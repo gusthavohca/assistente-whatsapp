@@ -1,0 +1,26 @@
+{
+  "name": "assistente-whatsapp",
+  "version": "1.0.0",
+  "description": "Assistente virtual para WhatsApp de eventos",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gusthavohca/assistente-whatsapp.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/gusthavohca/assistente-whatsapp/issues"
+  },
+  "homepage": "https://github.com/gusthavohca/assistente-whatsapp#readme",
+  "dependencies": {
+    "axios": "^1.15.0",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1"
+  }
+}
