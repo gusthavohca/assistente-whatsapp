@@ -106,7 +106,27 @@ async function alertarDono(telefoneCliente, ultimaMensagemDoCliente) {
     console.log(erro.response?.data || erro.message);
   }
 }
+// ============================================================================
+// FUNÇÃO 4: MOSTRAR "DIGITANDO..." PRO CLIENTE
+// ============================================================================
+// Faz o WhatsApp do cliente mostrar "digitando..." abaixo do nome do Gusthavo.
+// Útil pra dar feedback enquanto a IA está processando a resposta.
+// O status some sozinho depois de alguns segundos se nada for enviado.
 
+async function mostrarDigitando(telefoneCliente) {
+  try {
+    await axios.post(
+      `${URL_BASE}/send-chat-state`,
+      {
+        phone: telefoneCliente,
+        chatState: 'composing',
+      },
+      { headers: HEADERS }
+    );
+  } catch (erro) {
+    // Não loga erro pra não poluir o terminal — esse status é cosmético
+  }
+}
 // ============================================================================
 // EXPORTAÇÃO
 // ============================================================================
@@ -115,4 +135,5 @@ module.exports = {
   enviarTexto,
   enviarImagem,
   alertarDono,
+  mostrarDigitando,
 };
