@@ -127,7 +127,7 @@ async function processarBufferDoCliente(telefoneCliente) {
     );
 
     // Chama a Claude
-    const respostaDaClaude = await claude.conversar(telefoneCliente, textoFinal);
+    const respostaDaClaude = await claude.perguntarParaClaude(telefoneCliente, textoFinal);
     console.log(`🤖 Claude respondeu: "${respostaDaClaude}"`);
 
     // Analisa comandos especiais
