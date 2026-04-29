@@ -1,6 +1,7 @@
 require('dotenv').config();
 const Anthropic = require('@anthropic-ai/sdk');
 const { SYSTEM_PROMPT } = require('./prompt');
+const { lerAtracoes, lerCerebroDoGusthavo } = require('./firebase');
 
 const claude = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -9,7 +10,13 @@ const claude = new Anthropic({
 const historicos = {};
 
 async function montarCerebro() {
-  return SYSTEM_PROMPT;
+  try {
+    const cerebroFirebase = await lerCerebroDoGusthavo();
+    return cerebroFirebase || SYSTEM_PROMPT;
+  } catch (erro) {
+    console.log('⚠️ Firebase indisponível, usando prompt local.');
+    return SYSTEM_PROMPT;
+  }
 }
 
 async function perguntarParaClaude(telefone, mensagemDoCliente) {
