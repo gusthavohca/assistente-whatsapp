@@ -14,16 +14,17 @@ const path = require('path');
 // INICIALIZAÇÃO DO FIREBASE
 // ============================================================================
 
-// Caminho pro arquivo de credenciais
-const serviceAccount = require(
-  path.join(__dirname, '..', 'config', 'firebase.json')
-);
+// Carrega credenciais do Firebase
+// No Railway usa a variável de ambiente FIREBASE_CREDENTIALS
+// Localmente usa o arquivo config/firebase.json
+let serviceAccount;
 
-// Inicializa o Firebase (só uma vez)
-if (!admin.apps.length) {
-  admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
-  });
+if (process.env.FIREBASE_CREDENTIALS) {
+  serviceAccount = JSON.parse(process.env.FIREBASE_CREDENTIALS);
+} else {
+  serviceAccount = require(
+    path.join(__dirname, '..', 'config', 'firebase.json')
+  );
 }
 
 const db = admin.firestore();
