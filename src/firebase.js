@@ -19,14 +19,24 @@ const path = require('path');
 // Localmente usa o arquivo config/firebase.json
 let serviceAccount;
 
-if (process.env.FIREBASE_CREDENTIALS) {
-  serviceAccount = JSON.parse(process.env.FIREBASE_CREDENTIALS);
-} else {
-  serviceAccount = require(
-    path.join(__dirname, '..', 'config', 'firebase.json')
-  );
+// Inicializa o Firebase (só uma vez)
+if (!admin.apps.length) {
+  let serviceAccount;
+
+  if (process.env.FIREBASE_CREDENTIALS) {
+    serviceAccount = JSON.parse(process.env.FIREBASE_CREDENTIALS);
+  } else {
+    serviceAccount = require(
+      path.join(__dirname, '..', 'config', 'firebase.json')
+    );
+  }
+
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+  });
 }
 
+// Referência ao banco de dados Firestore
 const db = admin.firestore();
 db.settings({
   ignoreUndefinedProperties: true,
