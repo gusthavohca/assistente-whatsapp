@@ -1,42 +1,35 @@
 require('dotenv').config();
-const { salvarCerebroDoGusthavo, salvarAtracao, lerAtracoes } = require('./firebase');
-const { SYSTEM_PROMPT } = require('./prompt');
+const { salvarCerebroDoGusthavo, salvarAtracao } = require('./firebase');
 const Anthropic = require('@anthropic-ai/sdk');
 
 const claude = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
-const PROMPT_ADMIN = `
-Você é um assistente que ajuda o dono da Le Club a gerenciar o sistema GIA pelo WhatsApp.
+const PROMPT_ADMIN = `Você interpreta comandos do dono da Le Club e retorna APENAS um JSON válido, sem texto extra, sem markdown, sem explicações.
 
-Você interpreta comandos em linguagem natural e retorna um JSON com a ação a executar.
+AÇÕES:
+1. atualizar_atracao: quando falar de DJ, horário, programação
+   {"acao":"atualizar_atracao","dia":"sexta","dj":"nome do DJ","horario":"22:30"}
 
-AÇÕES DISPONÍVEIS:
+2. atualizar_cerebro: quando quiser mudar comportamento do GIA
+   {"acao":"atualizar_cerebro","instrucao":"o que mudar"}
 
-1. atualizar_atracao — quando o dono falar sobre DJ, horário ou programação
-   Exemplos: "DJ da sexta é Volkan, abre 22h", "sábado vai ter DJ Pedro às 23h"
-   Retorno: {"acao": "atualizar_atracao", "dia": "sexta" ou "sabado", "dj": "nome", "horario": "22:00"}
+3. responder: qualquer outra coisa
+   {"acao":"responder","mensagem":"resposta aqui"}
 
-2. atualizar_cerebro — quando o dono quiser mudar o comportamento do GIA
-   Exemplos: "adiciona que temos estacionamento", "remove a parte sobre dress code"
-   Retorno: {"acao": "atualizar_cerebro", "instrucao": "o que deve ser alterado"}
+Responda SOMENTE com o JSON. Nada mais.`;
 
-3. responder — quando for apenas uma pergunta ou conversa
-   Exemplos: "tudo bem?", "quantos clientes atendidos hoje?"
-   Retorno: {"acao": "responder", "mensagem": "sua resposta aqui"}
-
-Responda APENAS com o JSON, sem texto extra.
-`;
-
-async function processarComandoAdmin(mensagem, cerebroAtual) {
+async function processarComandoAdmin(mensagem) {
   try {
     const resposta = await claude.messages.create({
       model: 'claude-sonnet-4-5',
-      max_tokens: 1024,
+      max_tokens: 512,
       system: PROMPT_ADMIN,
       messages: [{ role: 'user', content: mensagem }],
     });
 
-    const texto = resposta.content[0].text.trim();
+    let texto = resposta.content[0].text.trim();
+    texto = texto.replace(/```json|```/g, '').trim();
+
     const json = JSON.parse(texto);
 
     if (json.acao === 'atualizar_atracao') {
@@ -45,23 +38,25 @@ async function processarComandoAdmin(mensagem, cerebroAtual) {
         horario: json.horario,
         ativo: true,
       });
-      return `Beleza! Atração do ${json.dia} atualizada: ${json.dj} às ${json.horario}`;
+      return `Beleza! ${json.dia} atualizado: ${json.dj} às ${json.horario}`;
     }
 
     if (json.acao === 'atualizar_cerebro') {
-      const novocerebro = cerebroAtual + `\n\n[ATUALIZAÇÃO]: ${json.instrucao}`;
-      await salvarCerebroDoGusthavo(novocerebro);
-      return `Feito! GIA atualizado com a nova instrução.`;
+      const { lerCerebroDoGusthavo } = require('./firebase');
+      const cerebroAtual = await lerCerebroDoGusthavo();
+      const novoCerebro = cerebroAtual + `\n\n[ATUALIZAÇÃO]: ${json.instrucao}`;
+      await salvarCerebroDoGusthavo(novoCerebro);
+      return `Feito! GIA atualizado.`;
     }
 
     if (json.acao === 'responder') {
       return json.mensagem;
     }
 
-    return 'Não entendi o comando. Tenta de novo.';
+    return 'Comando não reconhecido.';
   } catch (erro) {
     console.log('Erro no admin:', erro.message);
-    return 'Erro ao processar comando. Tenta de novo.';
+    return 'Erro ao processar. Tenta de novo.';
   }
 }
 
