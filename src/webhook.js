@@ -11,6 +11,9 @@
 
 const claude = require('./claude');
 const zapi = require('./zapi');
+const { processarComandoAdmin } = require('./admin');
+const { lerCerebroDoGusthavo } = require('./firebase');
+const NUMERO_ADMIN = process.env.NUMERO_GUSTHAVO_PESSOAL;
 
 // ============================================================================
 // MAPA DOS FLYERS
@@ -126,8 +129,18 @@ async function processarBufferDoCliente(telefoneCliente) {
       `🎯 Processando ${mensagensAcumuladas.length} mensagem(ns) de ${telefoneCliente}`,
     );
 
-    // Chama a Claude
-    const respostaDaClaude = await claude.perguntarParaClaude(telefoneCliente, textoFinal);
+    // Verifica se é o admin ou cliente normal
+    let respostaDaClaude;
+    const telefoneAdmin = NUMERO_ADMIN ? NUMERO_ADMIN.replace(/\D/g, '') : '';
+    const telefoneClean = telefoneCliente.replace(/\D/g, '');
+
+    if (telefoneAdmin && telefoneClean.includes(telefoneAdmin.slice(-8))) {
+      console.log('👑 Modo Admin ativado');
+      const cerebroAtual = await lerCerebroDoGusthavo();
+      respostaDaClaude = await processarComandoAdmin(textoFinal, cerebroAtual);
+    } else {
+      respostaDaClaude = await claude.perguntarParaClaude(telefoneCliente, textoFinal);
+    }
     console.log(`🤖 Claude respondeu: "${respostaDaClaude}"`);
 
     // Analisa comandos especiais
