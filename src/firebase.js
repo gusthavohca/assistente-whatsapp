@@ -173,4 +173,34 @@ async function salvarHistorico(telefone, mensagens) {
     return false;
   }
 }
-module.exports = { lerCerebroDoGusthavo, lerAtracoes, salvarCerebroDoGusthavo, salvarAtracao, lerHistorico, salvarHistorico };
+// ============================================================================
+// FUNÇÃO: SALVAR FLYER
+// ============================================================================
+async function salvarFlyer(tipo, url) {
+  try {
+    await db.collection('flyers').doc(tipo).set({ url, atualizadoEm: new Date() });
+    console.log(`✅ Flyer "${tipo}" atualizado no Firebase`);
+    return true;
+  } catch (erro) {
+    console.log('⚠️ Erro ao salvar flyer:', erro.message);
+    return false;
+  }
+}
+
+// ============================================================================
+// FUNÇÃO: LER FLYERS
+// ============================================================================
+async function lerFlyers() {
+  try {
+    const snapshot = await db.collection('flyers').get();
+    const flyers = {};
+    snapshot.forEach(doc => {
+      flyers[doc.id] = doc.data().url;
+    });
+    return flyers;
+  } catch (erro) {
+    console.log('⚠️ Erro ao ler flyers:', erro.message);
+    return {};
+  }
+}
+module.exports = { lerCerebroDoGusthavo, lerAtracoes, salvarCerebroDoGusthavo, salvarAtracao, lerHistorico, salvarHistorico, salvarFlyer, lerFlyers };
