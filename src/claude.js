@@ -1,37 +1,52 @@
 require('dotenv').config();
 const Anthropic = require('@anthropic-ai/sdk');
-const { SYSTEM_PROMPT } = require('./prompt');
-const { lerCerebroDoGusthavo, lerHistorico, salvarHistorico } = require('./firebase');
+const { montarSystemPrompt } = require('./prompt');
+const { lerHistorico, salvarHistorico, lerAtracoes, lerInfos } = require('./firebase');
 
 const claude = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
 });
 
-async function montarCerebro() {
-  try {
-    const cerebroFirebase = await lerCerebroDoGusthavo();
-    return cerebroFirebase || SYSTEM_PROMPT;
-  } catch (erro) {
-    console.log('⚠️ Firebase indisponível, usando prompt local.');
-    return SYSTEM_PROMPT;
-  }
-}
-
 async function perguntarParaClaude(telefone, mensagemDoCliente) {
-  // Busca histórico do Firebase
   let historico = [];
   try {
     historico = await lerHistorico(telefone) || [];
   } catch (erro) {
-    console.log('⚠️ Erro ao carregar histórico, começando do zero.');
     historico = [];
   }
 
-  const cerebro = await montarCerebro();
+  // Busca dados atualizados do Firebase
+  const atracoes = await lerAtracoes();
+  const infos = await lerInfos();
+
+  // Monta contexto atual obrigatório
+  const djSexta = atracoes?.sexta?.dj || null;
+  const horarioSexta = atracoes?.sexta?.horario || null;
+  const djSabado = atracoes?.sabado?.dj || null;
+  const horarioSabado = atracoes?.sabado?.horario || null;
+
+ // Injeta contexto atual DENTRO da mensagem do usuário
+  const respostaSexta = djSexta
+    ? `Bhaskar toca sexta às ${horarioSexta}`
+    : `a divulgação do line up sai durante a semana`;
+
+  const respostaSabado = djSabado
+    ? `${djSabado} toca sábado às ${horarioSabado}`
+    : `a divulgação do line up sai durante a semana`;
+
+  const contextoAtual = `
+[INSTRUÇÃO DO SISTEMA]:
+Se o cliente perguntar sobre sexta, a resposta EXATA é: "${respostaSexta}"
+Se o cliente perguntar sobre sábado, a resposta EXATA é: "${respostaSabado}"
+Use essas frases literalmente. Não invente, não modifique, não omita.
+
+[MENSAGEM DO CLIENTE]: ${mensagemDoCliente}`;
+
+  const cerebro = await montarSystemPrompt();
 
   historico.push({
     role: 'user',
-    content: mensagemDoCliente,
+    content: contextoAtual,
   });
 
   const resposta = await claude.messages.create({
@@ -43,13 +58,17 @@ async function perguntarParaClaude(telefone, mensagemDoCliente) {
 
   const textoResposta = resposta.content[0].text;
 
+  // Salva no histórico só a mensagem real do cliente (sem o contexto técnico)
+  historico[historico.length - 1] = {
+    role: 'user',
+    content: mensagemDoCliente,
+  };
+
   historico.push({
     role: 'assistant',
     content: textoResposta,
   });
 
-  // Salva histórico atualizado no Firebase
-  // Mantém apenas as últimas 20 mensagens para não ficar pesado
   const historicoReduzido = historico.slice(-20);
   try {
     await salvarHistorico(telefone, historicoReduzido);

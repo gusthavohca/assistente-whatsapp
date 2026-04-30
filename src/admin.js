@@ -1,5 +1,5 @@
 require('dotenv').config();
-const { salvarCerebroDoGusthavo, salvarAtracao, salvarFlyer, lerCerebroDoGusthavo } = require('./firebase');
+const { salvarCerebroDoGusthavo, salvarAtracao, salvarFlyer, salvarInfo, lerCerebroDoGusthavo } = require('./firebase');
 const Anthropic = require('@anthropic-ai/sdk');
 
 const claude = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
@@ -7,17 +7,21 @@ const claude = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 const PROMPT_ADMIN = `Você interpreta comandos do dono da Le Club e retorna APENAS um JSON válido, sem texto extra, sem markdown, sem explicações.
 
 AÇÕES:
-1. atualizar_atracao: quando falar de DJ, horário, programação
-   {"acao":"atualizar_atracao","dia":"sexta","dj":"nome do DJ","horario":"22:30"}
+1. atualizar_atracao: quando falar de DJ ou horário
+   {"acao":"atualizar_atracao","dia":"sexta","dj":"nome","horario":"22:30"}
 
-2. atualizar_flyer: quando enviar link de flyer/imagem
-   Tipos possíveis: entrada_sexta, entrada_sabado, camarote_sexta, camarote_sabado, aniversario
+2. atualizar_flyer: quando enviar link de imagem
+   Tipos: entrada_sexta, entrada_sabado, camarote_sexta, camarote_sabado, aniversario
    {"acao":"atualizar_flyer","tipo":"entrada_sexta","url":"https://..."}
 
-3. atualizar_cerebro: quando quiser mudar comportamento do GIA
+3. atualizar_info: quando falar de valores, benefícios, programação ou infos extras
+   Tipos: entrada_sexta, entrada_sabado, camarote_sexta, camarote_sabado, aniversario_sexta, aniversario_sabado, programacao, extra
+   {"acao":"atualizar_info","tipo":"entrada_sexta","conteudo":"R$40 até meia noite, R$60 depois"}
+
+4. atualizar_cerebro: quando quiser mudar comportamento do GIA
    {"acao":"atualizar_cerebro","instrucao":"o que mudar"}
 
-4. responder: qualquer outra coisa
+5. responder: qualquer outra coisa
    {"acao":"responder","mensagem":"resposta aqui"}
 
 Responda SOMENTE com o JSON. Nada mais.`;
@@ -55,6 +59,21 @@ async function processarComandoAdmin(mensagem) {
         aniversario: 'Aniversário',
       };
       return `Flyer de ${nomes[json.tipo] || json.tipo} atualizado!`;
+    }
+
+    if (json.acao === 'atualizar_info') {
+      await salvarInfo(json.tipo, json.conteudo);
+      const nomes = {
+        entrada_sexta: 'Entrada Sexta',
+        entrada_sabado: 'Entrada Sábado',
+        camarote_sexta: 'Camarote Sexta',
+        camarote_sabado: 'Camarote Sábado',
+        aniversario_sexta: 'Aniversário Sexta',
+        aniversario_sabado: 'Aniversário Sábado',
+        programacao: 'Programação',
+        extra: 'Informação Extra',
+      };
+      return `Beleza! ${nomes[json.tipo] || json.tipo} atualizado.`;
     }
 
     if (json.acao === 'atualizar_cerebro') {

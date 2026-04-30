@@ -203,4 +203,38 @@ async function lerFlyers() {
     return {};
   }
 }
-module.exports = { lerCerebroDoGusthavo, lerAtracoes, salvarCerebroDoGusthavo, salvarAtracao, lerHistorico, salvarHistorico, salvarFlyer, lerFlyers };
+// ============================================================================
+// FUNÇÃO: SALVAR INFO (valores, benefícios, programação, extras)
+// ============================================================================
+async function salvarInfo(tipo, conteudo) {
+  try {
+    await db.collection('infos').doc(tipo).set({
+      conteudo,
+      atualizadoEm: new Date()
+    });
+    console.log(`✅ Info "${tipo}" atualizada no Firebase`);
+    return true;
+  } catch (erro) {
+    console.log('⚠️ Erro ao salvar info:', erro.message);
+    return false;
+  }
+}
+
+// ============================================================================
+// FUNÇÃO: LER INFOS
+// ============================================================================
+async function lerInfos() {
+  try {
+    const snapshot = await db.collection('infos').get();
+    const infos = {};
+    snapshot.forEach(doc => {
+      infos[doc.id] = doc.data().conteudo;
+    });
+    return infos;
+  } catch (erro) {
+    console.log('⚠️ Erro ao ler infos:', erro.message);
+    return {};
+  }
+}
+
+module.exports = { lerCerebroDoGusthavo, lerAtracoes, salvarCerebroDoGusthavo, salvarAtracao, lerHistorico, salvarHistorico, salvarFlyer, lerFlyers, salvarInfo, lerInfos };

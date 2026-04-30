@@ -1,29 +1,34 @@
 // ============================================================================
 // WEBHOOK.JS - O "cérebro decisor" entre o WhatsApp e a Claude
 // ============================================================================
-// Este arquivo é responsável por:
-// 1. Receber a mensagem do cliente (via Z-API)
-// 2. Acumular mensagens no buffer (debounce de 25 segundos)
-// 3. Chamar a Claude pra pensar a resposta quando o timer expira
-// 4. Analisar a resposta procurando comandos especiais
-// 5. Executar as ações: enviar texto, flyers, alertas
-// ============================================================================
 
 const claude = require('./claude');
 const zapi = require('./zapi');
 const { processarComandoAdmin } = require('./admin');
-const { lerCerebroDoGusthavo } = require('./firebase');
+const { lerCerebroDoGusthavo, lerFlyers, salvarFlyer } = require('./firebase');
 const NUMERO_ADMIN = process.env.NUMERO_GUSTHAVO_PESSOAL;
+
+// Armazena a última imagem enviada pelo admin
+let ultimaImagemAdmin = null;
 
 // ============================================================================
 // MAPA DOS FLYERS
 // ============================================================================
 
-const FLYERS = {
+const FLYERS_PADRAO = {
   entrada: 'https://raw.githubusercontent.com/gusthavohca/assistente-whatsapp/main/assets/flyers/entrada.jpeg',
   camarotes: 'https://raw.githubusercontent.com/gusthavohca/assistente-whatsapp/main/assets/flyers/camarotes.jpeg',
   aniversario: 'https://raw.githubusercontent.com/gusthavohca/assistente-whatsapp/main/assets/flyers/aniversario.jpeg',
 };
+
+async function obterFlyers(dia) {
+  const flyersFirebase = await lerFlyers();
+  return {
+    entrada: flyersFirebase[`entrada_${dia}`] || FLYERS_PADRAO.entrada,
+    camarotes: flyersFirebase[`camarote_${dia}`] || FLYERS_PADRAO.camarotes,
+    aniversario: flyersFirebase['aniversario'] || FLYERS_PADRAO.aniversario,
+  };
+}
 
 // ============================================================================
 // SISTEMA DE DEBOUNCE
@@ -51,20 +56,54 @@ async function processarMensagem(dadosDoWebhook) {
       (telefoneCliente && telefoneCliente.includes('-group'));
 
     if (ehDeGrupo) {
-      console.log('👥 Mensagem de grupo ignorada (atendemos só clientes diretos).');
+      console.log('👥 Mensagem de grupo ignorada.');
       return;
     }
 
-    // Se foi enviada por nós mesmos, ignorar (evita loop)
+    // Se foi enviada por nós mesmos, ignorar
     if (enviadaPorNos) {
       console.log('↩️  Mensagem enviada por nós mesmos, ignorando.');
       return;
     }
 
-    // Se não tem texto (foto, áudio, etc), ignorar por enquanto
+    // Verifica se é admin
+    const telefoneAdminLimpo = NUMERO_ADMIN ? NUMERO_ADMIN.replace(/\D/g, '') : '';
+    const telefoneClienteLimpo = telefoneCliente.replace(/\D/g, '');
+    const ehAdmin = telefoneAdminLimpo && telefoneClienteLimpo.includes(telefoneAdminLimpo.slice(-8));
+
+    // Se não tem texto, verifica se é imagem do admin
     if (!textoRecebido) {
-      console.log('📎 Mensagem sem texto recebida, ignorando por enquanto.');
+      if (ehAdmin && dadosDoWebhook.image?.imageUrl) {
+        ultimaImagemAdmin = dadosDoWebhook.image.imageUrl;
+        console.log('📸 Imagem do admin armazenada:', ultimaImagemAdmin);
+      }
       return;
+    }
+
+    // Verifica se admin mandou comando de flyer após imagem
+    if (ehAdmin && ultimaImagemAdmin) {
+      const texto = textoRecebido.toLowerCase().trim();
+      let tipoFlyer = null;
+
+      if (texto.includes('flyer sexta') || texto.includes('programacao sexta') || texto.includes('programação sexta')) {
+        tipoFlyer = 'entrada_sexta';
+      } else if (texto.includes('flyer sabado') || texto.includes('flyer sábado') || texto.includes('programacao sabado') || texto.includes('programação sábado')) {
+        tipoFlyer = 'entrada_sabado';
+      } else if (texto.includes('flyer camarote sexta')) {
+        tipoFlyer = 'camarote_sexta';
+      } else if (texto.includes('flyer camarote sabado') || texto.includes('flyer camarote sábado')) {
+        tipoFlyer = 'camarote_sabado';
+      } else if (texto.includes('flyer aniversario') || texto.includes('flyer aniversário')) {
+        tipoFlyer = 'aniversario';
+      }
+
+      if (tipoFlyer) {
+        await salvarFlyer(tipoFlyer, ultimaImagemAdmin);
+        ultimaImagemAdmin = null;
+        await zapi.enviarTexto(telefoneCliente, `Beleza! Flyer de ${tipoFlyer.replace('_', ' ')} atualizado.`);
+        console.log(`✅ Flyer ${tipoFlyer} salvo no Firebase`);
+        return;
+      }
     }
 
     console.log(`📥 Mensagem recebida de ${telefoneCliente}: "${textoRecebido}"`);
@@ -75,7 +114,7 @@ async function processarMensagem(dadosDoWebhook) {
     }
     buffersDeMensagens[telefoneCliente].push(textoRecebido);
 
-    // Cancelar timers anteriores (resetar)
+    // Cancelar timers anteriores
     if (timersDeEspera[telefoneCliente]) {
       clearTimeout(timersDeEspera[telefoneCliente]);
     }
@@ -83,20 +122,19 @@ async function processarMensagem(dadosDoWebhook) {
       clearInterval(timersDeDigitando[telefoneCliente]);
     }
 
-    // Mostrar "digitando..." pro cliente
+    // Mostrar "digitando..."
     zapi.mostrarDigitando(telefoneCliente);
 
-    // Renovar "digitando..." a cada 7 segundos
     timersDeDigitando[telefoneCliente] = setInterval(() => {
       zapi.mostrarDigitando(telefoneCliente);
     }, RENOVAR_DIGITANDO_MS);
 
-    // Criar timer de 25 segundos
     console.log(`⏱️  Aguardando ${TEMPO_ESPERA_MS / 1000}s para responder ${telefoneCliente}...`);
 
     timersDeEspera[telefoneCliente] = setTimeout(() => {
       processarBufferDoCliente(telefoneCliente);
     }, TEMPO_ESPERA_MS);
+
   } catch (erro) {
     console.log('❌ Erro ao processar mensagem:');
     console.log(erro.message);
@@ -107,29 +145,23 @@ async function processarMensagem(dadosDoWebhook) {
 // FUNÇÃO: PROCESSAR BUFFER ACUMULADO DE UM CLIENTE
 // ============================================================================
 
-async function processarBufferDoCliente(telefoneCliente) {
+async function processarBufferDoCliente(telefoneCliente, dia = 'sexta') {
   try {
-    // Para o "digitando..."
     if (timersDeDigitando[telefoneCliente]) {
       clearInterval(timersDeDigitando[telefoneCliente]);
       delete timersDeDigitando[telefoneCliente];
     }
 
-    // Pega e limpa o buffer
     const mensagensAcumuladas = buffersDeMensagens[telefoneCliente] || [];
     delete buffersDeMensagens[telefoneCliente];
     delete timersDeEspera[telefoneCliente];
 
     if (mensagensAcumuladas.length === 0) return;
 
-    // Junta todas as mensagens
     const textoFinal = mensagensAcumuladas.join('\n');
 
-    console.log(
-      `🎯 Processando ${mensagensAcumuladas.length} mensagem(ns) de ${telefoneCliente}`,
-    );
+    console.log(`🎯 Processando ${mensagensAcumuladas.length} mensagem(ns) de ${telefoneCliente}`);
 
-    // Verifica se é o admin ou cliente normal
     let respostaDaClaude;
     const telefoneAdmin = NUMERO_ADMIN ? NUMERO_ADMIN.replace(/\D/g, '') : '';
     const telefoneClean = telefoneCliente.replace(/\D/g, '');
@@ -141,9 +173,9 @@ async function processarBufferDoCliente(telefoneCliente) {
     } else {
       respostaDaClaude = await claude.perguntarParaClaude(telefoneCliente, textoFinal);
     }
+
     console.log(`🤖 Claude respondeu: "${respostaDaClaude}"`);
 
-    // Analisa comandos especiais
     const flyersSolicitados = [];
     let precisaAlertar = false;
     let textoLimpo = respostaDaClaude;
@@ -162,25 +194,21 @@ async function processarBufferDoCliente(telefoneCliente) {
 
     textoLimpo = textoLimpo.replace(/\n{3,}/g, '\n\n').trim();
 
-    // Envia as mensagens de texto (quebradas por linha vazia)
     const pedacos = textoLimpo.split(/\n\s*\n/).filter((p) => p.trim() !== '');
     for (const pedaco of pedacos) {
       await zapi.enviarTexto(telefoneCliente, pedaco.trim());
       await esperar(1500);
     }
 
-    // Envia flyers
+    const flyersAtuais = await obterFlyers(dia);
     for (const nomeFlyer of flyersSolicitados) {
-      const urlFlyer = FLYERS[nomeFlyer];
-      if (urlFlyer && !urlFlyer.startsWith('COLOCAR_URL')) {
+      const urlFlyer = flyersAtuais[nomeFlyer];
+      if (urlFlyer) {
         await zapi.enviarImagem(telefoneCliente, urlFlyer);
         await esperar(1000);
-      } else {
-        console.log(`⚠️  URL do flyer "${nomeFlyer}" ainda não configurada.`);
       }
     }
 
-    // Alerta o dono se necessário
     if (precisaAlertar) {
       await zapi.alertarDono(telefoneCliente, textoFinal);
     }
