@@ -1,13 +1,11 @@
 require('dotenv').config();
 const Anthropic = require('@anthropic-ai/sdk');
 const { SYSTEM_PROMPT } = require('./prompt');
-const { lerAtracoes, lerCerebroDoGusthavo } = require('./firebase');
+const { lerCerebroDoGusthavo, lerHistorico, salvarHistorico } = require('./firebase');
 
 const claude = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
 });
-
-const historicos = {};
 
 async function montarCerebro() {
   try {
@@ -20,13 +18,18 @@ async function montarCerebro() {
 }
 
 async function perguntarParaClaude(telefone, mensagemDoCliente) {
-  if (!historicos[telefone]) {
-    historicos[telefone] = [];
+  // Busca histórico do Firebase
+  let historico = [];
+  try {
+    historico = await lerHistorico(telefone) || [];
+  } catch (erro) {
+    console.log('⚠️ Erro ao carregar histórico, começando do zero.');
+    historico = [];
   }
 
   const cerebro = await montarCerebro();
 
-  historicos[telefone].push({
+  historico.push({
     role: 'user',
     content: mensagemDoCliente,
   });
@@ -35,15 +38,24 @@ async function perguntarParaClaude(telefone, mensagemDoCliente) {
     model: 'claude-sonnet-4-5',
     max_tokens: 1024,
     system: cerebro,
-    messages: historicos[telefone],
+    messages: historico,
   });
 
   const textoResposta = resposta.content[0].text;
 
-  historicos[telefone].push({
+  historico.push({
     role: 'assistant',
     content: textoResposta,
   });
+
+  // Salva histórico atualizado no Firebase
+  // Mantém apenas as últimas 20 mensagens para não ficar pesado
+  const historicoReduzido = historico.slice(-20);
+  try {
+    await salvarHistorico(telefone, historicoReduzido);
+  } catch (erro) {
+    console.log('⚠️ Erro ao salvar histórico.');
+  }
 
   return textoResposta;
 }

@@ -140,11 +140,37 @@ async function salvarAtracao(dia, dados) {
 // ============================================================================
 // EXPORTAÇÃO
 // ============================================================================
+// ============================================================================
+// FUNÇÃO: LER HISTÓRICO DO CLIENTE
+// ============================================================================
+async function lerHistorico(telefone) {
+  try {
+    const doc = await db
+      .collection('historicos')
+      .doc(telefone)
+      .get();
+    if (!doc.exists) return [];
+    return doc.data().mensagens || [];
+  } catch (erro) {
+    console.log('⚠️ Erro ao ler histórico:', erro.message);
+    return [];
+  }
+}
 
-module.exports = {
-  db,
-  lerCerebroDoGusthavo,
-  lerAtracoes,
-  salvarCerebroDoGusthavo,
-  salvarAtracao,
-};
+// ============================================================================
+// FUNÇÃO: SALVAR HISTÓRICO DO CLIENTE
+// ============================================================================
+async function salvarHistorico(telefone, mensagens) {
+  try {
+    await db
+      .collection('historicos')
+      .doc(telefone)
+      .set({ mensagens, atualizadoEm: new Date() });
+    console.log(`💾 Histórico salvo para ${telefone}`);
+    return true;
+  } catch (erro) {
+    console.log('⚠️ Erro ao salvar histórico:', erro.message);
+    return false;
+  }
+}
+module.exports = { lerCerebroDoGusthavo, lerAtracoes, salvarCerebroDoGusthavo, salvarAtracao, lerHistorico, salvarHistorico };
