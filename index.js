@@ -5,11 +5,11 @@ const bodyParser = require('body-parser');
 const path = require('path');
 
 const webhook = require('./src/webhook');
+const { iniciarAgendamento } = require('./src/relatorio');
 const { lerAtracoes, lerCerebroDoGusthavo, salvarAtracao, salvarCerebroDoGusthavo } = require('./src/firebase');
-const { SYSTEM_PROMPT } = require('./src/prompt');
 
 const app = express();
-const PORTA = 3000;
+const PORTA = process.env.PORT || 3000;
 
 app.use(bodyParser.json());
 
@@ -27,7 +27,6 @@ app.get('/', (req, res) => {
 // ROTAS DO PAINEL ADMIN
 // ============================================================================
 
-// Carrega todos os dados pro painel
 app.get('/api/dados', async (req, res) => {
   const [atracoes, cerebro] = await Promise.all([
     lerAtracoes(),
@@ -35,18 +34,16 @@ app.get('/api/dados', async (req, res) => {
   ]);
   res.json({
     atracoes,
-    cerebro: cerebro || SYSTEM_PROMPT,
+    cerebro: cerebro || '',
   });
 });
 
-// Salva atração (sexta ou sábado)
 app.post('/api/salvar-atracao', async (req, res) => {
   const { dia, dados } = req.body;
   const ok = await salvarAtracao(dia, dados);
   res.json({ ok });
 });
 
-// Salva o cérebro do Gusthavo
 app.post('/api/salvar-cerebro', async (req, res) => {
   const { cerebro } = req.body;
   const ok = await salvarCerebroDoGusthavo(cerebro);
@@ -76,4 +73,7 @@ app.listen(PORTA, () => {
   console.log('========================================');
   console.log('  Aguardando mensagens do WhatsApp...');
   console.log('');
+
+  // Inicia o agendamento do relatório semanal
+  iniciarAgendamento();
 });

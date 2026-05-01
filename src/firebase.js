@@ -264,4 +264,87 @@ async function lerStatusGia() {
   }
 }
 
-module.exports = { lerCerebroDoGusthavo, lerAtracoes, salvarCerebroDoGusthavo, salvarAtracao, lerHistorico, salvarHistorico, salvarFlyer, lerFlyers, salvarInfo, lerInfos, salvarStatusGia, lerStatusGia };
+// ============================================================================
+// FUNÇÃO: RASTREAR PEDIDOS (lista, camarote, aniversário)
+// ============================================================================
+async function registrarPedido(tipo) {
+  try {
+    const hoje = new Date().toISOString().split('T')[0];
+    const ref = db.collection('relatorios').doc(hoje);
+    const doc = await ref.get();
+    const dados = doc.exists ? doc.data() : {
+      atendimentos: 0,
+      lista: 0,
+      camarote: 0,
+      aniversario: 0,
+      perguntas: {}
+    };
+
+    dados[tipo] = (dados[tipo] || 0) + 1;
+    await ref.set(dados);
+    return true;
+  } catch (erro) {
+    console.log('⚠️ Erro ao registrar pedido:', erro.message);
+    return false;
+  }
+}
+
+async function registrarAtendimento(pergunta) {
+  try {
+    const hoje = new Date().toISOString().split('T')[0];
+    const ref = db.collection('relatorios').doc(hoje);
+    const doc = await ref.get();
+    const dados = doc.exists ? doc.data() : {
+      atendimentos: 0,
+      lista: 0,
+      camarote: 0,
+      aniversario: 0,
+      perguntas: {}
+    };
+
+    dados.atendimentos = (dados.atendimentos || 0) + 1;
+    dados.perguntas = dados.perguntas || {};
+    dados.perguntas[pergunta] = (dados.perguntas[pergunta] || 0) + 1;
+    await ref.set(dados);
+    return true;
+  } catch (erro) {
+    console.log('⚠️ Erro ao registrar atendimento:', erro.message);
+    return false;
+  }
+}
+
+async function lerRelatorioSemana() {
+  try {
+    const hoje = new Date();
+    const relatorio = {
+      atendimentos: 0,
+      lista: 0,
+      camarote: 0,
+      aniversario: 0,
+      perguntas: {}
+    };
+
+    for (let i = 0; i < 7; i++) {
+      const data = new Date(hoje);
+      data.setDate(hoje.getDate() - i);
+      const chave = data.toISOString().split('T')[0];
+      const doc = await db.collection('relatorios').doc(chave).get();
+      if (doc.exists) {
+        const d = doc.data();
+        relatorio.atendimentos += d.atendimentos || 0;
+        relatorio.lista += d.lista || 0;
+        relatorio.camarote += d.camarote || 0;
+        relatorio.aniversario += d.aniversario || 0;
+        Object.entries(d.perguntas || {}).forEach(([p, n]) => {
+          relatorio.perguntas[p] = (relatorio.perguntas[p] || 0) + n;
+        });
+      }
+    }
+    return relatorio;
+  } catch (erro) {
+    console.log('⚠️ Erro ao ler relatório:', erro.message);
+    return null;
+  }
+}
+
+module.exports = { lerCerebroDoGusthavo, lerAtracoes, salvarCerebroDoGusthavo, salvarAtracao, lerHistorico, salvarHistorico, salvarFlyer, lerFlyers, salvarInfo, lerInfos, salvarStatusGia, lerStatusGia, registrarPedido, registrarAtendimento, lerRelatorioSemana };

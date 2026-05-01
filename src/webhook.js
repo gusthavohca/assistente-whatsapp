@@ -5,7 +5,7 @@
 const claude = require('./claude');
 const zapi = require('./zapi');
 const { processarComandoAdmin } = require('./admin');
-const { lerCerebroDoGusthavo, lerFlyers, salvarFlyer, lerStatusGia } = require('./firebase');
+const { lerCerebroDoGusthavo, lerFlyers, salvarFlyer, lerStatusGia, registrarPedido, registrarAtendimento } = require('./firebase');
 const NUMERO_ADMIN = process.env.NUMERO_GUSTHAVO_PESSOAL;
 
 // Armazena a última imagem enviada pelo admin
@@ -222,7 +222,12 @@ async function processarBufferDoCliente(telefoneCliente, dia = 'sexta') {
     if (precisaAlertar) {
       await zapi.alertarDono(telefoneCliente, textoFinal);
     }
-
+// Registra atendimento e pedidos especiais
+    await registrarAtendimento(textoFinal.substring(0, 50));
+    if (textoLimpo.toLowerCase().includes('lista')) await registrarPedido('lista');
+    if (textoLimpo.toLowerCase().includes('camarote')) await registrarPedido('camarote');
+    if (textoLimpo.toLowerCase().includes('aniversar')) await registrarPedido('aniversario');
+    
     console.log(`✅ Atendimento concluído para ${telefoneCliente}\n`);
   } catch (erro) {
     console.log('❌ Erro ao processar buffer:');
