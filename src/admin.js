@@ -27,7 +27,10 @@ AÇÕES:
 6. ativar_gia: quando disser "GIA ativar", "ativar GIA", "ligar GIA"
    {"acao":"ativar_gia"}
 
-7. responder: qualquer outra coisa
+7. ajuda: quando disser "ajuda", "help", "comandos", "o que você faz"
+   {"acao":"ajuda"}
+
+8. responder: qualquer outra coisa
    {"acao":"responder","mensagem":"resposta aqui"}
 
 Responda SOMENTE com o JSON. Nada mais.`;
@@ -98,7 +101,37 @@ async function processarComandoAdmin(mensagem) {
       await salvarStatusGia(true);
       return 'GIA ativado. Voltando a atender normalmente.';
     }
+if (json.acao === 'ajuda') {
+      return `Comandos disponíveis:
 
+PROGRAMAÇÃO:
+- DJ sexta: [nome] às [hora]
+- DJ sábado: [nome] às [hora]
+
+FLYERS (mande a imagem primeiro, depois o texto):
+- flyer sexta
+- flyer sabado
+- flyer camarote sexta
+- flyer camarote sabado
+- flyer aniversario
+
+INFORMAÇÕES:
+- Entrada sexta: [descrição]
+- Entrada sábado: [descrição]
+- Camarote sexta: [descrição]
+- Camarote sábado: [descrição]
+- Aniversário sexta: [descrição]
+- Aniversário sábado: [descrição]
+- Info: [qualquer informação extra]
+
+COMPORTAMENTO:
+- Adiciona aí GIA que... [instrução]
+
+CONTROLE:
+- GIA pausar
+- GIA ativar`;
+    }
+    
     if (json.acao === 'responder') {
       return json.mensagem;
     }
