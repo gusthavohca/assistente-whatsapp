@@ -237,4 +237,31 @@ async function lerInfos() {
   }
 }
 
-module.exports = { lerCerebroDoGusthavo, lerAtracoes, salvarCerebroDoGusthavo, salvarAtracao, lerHistorico, salvarHistorico, salvarFlyer, lerFlyers, salvarInfo, lerInfos };
+// ============================================================================
+// FUNÇÃO: CONTROLE DO GIA (ligar/desligar)
+// ============================================================================
+async function salvarStatusGia(status) {
+  try {
+    await db.collection('configuracoes').doc('status').set({
+      ativo: status,
+      atualizadoEm: new Date()
+    });
+    console.log(`✅ GIA ${status ? 'ativado' : 'pausado'}`);
+    return true;
+  } catch (erro) {
+    console.log('⚠️ Erro ao salvar status:', erro.message);
+    return false;
+  }
+}
+
+async function lerStatusGia() {
+  try {
+    const doc = await db.collection('configuracoes').doc('status').get();
+    if (!doc.exists) return true; // padrão: ativo
+    return doc.data().ativo !== false;
+  } catch (erro) {
+    return true; // se der erro, mantém ativo
+  }
+}
+
+module.exports = { lerCerebroDoGusthavo, lerAtracoes, salvarCerebroDoGusthavo, salvarAtracao, lerHistorico, salvarHistorico, salvarFlyer, lerFlyers, salvarInfo, lerInfos, salvarStatusGia, lerStatusGia };

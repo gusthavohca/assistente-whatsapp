@@ -5,7 +5,7 @@
 const claude = require('./claude');
 const zapi = require('./zapi');
 const { processarComandoAdmin } = require('./admin');
-const { lerCerebroDoGusthavo, lerFlyers, salvarFlyer } = require('./firebase');
+const { lerCerebroDoGusthavo, lerFlyers, salvarFlyer, lerStatusGia } = require('./firebase');
 const NUMERO_ADMIN = process.env.NUMERO_GUSTHAVO_PESSOAL;
 
 // Armazena a última imagem enviada pelo admin
@@ -67,9 +67,19 @@ async function processarMensagem(dadosDoWebhook) {
     }
 
     // Verifica se é admin
+    // Verifica se é admin
     const telefoneAdminLimpo = NUMERO_ADMIN ? NUMERO_ADMIN.replace(/\D/g, '') : '';
     const telefoneClienteLimpo = telefoneCliente.replace(/\D/g, '');
     const ehAdmin = telefoneAdminLimpo && telefoneClienteLimpo.includes(telefoneAdminLimpo.slice(-8));
+
+    // Se não é admin, verifica se o GIA está ativo
+    if (!ehAdmin) {
+      const giaAtivo = await lerStatusGia();
+      if (!giaAtivo) {
+        console.log('⏸️ GIA pausado, ignorando mensagem de cliente.');
+        return;
+      }
+    }
 
     // Se não tem texto, verifica se é imagem do admin
     if (!textoRecebido) {

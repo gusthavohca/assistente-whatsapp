@@ -1,5 +1,5 @@
 require('dotenv').config();
-const { salvarCerebroDoGusthavo, salvarAtracao, salvarFlyer, salvarInfo, lerCerebroDoGusthavo } = require('./firebase');
+const { salvarCerebroDoGusthavo, salvarAtracao, salvarFlyer, salvarInfo, lerCerebroDoGusthavo, salvarStatusGia } = require('./firebase');
 const Anthropic = require('@anthropic-ai/sdk');
 
 const claude = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
@@ -21,7 +21,13 @@ AÇÕES:
 4. atualizar_cerebro: quando quiser mudar comportamento do GIA
    {"acao":"atualizar_cerebro","instrucao":"o que mudar"}
 
-5. responder: qualquer outra coisa
+5. pausar_gia: quando disser "GIA pausar", "desativar GIA", "pausar GIA"
+   {"acao":"pausar_gia"}
+
+6. ativar_gia: quando disser "GIA ativar", "ativar GIA", "ligar GIA"
+   {"acao":"ativar_gia"}
+
+7. responder: qualquer outra coisa
    {"acao":"responder","mensagem":"resposta aqui"}
 
 Responda SOMENTE com o JSON. Nada mais.`;
@@ -81,6 +87,16 @@ async function processarComandoAdmin(mensagem) {
       const novoCerebro = cerebroAtual + `\n\n[ATUALIZAÇÃO]: ${json.instrucao}`;
       await salvarCerebroDoGusthavo(novoCerebro);
       return `Feito! GIA atualizado.`;
+    }
+
+    if (json.acao === 'pausar_gia') {
+      await salvarStatusGia(false);
+      return 'GIA pausado. Clientes não receberão resposta até você ativar novamente.';
+    }
+
+    if (json.acao === 'ativar_gia') {
+      await salvarStatusGia(true);
+      return 'GIA ativado. Voltando a atender normalmente.';
     }
 
     if (json.acao === 'responder') {
