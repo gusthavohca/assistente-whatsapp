@@ -104,16 +104,18 @@ async function processarComandoAdmin(mensagem) {
 if (json.acao === 'ajuda') {
       return `Comandos disponíveis:
 
-PROGRAMAÇÃO:
-- DJ sexta: [nome] às [hora]
-- DJ sábado: [nome] às [hora]
-
 FLYERS (mande a imagem primeiro, depois o texto):
-- flyer sexta
-- flyer sabado
-- flyer camarote sexta
-- flyer camarote sabado
-- flyer aniversario
+SEXTA:
+- programacao sexta
+- entrada sexta
+- camarote sexta
+- aniversario sexta
+
+SÁBADO:
+- programacao sabado
+- entrada sabado
+- camarote sabado
+- aniversario sabado
 
 INFORMAÇÕES:
 - Entrada sexta: [descrição]

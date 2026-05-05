@@ -27,6 +27,14 @@ async function obterFlyers(dia) {
     entrada: flyersFirebase[`entrada_${dia}`] || FLYERS_PADRAO.entrada,
     camarotes: flyersFirebase[`camarote_${dia}`] || FLYERS_PADRAO.camarotes,
     aniversario: flyersFirebase['aniversario'] || FLYERS_PADRAO.aniversario,
+    programacao_sexta: flyersFirebase['programacao_sexta'] || null,
+    programacao_sabado: flyersFirebase['programacao_sabado'] || null,
+    entrada_sexta: flyersFirebase['entrada_sexta'] || null,
+    entrada_sabado: flyersFirebase['entrada_sabado'] || null,
+    camarote_sexta: flyersFirebase['camarote_sexta'] || null,
+    camarote_sabado: flyersFirebase['camarote_sabado'] || null,
+    aniversario_sexta: flyersFirebase['aniversario_sexta'] || null,
+    aniversario_sabado: flyersFirebase['aniversario_sabado'] || null,
   };
 }
 
@@ -95,16 +103,22 @@ async function processarMensagem(dadosDoWebhook) {
       const texto = textoRecebido.toLowerCase().trim();
       let tipoFlyer = null;
 
-      if (texto.includes('flyer sexta') || texto.includes('programacao sexta') || texto.includes('programação sexta')) {
+      if (texto.includes('programacao sexta') || texto.includes('programação sexta') || texto.includes('flyer programacao sexta') || texto.includes('flyer programação sexta')) {
+        tipoFlyer = 'programacao_sexta';
+      } else if (texto.includes('programacao sabado') || texto.includes('programação sábado') || texto.includes('flyer programacao sabado')) {
+        tipoFlyer = 'programacao_sabado';
+      } else if (texto.includes('entrada sexta') || texto.includes('flyer entrada sexta')) {
         tipoFlyer = 'entrada_sexta';
-      } else if (texto.includes('flyer sabado') || texto.includes('flyer sábado') || texto.includes('programacao sabado') || texto.includes('programação sábado')) {
+      } else if (texto.includes('entrada sabado') || texto.includes('entrada sábado') || texto.includes('flyer entrada sabado')) {
         tipoFlyer = 'entrada_sabado';
-      } else if (texto.includes('flyer camarote sexta')) {
+      } else if (texto.includes('camarote sexta') || texto.includes('flyer camarote sexta')) {
         tipoFlyer = 'camarote_sexta';
-      } else if (texto.includes('flyer camarote sabado') || texto.includes('flyer camarote sábado')) {
+      } else if (texto.includes('camarote sabado') || texto.includes('camarote sábado') || texto.includes('flyer camarote sabado')) {
         tipoFlyer = 'camarote_sabado';
-      } else if (texto.includes('flyer aniversario') || texto.includes('flyer aniversário')) {
-        tipoFlyer = 'aniversario';
+      } else if (texto.includes('aniversario sexta') || texto.includes('aniversário sexta') || texto.includes('flyer aniversario sexta')) {
+        tipoFlyer = 'aniversario_sexta';
+      } else if (texto.includes('aniversario sabado') || texto.includes('aniversário sábado') || texto.includes('flyer aniversario sabado')) {
+        tipoFlyer = 'aniversario_sabado';
       }
 
       if (tipoFlyer) {
@@ -190,7 +204,7 @@ async function processarBufferDoCliente(telefoneCliente, dia = 'sexta') {
     let precisaAlertar = false;
     let textoLimpo = respostaDaClaude;
 
-    const regexFlyer = /\[ENVIAR_FLYER:(entrada|camarotes|aniversario)\]/g;
+    const regexFlyer = /\[ENVIAR_FLYER:(entrada|camarotes|aniversario|programacao_sexta|programacao_sabado|entrada_sexta|entrada_sabado|camarote_sexta|camarote_sabado|aniversario_sexta|aniversario_sabado)\]/g;
     let matchFlyer;
     while ((matchFlyer = regexFlyer.exec(respostaDaClaude)) !== null) {
       flyersSolicitados.push(matchFlyer[1]);
