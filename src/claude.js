@@ -1,11 +1,31 @@
 require('dotenv').config();
 const Anthropic = require('@anthropic-ai/sdk');
 const { montarSystemPrompt } = require('./prompt');
-const { lerHistorico, salvarHistorico, lerAtracoes, lerInfos } = require('./firebase');
+const { lerHistorico, salvarHistorico, lerFlyer } = require('./firebase');
 
 const claude = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
 });
+
+// Detecta se o cliente está perguntando sobre programação
+function detectarPerguntaProgramacao(mensagem) {
+  const msg = mensagem.toLowerCase();
+
+  const termosGerais = ['programação', 'programacao', 'programaçao', 'o que vai ter', 'o que tem', 'quem toca', 'quem canta', 'line up', 'lineup', 'atração', 'atracao'];
+  const termosSexta = ['sexta', 'sex', '6ª', 'friday'];
+  const termosSabado = ['sábado', 'sabado', 'sab', '7ª', 'saturday'];
+
+  const temTermoGeral = termosGerais.some(t => msg.includes(t));
+  const temSexta = termosSexta.some(t => msg.includes(t));
+  const temSabado = termosSabado.some(t => msg.includes(t));
+
+  if (temTermoGeral && temSexta) return 'programacao_sexta';
+  if (temTermoGeral && temSabado) return 'programacao_sabado';
+  if (temSexta) return 'programacao_sexta';
+  if (temSabado) return 'programacao_sabado';
+
+  return null;
+}
 
 async function perguntarParaClaude(telefone, mensagemDoCliente) {
   let historico = [];
@@ -15,38 +35,21 @@ async function perguntarParaClaude(telefone, mensagemDoCliente) {
     historico = [];
   }
 
-  // Busca dados atualizados do Firebase
-  const atracoes = await lerAtracoes();
-  const infos = await lerInfos();
-
-  // Monta contexto atual obrigatório
-  const djSexta = atracoes?.sexta?.dj || null;
-  const horarioSexta = atracoes?.sexta?.horario || null;
-  const djSabado = atracoes?.sabado?.dj || null;
-  const horarioSabado = atracoes?.sabado?.horario || null;
-
- // Injeta contexto atual DENTRO da mensagem do usuário
-  const respostaSexta = djSexta
-    ? `Bhaskar toca sexta às ${horarioSexta}`
-    : `a divulgação do line up sai durante a semana`;
-
-  const respostaSabado = djSabado
-    ? `${djSabado} toca sábado às ${horarioSabado}`
-    : `a divulgação do line up sai durante a semana`;
-
-  const contextoAtual = `
-[INSTRUÇÃO DO SISTEMA]:
-Se o cliente perguntar sobre sexta, a resposta EXATA é: "${respostaSexta}"
-Se o cliente perguntar sobre sábado, a resposta EXATA é: "${respostaSabado}"
-Use essas frases literalmente. Não invente, não modifique, não omita.
-
-[MENSAGEM DO CLIENTE]: ${mensagemDoCliente}`;
+  // Verifica se o cliente está perguntando sobre programação
+  const tipoProgramacao = detectarPerguntaProgramacao(mensagemDoCliente);
+  if (tipoProgramacao) {
+    const urlFlyer = await lerFlyer(tipoProgramacao);
+    if (urlFlyer) {
+      console.log(`🎯 Pergunta de programação detectada: ${tipoProgramacao}`);
+      return { tipo: 'flyer', url: urlFlyer };
+    }
+  }
 
   const cerebro = await montarSystemPrompt();
 
   historico.push({
     role: 'user',
-    content: contextoAtual,
+    content: mensagemDoCliente,
   });
 
   const resposta = await claude.messages.create({
@@ -57,12 +60,6 @@ Use essas frases literalmente. Não invente, não modifique, não omita.
   });
 
   const textoResposta = resposta.content[0].text;
-
-  // Salva no histórico só a mensagem real do cliente (sem o contexto técnico)
-  historico[historico.length - 1] = {
-    role: 'user',
-    content: mensagemDoCliente,
-  };
 
   historico.push({
     role: 'assistant',
@@ -76,7 +73,7 @@ Use essas frases literalmente. Não invente, não modifique, não omita.
     console.log('⚠️ Erro ao salvar histórico.');
   }
 
-  return textoResposta;
+  return { tipo: 'texto', mensagem: textoResposta };
 }
 
 module.exports = { perguntarParaClaude };

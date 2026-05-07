@@ -347,4 +347,46 @@ async function lerRelatorioSemana() {
   }
 }
 
-module.exports = { lerCerebroDoGusthavo, lerAtracoes, salvarCerebroDoGusthavo, salvarAtracao, lerHistorico, salvarHistorico, salvarFlyer, lerFlyers, salvarInfo, lerInfos, salvarStatusGia, lerStatusGia, registrarPedido, registrarAtendimento, lerRelatorioSemana };
+// ============================================================================
+// FUNÇÃO: LER HISTÓRICO DO CLIENTE
+// ============================================================================
+async function lerHistorico(telefone) {
+  try {
+    const doc = await db.collection('historicos').doc(telefone).get();
+    if (!doc.exists) return [];
+    return doc.data().mensagens || [];
+  } catch (erro) {
+    console.log('⚠️ Erro ao ler histórico:', erro.message);
+    return [];
+  }
+}
+
+// ============================================================================
+// FUNÇÃO: LER UM FLYER ESPECÍFICO
+// ============================================================================
+async function lerFlyer(tipo) {
+  try {
+    const doc = await db.collection('flyers').doc(tipo).get();
+    if (!doc.exists) return null;
+    return doc.data().url || null;
+  } catch (erro) {
+    console.log('⚠️ Erro ao ler flyer:', erro.message);
+    return null;
+  }
+}
+
+module.exports = {
+  lerCerebroDoGusthavo,
+  lerHistorico,
+  salvarHistorico,
+  salvarFlyer,
+  lerFlyer,
+  lerFlyers,
+  salvarInfo,
+  lerInfos,
+  salvarStatusGia,
+  lerStatusGia,
+  registrarPedido,
+  registrarAtendimento,
+  lerRelatorioSemana
+};

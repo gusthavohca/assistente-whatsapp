@@ -169,7 +169,7 @@ async function processarMensagem(dadosDoWebhook) {
 // FUNÇÃO: PROCESSAR BUFFER ACUMULADO DE UM CLIENTE
 // ============================================================================
 
-async function processarBufferDoCliente(telefoneCliente, dia = 'sexta') {
+async function processarBufferDoCliente(telefoneCliente) {
   try {
     if (timersDeDigitando[telefoneCliente]) {
       clearInterval(timersDeDigitando[telefoneCliente]);
@@ -184,21 +184,35 @@ async function processarBufferDoCliente(telefoneCliente, dia = 'sexta') {
 
     const textoFinal = mensagensAcumuladas.join('\n');
 
-    console.log(`🎯 Processando ${mensagensAcumuladas.length} mensagem(ns) de ${telefoneCliente}`);
+    console.log(`🔄 Processando ${mensagensAcumuladas.length} mensagem(ns) de ${telefoneCliente}`);
 
-    let respostaDaClaude;
     const telefoneAdmin = NUMERO_ADMIN ? NUMERO_ADMIN.replace(/\D/g, '') : '';
     const telefoneClean = telefoneCliente.replace(/\D/g, '');
+    const ehAdmin = telefoneAdmin && telefoneClean.includes(telefoneAdmin.slice(-8));
 
-    if (telefoneAdmin && telefoneClean.includes(telefoneAdmin.slice(-8))) {
-      console.log('👑 Modo Admin ativado');
+    if (ehAdmin) {
+      console.log('🔑 Modo Admin ativado');
       const cerebroAtual = await lerCerebroDoGusthavo();
-      respostaDaClaude = await processarComandoAdmin(textoFinal, cerebroAtual);
-    } else {
-      respostaDaClaude = await claude.perguntarParaClaude(telefoneCliente, textoFinal);
+      const respostaAdmin = await processarComandoAdmin(textoFinal, cerebroAtual);
+      await zapi.enviarTexto(telefoneCliente, respostaAdmin);
+      return;
     }
 
-    console.log(`🤖 Claude respondeu: "${respostaDaClaude}"`);
+    // Chama o Claude — agora retorna { tipo, url } ou { tipo, mensagem }
+    const resposta = await claude.perguntarParaClaude(telefoneCliente, textoFinal);
+
+    console.log(`🤖 Resposta tipo: "${resposta.tipo}"`);
+
+    // Se for flyer de programação
+    if (resposta.tipo === 'flyer') {
+      await zapi.enviarImagem(telefoneCliente, resposta.url);
+      await registrarAtendimento(textoFinal.substring(0, 50));
+      console.log(`✅ Flyer enviado para ${telefoneCliente}\n`);
+      return;
+    }
+
+    // Se for texto normal
+    const respostaDaClaude = resposta.mensagem;
 
     const flyersSolicitados = [];
     let precisaAlertar = false;
@@ -224,7 +238,7 @@ async function processarBufferDoCliente(telefoneCliente, dia = 'sexta') {
       await esperar(1500);
     }
 
-    const flyersAtuais = await obterFlyers(dia);
+    const flyersAtuais = await obterFlyers('sexta');
     for (const nomeFlyer of flyersSolicitados) {
       const urlFlyer = flyersAtuais[nomeFlyer];
       if (urlFlyer) {
@@ -236,12 +250,12 @@ async function processarBufferDoCliente(telefoneCliente, dia = 'sexta') {
     if (precisaAlertar) {
       await zapi.alertarDono(telefoneCliente, textoFinal);
     }
-// Registra atendimento e pedidos especiais
+
     await registrarAtendimento(textoFinal.substring(0, 50));
     if (textoLimpo.toLowerCase().includes('lista')) await registrarPedido('lista');
     if (textoLimpo.toLowerCase().includes('camarote')) await registrarPedido('camarote');
     if (textoLimpo.toLowerCase().includes('aniversar')) await registrarPedido('aniversario');
-    
+
     console.log(`✅ Atendimento concluído para ${telefoneCliente}\n`);
   } catch (erro) {
     console.log('❌ Erro ao processar buffer:');
