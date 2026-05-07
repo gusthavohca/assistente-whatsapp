@@ -11,7 +11,12 @@ const claude = new Anthropic({
 function detectarPerguntaProgramacao(mensagem) {
   const msg = mensagem.toLowerCase();
 
-  const termosGerais = ['programação', 'programacao', 'programaçao', 'o que vai ter', 'o que tem', 'quem toca', 'quem canta', 'line up', 'lineup', 'atração', 'atracao'];
+  // Palavras que indicam pergunta de VALOR/ENTRADA — não deve enviar flyer de programação
+  const termosValor = ['valor', 'preço', 'preco', 'quanto', 'ingresso', 'entrada', 'pagar', 'custa'];
+  if (termosValor.some(t => msg.includes(t))) return null;
+
+  // Palavras que indicam pergunta de PROGRAMAÇÃO
+  const termosGerais = ['programação', 'programacao', 'o que vai ter', 'o que tem', 'quem toca', 'quem canta', 'line up', 'lineup', 'atração', 'atracao', 'show'];
   const termosSexta = ['sexta', 'sex', '6ª', 'friday'];
   const termosSabado = ['sábado', 'sabado', 'sab', '7ª', 'saturday'];
 
@@ -21,8 +26,7 @@ function detectarPerguntaProgramacao(mensagem) {
 
   if (temTermoGeral && temSexta) return 'programacao_sexta';
   if (temTermoGeral && temSabado) return 'programacao_sabado';
-  if (temSexta) return 'programacao_sexta';
-  if (temSabado) return 'programacao_sabado';
+  if (temTermoGeral) return null; // Não sabe qual dia, deixa o Claude perguntar
 
   return null;
 }
