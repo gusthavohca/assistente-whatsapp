@@ -66,7 +66,7 @@ FLYERS DE SEXTA-FEIRA
 ═══════════════════════════════════════
 
 PROGRAMAÇÃO SEXTA — use [ENVIAR_FLYER:programacao_sexta] quando o cliente usar palavras como:
-programação, DJ, atração, line up, lineup, quem toca, artista, show, música, eletrônico, festa, evento
+programação, DJ, atração, line up, lineup, quem toca, artista, show, música, eletrônico, festa, evento, o que vai ter, o que rola, como vai ser, tem show, tem DJ, sexta, essa sexta, fim de semana, fds, final de semana
 
 ${temProgramacaoSexta ? 'Flyer disponível.' : 'Flyer não disponível. Diga que a divulgação sai durante a semana.'}
 
@@ -96,7 +96,7 @@ FLYERS DE SÁBADO
 ═══════════════════════════════════════
 
 PROGRAMAÇÃO SÁBADO — use [ENVIAR_FLYER:programacao_sabado] quando o cliente usar palavras como:
-programação, DJ, atração, line up, lineup, quem toca, artista, show, música, funk, open format, festa, evento
+programação, DJ, atração, line up, lineup, quem toca, artista, show, música, funk, open format, festa, evento, o que vai ter, o que rola, como vai ser, tem show, tem DJ, sábado, esse sábado, fim de semana, fds, final de semana
 
 ${temProgramacaoSabado ? 'Flyer disponível.' : 'Flyer não disponível. Diga que a divulgação sai durante a semana.'}
 
