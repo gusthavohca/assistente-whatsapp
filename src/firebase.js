@@ -377,6 +377,9 @@ async function lerFlyer(tipo) {
 
 module.exports = {
   lerCerebroDoGusthavo,
+  salvarCerebroDoGusthavo,
+  lerAtracoes,
+  salvarAtracao,
   lerHistorico,
   salvarHistorico,
   salvarFlyer,
