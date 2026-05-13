@@ -374,6 +374,49 @@ async function lerFlyer(tipo) {
     return null;
   }
 }
+// ============================================================================
+// FUNÇÃO: SALVAR CALENDÁRIO
+// ============================================================================
+async function salvarCalendario(dia, descricao) {
+  try {
+    await db.collection('calendario').doc(dia).set({
+      descricao,
+      atualizadoEm: new Date()
+    });
+    console.log(`✅ Calendário dia ${dia} salvo no Firebase`);
+    return true;
+  } catch (erro) {
+    console.log('⚠️ Erro ao salvar calendário:', erro.message);
+    return false;
+  }
+}
+
+// ============================================================================
+// FUNÇÃO: LER CALENDÁRIO COMPLETO
+// ============================================================================
+async function lerCalendario() {
+  try {
+    const snapshot = await db.collection('calendario').get();
+    if (snapshot.empty) return null;
+    
+    const dias = [];
+    snapshot.forEach(doc => {
+      dias.push({ dia: doc.id, descricao: doc.data().descricao });
+    });
+    
+    // Ordena por data
+    dias.sort((a, b) => {
+      const [dA, mA] = a.dia.split('/').map(Number);
+      const [dB, mB] = b.dia.split('/').map(Number);
+      return mA !== mB ? mA - mB : dA - dB;
+    });
+    
+    return dias.map(d => `${d.dia} - ${d.descricao}`).join('\n');
+  } catch (erro) {
+    console.log('⚠️ Erro ao ler calendário:', erro.message);
+    return null;
+  }
+}
 
 module.exports = {
   lerCerebroDoGusthavo,
@@ -391,5 +434,7 @@ module.exports = {
   lerStatusGia,
   registrarPedido,
   registrarAtendimento,
-  lerRelatorioSemana
+  lerRelatorioSemana,
+  salvarCalendario,
+  lerCalendario
 };

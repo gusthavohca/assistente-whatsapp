@@ -1,5 +1,5 @@
 require('dotenv').config();
-const { salvarCerebroDoGusthavo, salvarAtracao, salvarFlyer, salvarInfo, lerCerebroDoGusthavo, salvarStatusGia } = require('./firebase');
+const { salvarCerebroDoGusthavo, salvarAtracao, salvarFlyer, salvarInfo, lerCerebroDoGusthavo, salvarStatusGia, salvarCalendario } = require('./firebase');
 const Anthropic = require('@anthropic-ai/sdk');
 
 const claude = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
@@ -27,10 +27,13 @@ AÇÕES:
 6. ativar_gia: quando disser "GIA ativar", "ativar GIA", "ligar GIA"
    {"acao":"ativar_gia"}
 
-7. ajuda: quando disser "ajuda", "help", "comandos", "o que você faz"
+7. atualizar_calendario: quando disser "Calendario: dia DD/MM ..."
+   {"acao":"atualizar_calendario","dia":"09/05","descricao":"sexta - Almanac"}
+
+8. ajuda: quando disser "ajuda", "help", "comandos", "o que você faz"
    {"acao":"ajuda"}
 
-8. responder: qualquer outra coisa
+9. responder: qualquer outra coisa
    {"acao":"responder","mensagem":"resposta aqui"}
 
 Responda SOMENTE com o JSON. Nada mais.`;
@@ -101,7 +104,13 @@ async function processarComandoAdmin(mensagem) {
       await salvarStatusGia(true);
       return 'GIA ativado. Voltando a atender normalmente.';
     }
-if (json.acao === 'ajuda') {
+
+    if (json.acao === 'atualizar_calendario') {
+      await salvarCalendario(json.dia, json.descricao);
+      return `Beleza! Calendário atualizado: dia ${json.dia} - ${json.descricao}`;
+    }
+
+    if (json.acao === 'ajuda') {
       return `Comandos disponíveis:
 
 FLYERS (mande a imagem primeiro, depois o texto):
@@ -117,6 +126,14 @@ SÁBADO:
 - camarote sabado
 - aniversario sabado
 
+CALENDÁRIO:
+- Calendario: dia 09/05 sexta - Almanac
+- Calendario: dia 10/05 sabado - Dj Gm
+
+DJ DA SEMANA:
+- DJ sexta: [nome] às [hora]
+- DJ sabado: [nome] às [hora]
+
 INFORMAÇÕES:
 - Entrada sexta: [descrição]
 - Entrada sábado: [descrição]
@@ -124,7 +141,6 @@ INFORMAÇÕES:
 - Camarote sábado: [descrição]
 - Aniversário sexta: [descrição]
 - Aniversário sábado: [descrição]
-- Info: [qualquer informação extra]
 
 COMPORTAMENTO:
 - Adiciona aí GIA que... [instrução]
@@ -133,7 +149,7 @@ CONTROLE:
 - GIA pausar
 - GIA ativar`;
     }
-    
+
     if (json.acao === 'responder') {
       return json.mensagem;
     }

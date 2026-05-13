@@ -1,13 +1,13 @@
 require('dotenv').config();
 const Anthropic = require('@anthropic-ai/sdk');
 const { montarSystemPrompt } = require('./prompt');
-const { lerHistorico, salvarHistorico, lerFlyer } = require('./firebase');
+const { lerHistorico, salvarHistorico, lerFlyer, lerCalendario } = require('./firebase');
 
 const claude = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
 });
 
-// Detecta se o cliente está perguntando sobre programação
+// Detecta se o cliente está perguntando sobre programação do fim de semana atual
 function detectarPerguntaProgramacao(mensagem) {
   const msg = mensagem.toLowerCase();
 
@@ -15,7 +15,11 @@ function detectarPerguntaProgramacao(mensagem) {
   const termosValor = ['valor', 'preço', 'preco', 'quanto', 'ingresso', 'entrada', 'pagar', 'custa'];
   if (termosValor.some(t => msg.includes(t))) return null;
 
-  // Palavras que indicam pergunta de PROGRAMAÇÃO
+  // Palavras que indicam pergunta de CALENDÁRIO/DATA FUTURA — não deve enviar flyer
+  const termosCalendario = ['mês', 'mes', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro', 'janeiro', 'fevereiro', 'março', 'marco', 'abril', 'calendário', 'calendario', 'próximo', 'proximo', 'dia '];
+  if (termosCalendario.some(t => msg.includes(t))) return null;
+
+  // Palavras que indicam pergunta de PROGRAMAÇÃO do fim de semana
   const termosGerais = ['programação', 'programacao', 'o que vai ter', 'o que tem', 'quem toca', 'quem canta', 'line up', 'lineup', 'atração', 'atracao', 'show'];
   const termosSexta = ['sexta', 'sex', '6ª', 'friday'];
   const termosSabado = ['sábado', 'sabado', 'sab', '7ª', 'saturday'];
@@ -26,9 +30,25 @@ function detectarPerguntaProgramacao(mensagem) {
 
   if (temTermoGeral && temSexta) return 'programacao_sexta';
   if (temTermoGeral && temSabado) return 'programacao_sabado';
-  if (temTermoGeral) return null; // Não sabe qual dia, deixa o Claude perguntar
+  if (temTermoGeral) return null;
 
   return null;
+}
+
+// Detecta se o cliente está perguntando sobre calendário ou datas futuras
+function detectarPerguntaCalendario(mensagem) {
+  const msg = mensagem.toLowerCase();
+
+  const termosCalendario = [
+    'calendário', 'calendario', 'mês', 'mes',
+    'maio', 'junho', 'julho', 'agosto', 'setembro',
+    'outubro', 'novembro', 'dezembro', 'janeiro',
+    'fevereiro', 'março', 'marco', 'abril',
+    'próximo', 'proximo', 'próximas semanas',
+    'tem show no dia', 'o que tem no dia', 'dia '
+  ];
+
+  return termosCalendario.some(t => msg.includes(t));
 }
 
 async function perguntarParaClaude(telefone, mensagemDoCliente) {
@@ -39,13 +59,23 @@ async function perguntarParaClaude(telefone, mensagemDoCliente) {
     historico = [];
   }
 
-  // Verifica se o cliente está perguntando sobre programação
+  // Verifica se é pergunta de programação do fim de semana
   const tipoProgramacao = detectarPerguntaProgramacao(mensagemDoCliente);
   if (tipoProgramacao) {
     const urlFlyer = await lerFlyer(tipoProgramacao);
     if (urlFlyer) {
       console.log(`🎯 Pergunta de programação detectada: ${tipoProgramacao}`);
       return { tipo: 'flyer', url: urlFlyer };
+    }
+  }
+
+  // Verifica se é pergunta sobre calendário ou datas futuras
+  const ehPerguntaCalendario = detectarPerguntaCalendario(mensagemDoCliente);
+  if (ehPerguntaCalendario) {
+    const calendarioCompleto = await lerCalendario();
+    if (calendarioCompleto) {
+      console.log(`📅 Pergunta de calendário detectada`);
+      return { tipo: 'texto', mensagem: `Segue a programação do mês:\n\n${calendarioCompleto}` };
     }
   }
 
