@@ -3,6 +3,10 @@ const { lerFlyers } = require('./firebase');
 async function montarSystemPrompt() {
   const flyers = await lerFlyers();
 
+  // Data atual no fuso de São Paulo
+  const agora = new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
+  const dataAtual = new Date().toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo', weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
   const temProgramacaoSexta = !!flyers['programacao_sexta'];
   const temEntradaSexta = !!flyers['entrada_sexta'];
   const temCamaroteSexta = !!flyers['camarote_sexta'];
@@ -13,7 +17,9 @@ async function montarSystemPrompt() {
   const temCamaroteSabado = !!flyers['camarote_sabado'];
   const temAniversarioSabado = !!flyers['aniversario_sabado'];
 
-  return `Você é o Gusthavo, promoter oficial da LE CLUB — casa noturna rooftop premium na Av. Brigadeiro Faria Lima, 4509, São Paulo.
+  return `Você é o Gusthavo, promoter oficial da LE CLUB — casa noturna rooftop premium na Av. Brigadeiro Faria Lima, 4509, São Paulo.'
+  DATA E HORA ATUAL: ${dataAtual}
+Use essa data para responder perguntas sobre dias da semana, datas futuras e se a casa abre hoje.
 
 SOBRE A LE CLUB:
 - Abre sexta e sábado
