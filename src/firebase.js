@@ -372,6 +372,37 @@ async function lerMensagemFlyer(tipo) {
   }
 }
 // ============================================================================
+// FUNÇÃO: SALVAR CALENDÁRIO COMO TEXTO LIVRE
+// ============================================================================
+async function salvarCalendarioTexto(texto) {
+  try {
+    await db.collection('configuracoes').doc('calendarioTexto').set({
+      texto,
+      atualizadoEm: new Date()
+    });
+    console.log('✅ Calendário texto atualizado no Firebase');
+    return true;
+  } catch (erro) {
+    console.log('⚠️ Erro ao salvar calendário texto:', erro.message);
+    return false;
+  }
+}
+
+// ============================================================================
+// FUNÇÃO: LER CALENDÁRIO TEXTO LIVRE
+// ============================================================================
+async function lerCalendarioTexto() {
+  try {
+    const doc = await db.collection('configuracoes').doc('calendarioTexto').get();
+    if (!doc.exists) return null;
+    return doc.data().texto || null;
+  } catch (erro) {
+    console.log('⚠️ Erro ao ler calendário texto:', erro.message);
+    return null;
+  }
+}
+
+// ============================================================================
 // HELPERS DE TIMEZONE SÃO PAULO
 // ============================================================================
 
@@ -495,5 +526,7 @@ module.exports = {
   salvarCalendario,
   gerarCalendarioMes,
   lerCalendario,
+  salvarCalendarioTexto,
+  lerCalendarioTexto,
   getDataSP
 };

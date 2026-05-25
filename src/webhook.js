@@ -5,7 +5,7 @@
 const claude = require('./claude');
 const zapi = require('./zapi');
 const { processarComandoAdmin } = require('./admin');
-const { lerCerebroDoGusthavo, lerFlyers, salvarFlyer, lerStatusGia, registrarPedido, registrarAtendimento, lerMensagemFlyer } = require('./firebase');
+const { lerCerebroDoGusthavo, lerFlyers, salvarFlyer, lerStatusGia, registrarPedido, registrarAtendimento, lerMensagemFlyer, salvarCalendarioTexto } = require('./firebase');
 const NUMERO_ADMIN = process.env.NUMERO_GUSTHAVO_PESSOAL;
 
 // Armazena a última imagem enviada pelo admin
@@ -186,6 +186,14 @@ async function processarBufferDoCliente(telefoneCliente) {
 
     if (ehAdmin) {
       console.log('🔑 Modo Admin ativado');
+
+      // Detecção direta de calendário: mensagem começa com "Calendário" ou "Calendario"
+      if (/^calend[áa]rio/i.test(textoFinal.trim())) {
+        await salvarCalendarioTexto(textoFinal.trim());
+        await zapi.enviarTexto(telefoneCliente, 'Calendário atualizado!');
+        return;
+      }
+
       const cerebroAtual = await lerCerebroDoGusthavo();
       const respostaAdmin = await processarComandoAdmin(textoFinal, cerebroAtual);
       await zapi.enviarTexto(telefoneCliente, respostaAdmin);

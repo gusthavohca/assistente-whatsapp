@@ -1,5 +1,5 @@
 require('dotenv').config();
-const { salvarCerebroDoGusthavo, salvarAtracao, salvarFlyer, salvarMensagemFlyer, lerCerebroDoGusthavo, salvarStatusGia, salvarCalendario, gerarCalendarioMes, getDataSP } = require('./firebase');
+const { salvarCerebroDoGusthavo, salvarAtracao, salvarFlyer, salvarMensagemFlyer, lerCerebroDoGusthavo, salvarStatusGia, getDataSP } = require('./firebase');
 const Anthropic = require('@anthropic-ai/sdk');
 
 const claude = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
@@ -27,18 +27,11 @@ AÇÕES:
 6. ativar_gia: quando disser "GIA ativar", "ativar GIA", "ligar GIA"
    {"acao":"ativar_gia"}
 
-7. atualizar_calendario: quando disser "Calendario: dia DD/MM ..."
-   {"acao":"atualizar_calendario","dia":"09/05","descricao":"Sexta - DJ Almanac"}
-
-8. gerar_calendario: quando disser "gerar calendario", "novo mês", "criar calendario", "preparar calendario"
-   Use o mês e ano fornecidos no contexto se não especificado.
-   {"acao":"gerar_calendario","mes":6,"ano":2026}
-
-9. ajuda: quando disser "ajuda", "help", "comandos", "o que você faz"
+7. ajuda: quando disser "ajuda", "help", "comandos", "o que você faz"
    {"acao":"ajuda"}
 
-10. responder: qualquer outra coisa
-    {"acao":"responder","mensagem":"resposta aqui"}
+8. responder: qualquer outra coisa
+   {"acao":"responder","mensagem":"resposta aqui"}
 
 Responda SOMENTE com o JSON. Nada mais.`;
 
@@ -109,22 +102,6 @@ async function processarComandoAdmin(mensagem) {
       return 'GIA ativado. Voltando a atender normalmente.';
     }
 
-    if (json.acao === 'atualizar_calendario') {
-      await salvarCalendario(json.dia, json.descricao);
-      return `Beleza! Calendário atualizado: dia ${json.dia} - ${json.descricao}`;
-    }
-
-    if (json.acao === 'gerar_calendario') {
-      const resultado = await gerarCalendarioMes(json.mes, json.ano);
-      if (!resultado) return 'Erro ao gerar calendário.';
-      const MESES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
-      const nomeMes = MESES[json.mes - 1];
-      if (resultado.criados === 0) {
-        return `Calendário de ${nomeMes}/${json.ano} já está completo (${resultado.total} datas: ${resultado.datas.join(', ')}).`;
-      }
-      return `Calendário de ${nomeMes}/${json.ano} gerado!\n${resultado.criados} datas criadas: ${resultado.datas.join(', ')}\n\nAgora atualize as atrações com:\nCalendario: dia DD/MM Sexta - DJ Nome`;
-    }
-
     if (json.acao === 'ajuda') {
       return `Comandos disponíveis:
 
@@ -146,9 +123,16 @@ MENSAGEM PÓS-FLYER:
 - mensagem flyer programacao sabado: [texto]
 
 CALENDÁRIO:
-- Gerar calendario (cria todas as sextas/sábados do mês)
-- Gerar calendario julho (para outro mês)
-- Calendario: dia 06/06 Sexta - DJ Almanac (atualiza atração)
+- Envie o texto começando com "Calendário:" para atualizar
+  Exemplo:
+  Calendário:
+  Maio:
+  29.05 - Summer EletroHits
+  30.05 - Dj Mat-D
+
+  Junho:
+  6.06 -
+  13.06 -
 
 DJ DA SEMANA:
 - DJ sexta: [nome] às [hora]
