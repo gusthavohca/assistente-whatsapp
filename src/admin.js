@@ -1,5 +1,5 @@
 require('dotenv').config();
-const { salvarCerebroDoGusthavo, salvarAtracao, salvarFlyer, salvarInfo, lerCerebroDoGusthavo, salvarStatusGia, salvarCalendario } = require('./firebase');
+const { salvarCerebroDoGusthavo, salvarAtracao, salvarFlyer, salvarMensagemFlyer, lerCerebroDoGusthavo, salvarStatusGia, salvarCalendario, gerarCalendarioMes, getDataSP } = require('./firebase');
 const Anthropic = require('@anthropic-ai/sdk');
 
 const claude = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
@@ -11,12 +11,12 @@ AÇÕES:
    {"acao":"atualizar_atracao","dia":"sexta","dj":"nome","horario":"22:30"}
 
 2. atualizar_flyer: quando enviar link de imagem
-   Tipos: entrada_sexta, entrada_sabado, camarote_sexta, camarote_sabado, aniversario
-   {"acao":"atualizar_flyer","tipo":"entrada_sexta","url":"https://..."}
+   Tipos: programacao_sexta, programacao_sabado, entrada, camarote, aniversario
+   {"acao":"atualizar_flyer","tipo":"entrada","url":"https://..."}
 
-3. atualizar_info: quando falar de valores, benefícios, programação ou infos extras
-   Tipos: entrada_sexta, entrada_sabado, camarote_sexta, camarote_sabado, aniversario_sexta, aniversario_sabado, programacao, extra
-   {"acao":"atualizar_info","tipo":"entrada_sexta","conteudo":"R$40 até meia noite, R$60 depois"}
+3. atualizar_mensagem_flyer: quando quiser definir texto enviado após o flyer
+   Tipos: programacao_sexta, programacao_sabado, entrada, camarote, aniversario
+   {"acao":"atualizar_mensagem_flyer","tipo":"entrada","mensagem":"texto da mensagem"}
 
 4. atualizar_cerebro: quando quiser mudar comportamento do GIA
    {"acao":"atualizar_cerebro","instrucao":"o que mudar"}
@@ -28,22 +28,29 @@ AÇÕES:
    {"acao":"ativar_gia"}
 
 7. atualizar_calendario: quando disser "Calendario: dia DD/MM ..."
-   {"acao":"atualizar_calendario","dia":"09/05","descricao":"sexta - Almanac"}
+   {"acao":"atualizar_calendario","dia":"09/05","descricao":"Sexta - DJ Almanac"}
 
-8. ajuda: quando disser "ajuda", "help", "comandos", "o que você faz"
+8. gerar_calendario: quando disser "gerar calendario", "novo mês", "criar calendario", "preparar calendario"
+   Use o mês e ano fornecidos no contexto se não especificado.
+   {"acao":"gerar_calendario","mes":6,"ano":2026}
+
+9. ajuda: quando disser "ajuda", "help", "comandos", "o que você faz"
    {"acao":"ajuda"}
 
-9. responder: qualquer outra coisa
-   {"acao":"responder","mensagem":"resposta aqui"}
+10. responder: qualquer outra coisa
+    {"acao":"responder","mensagem":"resposta aqui"}
 
 Responda SOMENTE com o JSON. Nada mais.`;
 
 async function processarComandoAdmin(mensagem) {
   try {
+    const { dia, mes, ano } = getDataSP();
+    const promptComData = `${PROMPT_ADMIN}\n\nData atual em São Paulo: ${String(dia).padStart(2,'0')}/${String(mes).padStart(2,'0')}/${ano} (dia=${dia}, mes=${mes}, ano=${ano})`;
+
     const resposta = await claude.messages.create({
       model: 'claude-sonnet-4-5',
       max_tokens: 512,
-      system: PROMPT_ADMIN,
+      system: promptComData,
       messages: [{ role: 'user', content: mensagem }],
     });
 
@@ -64,28 +71,25 @@ async function processarComandoAdmin(mensagem) {
     if (json.acao === 'atualizar_flyer') {
       await salvarFlyer(json.tipo, json.url);
       const nomes = {
-        entrada_sexta: 'Entrada Sexta',
-        entrada_sabado: 'Entrada Sábado',
-        camarote_sexta: 'Camarote Sexta',
-        camarote_sabado: 'Camarote Sábado',
+        programacao_sexta: 'Programação Sexta',
+        programacao_sabado: 'Programação Sábado',
+        entrada: 'Entrada',
+        camarote: 'Camarote',
         aniversario: 'Aniversário',
       };
       return `Flyer de ${nomes[json.tipo] || json.tipo} atualizado!`;
     }
 
-    if (json.acao === 'atualizar_info') {
-      await salvarInfo(json.tipo, json.conteudo);
+    if (json.acao === 'atualizar_mensagem_flyer') {
+      await salvarMensagemFlyer(json.tipo, json.mensagem);
       const nomes = {
-        entrada_sexta: 'Entrada Sexta',
-        entrada_sabado: 'Entrada Sábado',
-        camarote_sexta: 'Camarote Sexta',
-        camarote_sabado: 'Camarote Sábado',
-        aniversario_sexta: 'Aniversário Sexta',
-        aniversario_sabado: 'Aniversário Sábado',
-        programacao: 'Programação',
-        extra: 'Informação Extra',
+        programacao_sexta: 'Programação Sexta',
+        programacao_sabado: 'Programação Sábado',
+        entrada: 'Entrada',
+        camarote: 'Camarote',
+        aniversario: 'Aniversário',
       };
-      return `Beleza! ${nomes[json.tipo] || json.tipo} atualizado.`;
+      return `Mensagem do flyer de ${nomes[json.tipo] || json.tipo} atualizada!`;
     }
 
     if (json.acao === 'atualizar_cerebro') {
@@ -110,37 +114,45 @@ async function processarComandoAdmin(mensagem) {
       return `Beleza! Calendário atualizado: dia ${json.dia} - ${json.descricao}`;
     }
 
+    if (json.acao === 'gerar_calendario') {
+      const resultado = await gerarCalendarioMes(json.mes, json.ano);
+      if (!resultado) return 'Erro ao gerar calendário.';
+      const MESES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+      const nomeMes = MESES[json.mes - 1];
+      if (resultado.criados === 0) {
+        return `Calendário de ${nomeMes}/${json.ano} já está completo (${resultado.total} datas: ${resultado.datas.join(', ')}).`;
+      }
+      return `Calendário de ${nomeMes}/${json.ano} gerado!\n${resultado.criados} datas criadas: ${resultado.datas.join(', ')}\n\nAgora atualize as atrações com:\nCalendario: dia DD/MM Sexta - DJ Nome`;
+    }
+
     if (json.acao === 'ajuda') {
       return `Comandos disponíveis:
 
 FLYERS (mande a imagem primeiro, depois o texto):
-SEXTA:
+PROGRAMAÇÃO:
 - programacao sexta
-- entrada sexta
-- camarote sexta
-- aniversario sexta
-
-SÁBADO:
 - programacao sabado
-- entrada sabado
-- camarote sabado
-- aniversario sabado
+
+OUTROS:
+- entrada
+- camarote
+- aniversario
+
+MENSAGEM PÓS-FLYER:
+- mensagem flyer entrada: [texto]
+- mensagem flyer camarote: [texto]
+- mensagem flyer aniversario: [texto]
+- mensagem flyer programacao sexta: [texto]
+- mensagem flyer programacao sabado: [texto]
 
 CALENDÁRIO:
-- Calendario: dia 09/05 sexta - Almanac
-- Calendario: dia 10/05 sabado - Dj Gm
+- Gerar calendario (cria todas as sextas/sábados do mês)
+- Gerar calendario julho (para outro mês)
+- Calendario: dia 06/06 Sexta - DJ Almanac (atualiza atração)
 
 DJ DA SEMANA:
 - DJ sexta: [nome] às [hora]
 - DJ sabado: [nome] às [hora]
-
-INFORMAÇÕES:
-- Entrada sexta: [descrição]
-- Entrada sábado: [descrição]
-- Camarote sexta: [descrição]
-- Camarote sábado: [descrição]
-- Aniversário sexta: [descrição]
-- Aniversário sábado: [descrição]
 
 COMPORTAMENTO:
 - Adiciona aí GIA que... [instrução]

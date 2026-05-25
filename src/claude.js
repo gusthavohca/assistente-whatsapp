@@ -65,7 +65,7 @@ async function perguntarParaClaude(telefone, mensagemDoCliente) {
     const urlFlyer = await lerFlyer(tipoProgramacao);
     if (urlFlyer) {
       console.log(`🎯 Pergunta de programação detectada: ${tipoProgramacao}`);
-      return { tipo: 'flyer', url: urlFlyer };
+      return { tipo: 'flyer', url: urlFlyer, tipoFlyer: tipoProgramacao };
     }
   }
 
