@@ -5,7 +5,7 @@
 const claude = require('./claude');
 const zapi = require('./zapi');
 const { processarComandoAdmin } = require('./admin');
-const { lerCerebroDoGusthavo, lerFlyers, salvarFlyer, lerStatusGia, registrarPedido, registrarAtendimento, lerMensagemFlyer } = require('./firebase');
+const { lerCerebroDoGusthavo, lerFlyers, salvarFlyer, lerStatusGia, registrarPedido, registrarAtendimento } = require('./firebase');
 const NUMERO_ADMIN = process.env.NUMERO_GUSTHAVO_PESSOAL;
 
 // Armazena a última imagem enviada pelo admin
@@ -17,24 +17,24 @@ let ultimaImagemAdmin = null;
 
 const FLYERS_PADRAO = {
   entrada: 'https://raw.githubusercontent.com/gusthavohca/assistente-whatsapp/main/assets/flyers/entrada.jpeg',
-  camarote: 'https://raw.githubusercontent.com/gusthavohca/assistente-whatsapp/main/assets/flyers/camarotes.jpeg',
+  camarotes: 'https://raw.githubusercontent.com/gusthavohca/assistente-whatsapp/main/assets/flyers/camarotes.jpeg',
   aniversario: 'https://raw.githubusercontent.com/gusthavohca/assistente-whatsapp/main/assets/flyers/aniversario.jpeg',
 };
 
-const MENSAGENS_PADRAO_FLYER = {
-  entrada: 'Esses são nossos valores iniciais de entrada na casa.',
-  camarote: 'Me diz em quantas pessoas vocês estão, que te falo a disponibilidade e se consigo negociar algo.',
-  aniversario: 'Oferecemos essas cortesias aqui, o que você acha?',
-};
-
-async function obterFlyers() {
+async function obterFlyers(dia) {
   const flyersFirebase = await lerFlyers();
   return {
-    entrada: flyersFirebase['entrada'] || FLYERS_PADRAO.entrada,
-    camarote: flyersFirebase['camarote'] || FLYERS_PADRAO.camarote,
+    entrada: flyersFirebase[`entrada_${dia}`] || FLYERS_PADRAO.entrada,
+    camarotes: flyersFirebase[`camarote_${dia}`] || FLYERS_PADRAO.camarotes,
     aniversario: flyersFirebase['aniversario'] || FLYERS_PADRAO.aniversario,
     programacao_sexta: flyersFirebase['programacao_sexta'] || null,
     programacao_sabado: flyersFirebase['programacao_sabado'] || null,
+    entrada_sexta: flyersFirebase['entrada_sexta'] || null,
+    entrada_sabado: flyersFirebase['entrada_sabado'] || null,
+    camarote_sexta: flyersFirebase['camarote_sexta'] || null,
+    camarote_sabado: flyersFirebase['camarote_sabado'] || null,
+    aniversario_sexta: flyersFirebase['aniversario_sexta'] || null,
+    aniversario_sabado: flyersFirebase['aniversario_sabado'] || null,
   };
 }
 
@@ -103,16 +103,22 @@ async function processarMensagem(dadosDoWebhook) {
       const texto = textoRecebido.toLowerCase().trim();
       let tipoFlyer = null;
 
-      if (texto.includes('programacao sexta') || texto.includes('programação sexta') || texto.includes('flyer programacao sexta')) {
+      if (texto.includes('programacao sexta') || texto.includes('programação sexta') || texto.includes('flyer programacao sexta') || texto.includes('flyer programação sexta')) {
         tipoFlyer = 'programacao_sexta';
-      } else if (texto.includes('programacao sabado') || texto.includes('programação sábado') || texto.includes('programação sabado') || texto.includes('flyer programacao sabado')) {
+      } else if (texto.includes('programacao sabado') || texto.includes('programação sábado') || texto.includes('flyer programacao sabado')) {
         tipoFlyer = 'programacao_sabado';
-      } else if (texto.includes('entrada')) {
-        tipoFlyer = 'entrada';
-      } else if (texto.includes('camarote')) {
-        tipoFlyer = 'camarote';
-      } else if (texto.includes('aniversario') || texto.includes('aniversário')) {
-        tipoFlyer = 'aniversario';
+      } else if (texto.includes('entrada sexta') || texto.includes('flyer entrada sexta')) {
+        tipoFlyer = 'entrada_sexta';
+      } else if (texto.includes('entrada sabado') || texto.includes('entrada sábado') || texto.includes('flyer entrada sabado')) {
+        tipoFlyer = 'entrada_sabado';
+      } else if (texto.includes('camarote sexta') || texto.includes('flyer camarote sexta')) {
+        tipoFlyer = 'camarote_sexta';
+      } else if (texto.includes('camarote sabado') || texto.includes('camarote sábado') || texto.includes('flyer camarote sabado')) {
+        tipoFlyer = 'camarote_sabado';
+      } else if (texto.includes('aniversario sexta') || texto.includes('aniversário sexta') || texto.includes('flyer aniversario sexta')) {
+        tipoFlyer = 'aniversario_sexta';
+      } else if (texto.includes('aniversario sabado') || texto.includes('aniversário sábado') || texto.includes('flyer aniversario sabado')) {
+        tipoFlyer = 'aniversario_sabado';
       }
 
       if (tipoFlyer) {
@@ -200,11 +206,6 @@ async function processarBufferDoCliente(telefoneCliente) {
     // Se for flyer de programação
     if (resposta.tipo === 'flyer') {
       await zapi.enviarImagem(telefoneCliente, resposta.url);
-      const mensagemExtraFlyer = (await lerMensagemFlyer(resposta.tipoFlyer)) || MENSAGENS_PADRAO_FLYER[resposta.tipoFlyer] || null;
-      if (mensagemExtraFlyer) {
-        await esperar(1000);
-        await zapi.enviarTexto(telefoneCliente, mensagemExtraFlyer);
-      }
       await registrarAtendimento(textoFinal.substring(0, 50));
       console.log(`✅ Flyer enviado para ${telefoneCliente}\n`);
       return;
@@ -217,7 +218,7 @@ async function processarBufferDoCliente(telefoneCliente) {
     let precisaAlertar = false;
     let textoLimpo = respostaDaClaude;
 
-    const regexFlyer = /\[ENVIAR_FLYER:(entrada|camarote|aniversario|programacao_sexta|programacao_sabado)\]/g;
+    const regexFlyer = /\[ENVIAR_FLYER:(entrada|camarotes|aniversario|programacao_sexta|programacao_sabado|entrada_sexta|entrada_sabado|camarote_sexta|camarote_sabado|aniversario_sexta|aniversario_sabado)\]/g;
     let matchFlyer;
     while ((matchFlyer = regexFlyer.exec(respostaDaClaude)) !== null) {
       flyersSolicitados.push(matchFlyer[1]);
@@ -237,16 +238,11 @@ async function processarBufferDoCliente(telefoneCliente) {
       await esperar(1500);
     }
 
-    const flyersAtuais = await obterFlyers();
+    const flyersAtuais = await obterFlyers('sexta');
     for (const nomeFlyer of flyersSolicitados) {
       const urlFlyer = flyersAtuais[nomeFlyer];
       if (urlFlyer) {
         await zapi.enviarImagem(telefoneCliente, urlFlyer);
-        const mensagemExtraFlyer = (await lerMensagemFlyer(nomeFlyer)) || MENSAGENS_PADRAO_FLYER[nomeFlyer] || null;
-        if (mensagemExtraFlyer) {
-          await esperar(1000);
-          await zapi.enviarTexto(telefoneCliente, mensagemExtraFlyer);
-        }
         await esperar(1000);
       }
     }

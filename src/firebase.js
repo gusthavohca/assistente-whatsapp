@@ -204,6 +204,40 @@ async function lerFlyers() {
   }
 }
 // ============================================================================
+// FUNÇÃO: SALVAR INFO (valores, benefícios, programação, extras)
+// ============================================================================
+async function salvarInfo(tipo, conteudo) {
+  try {
+    await db.collection('infos').doc(tipo).set({
+      conteudo,
+      atualizadoEm: new Date()
+    });
+    console.log(`✅ Info "${tipo}" atualizada no Firebase`);
+    return true;
+  } catch (erro) {
+    console.log('⚠️ Erro ao salvar info:', erro.message);
+    return false;
+  }
+}
+
+// ============================================================================
+// FUNÇÃO: LER INFOS
+// ============================================================================
+async function lerInfos() {
+  try {
+    const snapshot = await db.collection('infos').get();
+    const infos = {};
+    snapshot.forEach(doc => {
+      infos[doc.id] = doc.data().conteudo;
+    });
+    return infos;
+  } catch (erro) {
+    console.log('⚠️ Erro ao ler infos:', erro.message);
+    return {};
+  }
+}
+
+// ============================================================================
 // FUNÇÃO: CONTROLE DO GIA (ligar/desligar)
 // ============================================================================
 async function salvarStatusGia(status) {
@@ -340,69 +374,6 @@ async function lerFlyer(tipo) {
     return null;
   }
 }
-
-// ============================================================================
-// FUNÇÃO: SALVAR MENSAGEM EXTRA DO FLYER
-// ============================================================================
-async function salvarMensagemFlyer(tipo, mensagem) {
-  try {
-    await db.collection('flyers').doc(tipo).set(
-      { mensagem, atualizadoEm: new Date() },
-      { merge: true }
-    );
-    console.log(`✅ Mensagem do flyer "${tipo}" atualizada no Firebase`);
-    return true;
-  } catch (erro) {
-    console.log('⚠️ Erro ao salvar mensagem do flyer:', erro.message);
-    return false;
-  }
-}
-
-// ============================================================================
-// FUNÇÃO: LER MENSAGEM EXTRA DO FLYER
-// ============================================================================
-async function lerMensagemFlyer(tipo) {
-  try {
-    const doc = await db.collection('flyers').doc(tipo).get();
-    if (!doc.exists) return null;
-    return doc.data().mensagem || null;
-  } catch (erro) {
-    console.log('⚠️ Erro ao ler mensagem do flyer:', erro.message);
-    return null;
-  }
-}
-// ============================================================================
-// HELPERS DE TIMEZONE SÃO PAULO
-// ============================================================================
-
-function getDataSP() {
-  const spStr = new Intl.DateTimeFormat('pt-BR', {
-    timeZone: 'America/Sao_Paulo',
-    year: 'numeric', month: '2-digit', day: '2-digit'
-  }).format(new Date());
-  const [dia, mes, ano] = spStr.split('/').map(Number);
-  return { dia, mes, ano };
-}
-
-function gerarSextasSabadosDoMes(mes, ano) {
-  const totalDias = new Date(ano, mes, 0).getDate();
-  const dias = [];
-  for (let d = 1; d <= totalDias; d++) {
-    // Usa meio-dia UTC para evitar problemas de DST
-    const data = new Date(Date.UTC(ano, mes - 1, d, 15, 0, 0));
-    const diaSemana = new Intl.DateTimeFormat('pt-BR', {
-      timeZone: 'America/Sao_Paulo', weekday: 'long'
-    }).format(data);
-    if (diaSemana === 'sexta-feira' || diaSemana === 'sábado') {
-      dias.push({
-        dia: `${String(d).padStart(2, '0')}/${String(mes).padStart(2, '0')}`,
-        nomeDia: diaSemana === 'sexta-feira' ? 'Sexta' : 'Sábado'
-      });
-    }
-  }
-  return dias;
-}
-
 // ============================================================================
 // FUNÇÃO: SALVAR CALENDÁRIO
 // ============================================================================
@@ -421,54 +392,26 @@ async function salvarCalendario(dia, descricao) {
 }
 
 // ============================================================================
-// FUNÇÃO: GERAR ESQUELETO DO MÊS (todas as sextas e sábados)
+// FUNÇÃO: LER CALENDÁRIO COMPLETO
 // ============================================================================
-async function gerarCalendarioMes(mes, ano) {
-  try {
-    const dias = gerarSextasSabadosDoMes(mes, ano);
-    let criados = 0;
-    for (const { dia, nomeDia } of dias) {
-      const ref = db.collection('calendario').doc(dia);
-      const doc = await ref.get();
-      if (!doc.exists) {
-        await ref.set({ descricao: `${nomeDia} - A confirmar`, atualizadoEm: new Date() });
-        criados++;
-      }
-    }
-    console.log(`✅ Calendário gerado: ${criados} novas datas para ${mes}/${ano}`);
-    return { total: dias.length, criados, datas: dias.map(d => d.dia) };
-  } catch (erro) {
-    console.log('⚠️ Erro ao gerar calendário:', erro.message);
-    return null;
-  }
-}
-
-// ============================================================================
-// FUNÇÃO: LER CALENDÁRIO DO MÊS ATUAL (fuso SP)
-// ============================================================================
-const MESES_PT = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
-
 async function lerCalendario() {
   try {
-    const { mes, ano } = getDataSP();
     const snapshot = await db.collection('calendario').get();
     if (snapshot.empty) return null;
-
+    
     const dias = [];
     snapshot.forEach(doc => {
-      const [, m] = doc.id.split('/').map(Number);
-      if (m === mes) {
-        dias.push({ dia: doc.id, descricao: doc.data().descricao });
-      }
+      dias.push({ dia: doc.id, descricao: doc.data().descricao });
     });
-
-    if (dias.length === 0) return null;
-
-    dias.sort((a, b) => parseInt(a.dia) - parseInt(b.dia));
-
-    const nomeMes = MESES_PT[mes - 1];
-    const linhas = dias.map(d => `${d.dia} - ${d.descricao}`).join('\n');
-    return `Programação de ${nomeMes}/${ano}:\n\n${linhas}`;
+    
+    // Ordena por data
+    dias.sort((a, b) => {
+      const [dA, mA] = a.dia.split('/').map(Number);
+      const [dB, mB] = b.dia.split('/').map(Number);
+      return mA !== mB ? mA - mB : dA - dB;
+    });
+    
+    return dias.map(d => `${d.dia} - ${d.descricao}`).join('\n');
   } catch (erro) {
     console.log('⚠️ Erro ao ler calendário:', erro.message);
     return null;
@@ -485,15 +428,13 @@ module.exports = {
   salvarFlyer,
   lerFlyer,
   lerFlyers,
-  salvarMensagemFlyer,
-  lerMensagemFlyer,
+  salvarInfo,
+  lerInfos,
   salvarStatusGia,
   lerStatusGia,
   registrarPedido,
   registrarAtendimento,
   lerRelatorioSemana,
   salvarCalendario,
-  gerarCalendarioMes,
-  lerCalendario,
-  getDataSP
+  lerCalendario
 };
