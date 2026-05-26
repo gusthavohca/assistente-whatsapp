@@ -1,7 +1,7 @@
 require('dotenv').config();
 const Anthropic = require('@anthropic-ai/sdk');
 const { montarSystemPrompt } = require('./prompt');
-const { lerHistorico, salvarHistorico, lerFlyer, lerCalendarioTexto } = require('./firebase');
+const { lerHistorico, salvarHistorico, lerFlyer, lerCalendario } = require('./firebase');
 
 const claude = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -45,9 +45,7 @@ function detectarPerguntaCalendario(mensagem) {
     'outubro', 'novembro', 'dezembro', 'janeiro',
     'fevereiro', 'março', 'marco', 'abril',
     'próximo', 'proximo', 'próximas semanas',
-    'tem show no dia', 'o que tem no dia', 'dia ',
-    'atração', 'atracao', 'atrações', 'atracoes',
-    'agenda', 'futura', 'futuras'
+    'tem show no dia', 'o que tem no dia', 'dia '
   ];
 
   return termosCalendario.some(t => msg.includes(t));
@@ -74,10 +72,10 @@ async function perguntarParaClaude(telefone, mensagemDoCliente) {
   // Verifica se é pergunta sobre calendário ou datas futuras
   const ehPerguntaCalendario = detectarPerguntaCalendario(mensagemDoCliente);
   if (ehPerguntaCalendario) {
-    const calendarioTexto = await lerCalendarioTexto();
-    if (calendarioTexto) {
+    const calendarioCompleto = await lerCalendario();
+    if (calendarioCompleto) {
       console.log(`📅 Pergunta de calendário detectada`);
-      return { tipo: 'texto', mensagem: calendarioTexto };
+      return { tipo: 'texto', mensagem: `Segue a programação do mês:\n\n${calendarioCompleto}` };
     }
   }
 
