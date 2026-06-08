@@ -10,6 +10,7 @@ const {
   salvarCerebroDoGusthavo,
   lerFlyers,
   salvarFlyer,
+  deletarFlyer,
   lerRelatorioSemana,
   salvarStatusGia,
   lerStatusGia,
@@ -24,10 +25,10 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-// Multer - armazena imagem em memória antes de enviar pro Cloudinary
+// Multer - armazena imagem em memória
 const upload = multer({ storage: multer.memoryStorage() });
 
-// Tokens de login ativos (memória)
+// Tokens de login ativos
 const tokensAtivos = new Set();
 
 function gerarToken() {
@@ -86,6 +87,20 @@ router.post('/flyer/:tipo', verificarToken, upload.single('imagem'), async (req,
     res.json({ ok: true, url: resultado.secure_url });
   } catch (erro) {
     console.error('Erro upload flyer:', erro);
+    res.status(500).json({ erro: erro.message });
+  }
+});
+
+router.delete('/flyer/:tipo', verificarToken, async (req, res) => {
+  try {
+    const { tipo } = req.params;
+    // Remove do Cloudinary
+    await cloudinary.uploader.destroy(`leclub-flyers/${tipo}`);
+    // Remove do Firebase
+    await deletarFlyer(tipo);
+    res.json({ ok: true });
+  } catch (erro) {
+    console.error('Erro ao deletar flyer:', erro);
     res.status(500).json({ erro: erro.message });
   }
 });

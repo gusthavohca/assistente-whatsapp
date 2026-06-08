@@ -32,18 +32,8 @@
       text-align: center;
     }
 
-    .login-box h1 {
-      font-size: 28px;
-      font-weight: 700;
-      color: #fff;
-      margin-bottom: 4px;
-    }
-
-    .login-box p {
-      color: #666;
-      font-size: 14px;
-      margin-bottom: 32px;
-    }
+    .login-box h1 { font-size: 28px; font-weight: 700; color: #fff; margin-bottom: 4px; }
+    .login-box p { color: #666; font-size: 14px; margin-bottom: 32px; }
 
     .login-box input {
       width: 100%;
@@ -73,12 +63,7 @@
     }
 
     .btn-primary:hover { background: #e0bc5a; }
-
-    .erro-msg {
-      color: #e05a5a;
-      font-size: 13px;
-      margin-top: 10px;
-    }
+    .erro-msg { color: #e05a5a; font-size: 13px; margin-top: 10px; }
 
     /* ── PAINEL ── */
     #tela-painel { display: none; }
@@ -93,7 +78,6 @@
     }
 
     header h1 { font-size: 20px; font-weight: 700; color: #c9a84c; }
-    header span { font-size: 13px; color: #666; }
 
     .btn-logout {
       background: transparent;
@@ -120,12 +104,7 @@
 
     .status-label { font-size: 14px; color: #999; }
 
-    .toggle {
-      position: relative;
-      width: 48px;
-      height: 26px;
-    }
-
+    .toggle { position: relative; width: 48px; height: 26px; }
     .toggle input { display: none; }
 
     .toggle-slider {
@@ -180,23 +159,124 @@
     .tab.ativa { color: #c9a84c; border-bottom: 2px solid #c9a84c; }
 
     /* ── CONTEÚDO ── */
-    .conteudo { padding: 32px; max-width: 900px; }
+    .conteudo { padding: 32px; max-width: 960px; }
 
     .secao { display: none; }
     .secao.ativa { display: block; }
 
-    .secao h2 {
-      font-size: 18px;
-      font-weight: 700;
-      color: #fff;
+    .secao-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
       margin-bottom: 6px;
     }
 
-    .secao p.desc {
+    .secao h2 { font-size: 18px; font-weight: 700; color: #fff; }
+
+    .secao p.desc { font-size: 13px; color: #666; margin-bottom: 24px; }
+
+    /* ── BOTÃO NOVO FLYER ── */
+    .btn-novo-flyer {
+      background: #c9a84c;
+      color: #000;
+      border: none;
+      border-radius: 8px;
+      padding: 9px 18px;
       font-size: 13px;
-      color: #666;
-      margin-bottom: 24px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s;
+      white-space: nowrap;
     }
+
+    .btn-novo-flyer:hover { background: #e0bc5a; }
+
+    /* ── MODAL NOVO FLYER ── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    .modal-overlay.aberto { display: flex; }
+
+    .modal {
+      background: #141414;
+      border: 1px solid #2a2a2a;
+      border-radius: 16px;
+      padding: 32px;
+      width: 100%;
+      max-width: 420px;
+    }
+
+    .modal h3 { font-size: 18px; font-weight: 700; margin-bottom: 20px; color: #fff; }
+
+    .modal input[type="text"] {
+      width: 100%;
+      background: #1e1e1e;
+      border: 1px solid #2a2a2a;
+      border-radius: 8px;
+      padding: 11px 14px;
+      color: #fff;
+      font-size: 14px;
+      outline: none;
+      margin-bottom: 12px;
+    }
+
+    .modal input[type="text"]:focus { border-color: #c9a84c; }
+
+    .modal-preview {
+      width: 100%;
+      height: 140px;
+      background: #1e1e1e;
+      border: 1px dashed #333;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #555;
+      font-size: 13px;
+      margin-bottom: 12px;
+      overflow: hidden;
+      cursor: pointer;
+    }
+
+    .modal-preview img { width: 100%; height: 140px; object-fit: cover; }
+
+    .modal-btns { display: flex; gap: 10px; margin-top: 4px; }
+
+    .btn-cancelar {
+      flex: 1;
+      background: transparent;
+      border: 1px solid #333;
+      color: #999;
+      border-radius: 8px;
+      padding: 11px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-cancelar:hover { border-color: #e05a5a; color: #e05a5a; }
+
+    .btn-salvar-modal {
+      flex: 1;
+      background: #c9a84c;
+      color: #000;
+      border: none;
+      border-radius: 8px;
+      padding: 11px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn-salvar-modal:hover { background: #e0bc5a; }
 
     /* ── FLYERS GRID ── */
     .flyers-grid {
@@ -210,12 +290,14 @@
       border: 1px solid #2a2a2a;
       border-radius: 12px;
       overflow: hidden;
+      position: relative;
     }
+
+    .flyer-card.customizado { border-color: #c9a84c44; }
 
     .flyer-preview {
       width: 100%;
       height: 140px;
-      object-fit: cover;
       background: #1e1e1e;
       display: flex;
       align-items: center;
@@ -224,15 +306,9 @@
       font-size: 12px;
     }
 
-    .flyer-preview img {
-      width: 100%;
-      height: 140px;
-      object-fit: cover;
-    }
+    .flyer-preview img { width: 100%; height: 140px; object-fit: cover; }
 
-    .flyer-info {
-      padding: 12px;
-    }
+    .flyer-info { padding: 12px; }
 
     .flyer-info label {
       display: block;
@@ -259,8 +335,6 @@
 
     .flyer-upload:hover { border-color: #c9a84c; color: #c9a84c; }
 
-    .flyer-upload input[type="file"] { display: none; }
-
     .btn-enviar-flyer {
       width: 100%;
       margin-top: 8px;
@@ -277,6 +351,42 @@
     }
 
     .btn-enviar-flyer:hover { background: #e0bc5a; }
+
+    /* ── BOTÃO DELETAR ── */
+    .btn-deletar-flyer {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: rgba(0,0,0,0.7);
+      border: 1px solid #e05a5a;
+      color: #e05a5a;
+      border-radius: 6px;
+      width: 28px;
+      height: 28px;
+      font-size: 16px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      line-height: 1;
+    }
+
+    .btn-deletar-flyer:hover { background: #e05a5a; color: #fff; }
+
+    /* ── BADGE CUSTOMIZADO ── */
+    .badge-custom {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      background: #c9a84c;
+      color: #000;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 4px;
+      text-transform: uppercase;
+    }
 
     /* ── CÉREBRO ── */
     textarea {
@@ -326,19 +436,8 @@
       text-align: center;
     }
 
-    .stat-card .numero {
-      font-size: 36px;
-      font-weight: 700;
-      color: #c9a84c;
-    }
-
-    .stat-card .label {
-      font-size: 12px;
-      color: #666;
-      margin-top: 4px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
+    .stat-card .numero { font-size: 36px; font-weight: 700; color: #c9a84c; }
+    .stat-card .label { font-size: 12px; color: #666; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
 
     .perguntas-lista {
       background: #141414;
@@ -347,14 +446,7 @@
       padding: 20px;
     }
 
-    .perguntas-lista h3 {
-      font-size: 14px;
-      font-weight: 600;
-      color: #999;
-      margin-bottom: 16px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
+    .perguntas-lista h3 { font-size: 14px; font-weight: 600; color: #999; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.5px; }
 
     .pergunta-item {
       display: flex;
@@ -369,11 +461,7 @@
     .pergunta-item .count { color: #c9a84c; font-weight: 700; }
 
     /* ── CALENDÁRIO ── */
-    .calendario-form {
-      display: flex;
-      gap: 12px;
-      margin-bottom: 24px;
-    }
+    .calendario-form { display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; }
 
     .calendario-form input {
       background: #141414;
@@ -386,8 +474,8 @@
     }
 
     .calendario-form input:focus { border-color: #c9a84c; }
-    .calendario-form input:first-child { width: 130px; }
-    .calendario-form input:last-of-type { flex: 1; }
+    .calendario-form input:first-child { width: 120px; }
+    .calendario-form input:nth-child(2) { flex: 1; min-width: 180px; }
 
     .calendario-atual {
       background: #141414;
@@ -396,21 +484,9 @@
       padding: 20px;
     }
 
-    .calendario-atual h3 {
-      font-size: 14px;
-      font-weight: 600;
-      color: #999;
-      margin-bottom: 16px;
-      text-transform: uppercase;
-    }
+    .calendario-atual h3 { font-size: 14px; font-weight: 600; color: #999; margin-bottom: 16px; text-transform: uppercase; }
 
-    .calendario-item {
-      padding: 10px 0;
-      border-bottom: 1px solid #1e1e1e;
-      font-size: 14px;
-      color: #ccc;
-    }
-
+    .calendario-item { padding: 10px 0; border-bottom: 1px solid #1e1e1e; font-size: 14px; color: #ccc; }
     .calendario-item:last-child { border-bottom: none; }
     .calendario-item span { color: #c9a84c; font-weight: 600; margin-right: 10px; }
 
@@ -433,11 +509,18 @@
     .toast.ok { border-left: 3px solid #4caf50; }
     .toast.erro { border-left: 3px solid #e05a5a; }
 
-    /* ── LOADING ── */
-    .loading {
-      color: #666;
-      font-size: 14px;
-      padding: 20px 0;
+    .loading { color: #666; font-size: 14px; padding: 20px 0; }
+
+    /* ── DIVISOR ── */
+    .divisor-flyers {
+      grid-column: 1 / -1;
+      border-top: 1px solid #2a2a2a;
+      padding-top: 16px;
+      margin-top: 8px;
+      font-size: 12px;
+      color: #555;
+      text-transform: uppercase;
+      letter-spacing: 1px;
     }
   </style>
 </head>
@@ -459,11 +542,9 @@
 
   <header>
     <h1>GIA Admin — Le Club</h1>
-    <span id="header-status"></span>
     <button class="btn-logout" onclick="fazerLogout()">Sair</button>
   </header>
 
-  <!-- Status GIA -->
   <div class="status-bar">
     <span class="status-label">GIA:</span>
     <label class="toggle">
@@ -473,7 +554,6 @@
     <span class="status-text" id="status-text">carregando...</span>
   </div>
 
-  <!-- Tabs -->
   <div class="tabs">
     <button class="tab ativa" onclick="abrirTab('flyers', this)">🖼️ Flyers</button>
     <button class="tab" onclick="abrirTab('cerebro', this)">🧠 Cérebro</button>
@@ -485,7 +565,10 @@
 
     <!-- ── FLYERS ── -->
     <div class="secao ativa" id="secao-flyers">
-      <h2>Flyers</h2>
+      <div class="secao-header">
+        <h2>Flyers</h2>
+        <button class="btn-novo-flyer" onclick="abrirModalNovoFlyer()">+ Novo Flyer</button>
+      </div>
       <p class="desc">Faça upload das imagens para cada categoria. A GIA enviará automaticamente quando solicitado.</p>
       <div class="flyers-grid" id="flyers-grid">
         <div class="loading">Carregando flyers...</div>
@@ -531,13 +614,35 @@
   </div>
 </div>
 
-<!-- Toast de notificação -->
+<!-- ══════════════ MODAL NOVO FLYER ══════════════ -->
+<div class="modal-overlay" id="modal-novo-flyer">
+  <div class="modal">
+    <h3>+ Novo Flyer</h3>
+    <input type="text" id="modal-nome" placeholder="Nome do comando (ex: quinta_especial)" />
+    <div class="modal-preview" id="modal-preview" onclick="document.getElementById('modal-file').click()">
+      📎 Clique para escolher a imagem
+    </div>
+    <input type="file" id="modal-file" accept="image/*" style="display:none" />
+    <div class="modal-btns">
+      <button class="btn-cancelar" onclick="fecharModalNovoFlyer()">Cancelar</button>
+      <button class="btn-salvar-modal" id="btn-salvar-modal" onclick="salvarNovoFlyer()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
 <div class="toast" id="toast"></div>
 
 <script>
-  // ── CONFIGURAÇÃO ──
-  const API = '';  // mesmo servidor
+  const API = '';
   let TOKEN = localStorage.getItem('gia_token') || '';
+
+  const FLYERS_FIXOS = [
+    'programacao_sexta', 'programacao_sabado',
+    'entrada_sexta', 'entrada_sabado',
+    'camarote_sexta', 'camarote_sabado',
+    'aniversario_sexta', 'aniversario_sabado'
+  ];
 
   const FLYERS_LABELS = {
     programacao_sexta:  'Programação Sexta',
@@ -585,10 +690,7 @@
   }
 
   async function fazerLogout() {
-    await fetch('/painel/api/logout', {
-      method: 'POST',
-      headers: { 'Authorization': TOKEN }
-    });
+    await fetch('/painel/api/logout', { method: 'POST', headers: { 'Authorization': TOKEN } });
     TOKEN = '';
     localStorage.removeItem('gia_token');
     location.reload();
@@ -600,13 +702,11 @@
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('ativa'));
     document.getElementById('secao-' + nome).classList.add('ativa');
     btn.classList.add('ativa');
-
     if (nome === 'relatorio') carregarRelatorio();
     if (nome === 'calendario') carregarCalendario();
     if (nome === 'cerebro') carregarCerebro();
   }
 
-  // ── CARREGAR TUDO ──
   function carregarTudo() {
     carregarStatus();
     carregarFlyers();
@@ -643,37 +743,55 @@
     const grid = document.getElementById('flyers-grid');
     grid.innerHTML = '';
 
-    Object.entries(FLYERS_LABELS).forEach(([tipo, label]) => {
+    // Flyers fixos
+    FLYERS_FIXOS.forEach(tipo => {
       const url = flyers[tipo] || '';
-      const card = document.createElement('div');
-      card.className = 'flyer-card';
-      card.innerHTML = `
-        <div class="flyer-preview" id="preview-${tipo}">
-          ${url ? `<img src="${url}" alt="${label}" />` : 'Sem imagem'}
-        </div>
-        <div class="flyer-info">
-          <label>${label}</label>
-          <div class="flyer-upload" id="upload-label-${tipo}">
-            📎 Escolher imagem
-          </div>
-          <input type="file" id="file-${tipo}" accept="image/*,image/jpeg,image/png,image/webp" style="display:none" />
-          <button class="btn-enviar-flyer" id="btn-${tipo}" onclick="enviarFlyer('${tipo}')">
-            ⬆️ Enviar
-          </button>
-        </div>
-      `;
-      grid.appendChild(card);
-
-      // Evento de clique no label
-      document.getElementById('upload-label-' + tipo).addEventListener('click', function() {
-        document.getElementById('file-' + tipo).click();
-      });
-
-      // Evento de seleção de arquivo — compatível com mobile
-      document.getElementById('file-' + tipo).addEventListener('change', function() {
-        selecionouImagem(tipo);
-      });
+      grid.appendChild(criarCardFlyer(tipo, FLYERS_LABELS[tipo] || tipo, url, false));
     });
+
+    // Divisor + flyers customizados
+    const customizados = Object.keys(flyers).filter(k => !FLYERS_FIXOS.includes(k));
+    if (customizados.length > 0) {
+      const div = document.createElement('div');
+      div.className = 'divisor-flyers';
+      div.textContent = 'Flyers Personalizados';
+      grid.appendChild(div);
+      customizados.forEach(tipo => {
+        grid.appendChild(criarCardFlyer(tipo, tipo.replace(/_/g, ' '), flyers[tipo], true));
+      });
+    }
+  }
+
+  function criarCardFlyer(tipo, label, url, customizado) {
+    const card = document.createElement('div');
+    card.className = 'flyer-card' + (customizado ? ' customizado' : '');
+    card.id = 'card-' + tipo;
+
+    card.innerHTML = `
+      ${customizado ? '<span class="badge-custom">Custom</span>' : ''}
+      ${customizado ? `<button class="btn-deletar-flyer" onclick="deletarFlyer('${tipo}')" title="Remover flyer">×</button>` : ''}
+      <div class="flyer-preview" id="preview-${tipo}">
+        ${url ? `<img src="${url}" alt="${label}" />` : 'Sem imagem'}
+      </div>
+      <div class="flyer-info">
+        <label>${label}</label>
+        <div class="flyer-upload" id="upload-label-${tipo}">📎 Escolher imagem</div>
+        <input type="file" id="file-${tipo}" accept="image/*" style="display:none" />
+        <button class="btn-enviar-flyer" id="btn-${tipo}" onclick="enviarFlyer('${tipo}')">⬆️ Enviar</button>
+      </div>
+    `;
+
+    // Eventos após inserir no DOM
+    setTimeout(() => {
+      const uploadLabel = document.getElementById('upload-label-' + tipo);
+      const fileInput = document.getElementById('file-' + tipo);
+      if (uploadLabel && fileInput) {
+        uploadLabel.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', () => selecionouImagem(tipo));
+      }
+    }, 0);
+
+    return card;
   }
 
   function selecionouImagem(tipo) {
@@ -682,8 +800,6 @@
     const btn = document.getElementById('btn-' + tipo);
     btn.style.display = 'block';
     btn.textContent = `⬆️ Enviar: ${file.name}`;
-
-    // Preview local
     const reader = new FileReader();
     reader.onload = e => {
       const prev = document.getElementById('preview-' + tipo);
@@ -712,12 +828,84 @@
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.erro);
-      mostrarToast(`✅ Flyer "${FLYERS_LABELS[tipo]}" atualizado!`);
+      mostrarToast(`✅ Flyer "${tipo.replace(/_/g,' ')}" atualizado!`);
       btn.style.display = 'none';
       btn.disabled = false;
     } catch (e) {
       mostrarToast('❌ Erro ao enviar flyer', 'erro');
       btn.textContent = '⬆️ Tentar novamente';
+      btn.disabled = false;
+    }
+  }
+
+  async function deletarFlyer(tipo) {
+    if (!confirm(`Remover o flyer "${tipo.replace(/_/g,' ')}"?`)) return;
+    try {
+      const res = await fetch(`/painel/api/flyer/${tipo}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': TOKEN }
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.erro);
+      mostrarToast(`✅ Flyer removido!`);
+      carregarFlyers();
+    } catch (e) {
+      mostrarToast('❌ Erro ao remover flyer', 'erro');
+    }
+  }
+
+  // ── MODAL NOVO FLYER ──
+  function abrirModalNovoFlyer() {
+    document.getElementById('modal-nome').value = '';
+    document.getElementById('modal-preview').innerHTML = '📎 Clique para escolher a imagem';
+    document.getElementById('modal-file').value = '';
+    document.getElementById('modal-novo-flyer').classList.add('aberto');
+
+    document.getElementById('modal-file').onchange = function() {
+      const file = this.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = e => {
+        document.getElementById('modal-preview').innerHTML = `<img src="${e.target.result}" />`;
+      };
+      reader.readAsDataURL(file);
+    };
+  }
+
+  function fecharModalNovoFlyer() {
+    document.getElementById('modal-novo-flyer').classList.remove('aberto');
+  }
+
+  async function salvarNovoFlyer() {
+    const nome = document.getElementById('modal-nome').value.trim()
+      .toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
+    const file = document.getElementById('modal-file').files[0];
+
+    if (!nome) return mostrarToast('Digite um nome para o flyer.', 'erro');
+    if (!file) return mostrarToast('Escolha uma imagem.', 'erro');
+
+    const btn = document.getElementById('btn-salvar-modal');
+    btn.textContent = '⏳ Enviando...';
+    btn.disabled = true;
+
+    const formData = new FormData();
+    formData.append('imagem', file);
+
+    try {
+      const res = await fetch(`/painel/api/flyer/${nome}`, {
+        method: 'POST',
+        headers: { 'Authorization': TOKEN },
+        body: formData
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.erro);
+      mostrarToast(`✅ Flyer "${nome.replace(/_/g,' ')}" criado!`);
+      fecharModalNovoFlyer();
+      carregarFlyers();
+    } catch (e) {
+      mostrarToast('❌ Erro ao criar flyer', 'erro');
+    } finally {
+      btn.textContent = 'Salvar';
       btn.disabled = false;
     }
   }
