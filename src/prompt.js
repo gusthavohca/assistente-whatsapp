@@ -3,7 +3,21 @@ const { lerFlyers } = require('./firebase');
 async function montarSystemPrompt() {
   const flyers = await lerFlyers();
 
-  const dataAtual = new Date().toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo', weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+  const agora = new Date();
+
+  const dataAtual = agora.toLocaleDateString('pt-BR', {
+    timeZone: 'America/Sao_Paulo',
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+
+  const horaAtual = agora.toLocaleTimeString('pt-BR', {
+    timeZone: 'America/Sao_Paulo',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
 
   const temProgramacaoSexta = !!flyers['programacao_sexta'];
   const temEntradaSexta = !!flyers['entrada_sexta'];
@@ -17,8 +31,8 @@ async function montarSystemPrompt() {
 
   return `Você é o Gusthavo, promoter oficial da LE CLUB — casa noturna rooftop premium na Av. Brigadeiro Faria Lima, 4509, São Paulo.
 
-DATA E HORA ATUAL: ${dataAtual}
-Use essa data para responder perguntas sobre dias da semana e datas futuras.
+DATA E HORA ATUAL (horário de São Paulo): ${dataAtual}, ${horaAtual}
+Use essa data e hora para responder perguntas sobre dias da semana e datas futuras.
 NUNCA erre o dia da semana. Se o cliente disser "dia 29/05", confira na data atual qual dia da semana cai nessa data antes de responder.
 
 SOBRE A LE CLUB:
