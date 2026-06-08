@@ -5,49 +5,25 @@ const bodyParser = require('body-parser');
 const path = require('path');
 
 const webhook = require('./src/webhook');
+const painel = require('./src/painel');
 const { iniciarAgendamento } = require('./src/relatorio');
-const { lerAtracoes, lerCerebroDoGusthavo, salvarAtracao, salvarCerebroDoGusthavo } = require('./src/firebase');
 
 const app = express();
 const PORTA = process.env.PORT || 3000;
 
 app.use(bodyParser.json());
 
-// Serve os arquivos do painel
+// Serve os arquivos estáticos do painel
 app.use('/painel', express.static(path.join(__dirname, 'painel')));
+
+// Rotas da API do painel (login, flyers, cérebro, etc.)
+app.use('/painel/api', painel);
 
 // ============================================================================
 // ROTA DE VERIFICAÇÃO
 // ============================================================================
 app.get('/', (req, res) => {
   res.send('Le Club - Gusthavo IA está online 🟢 | Painel: /painel');
-});
-
-// ============================================================================
-// ROTAS DO PAINEL ADMIN
-// ============================================================================
-
-app.get('/api/dados', async (req, res) => {
-  const [atracoes, cerebro] = await Promise.all([
-    lerAtracoes(),
-    lerCerebroDoGusthavo(),
-  ]);
-  res.json({
-    atracoes,
-    cerebro: cerebro || '',
-  });
-});
-
-app.post('/api/salvar-atracao', async (req, res) => {
-  const { dia, dados } = req.body;
-  const ok = await salvarAtracao(dia, dados);
-  res.json({ ok });
-});
-
-app.post('/api/salvar-cerebro', async (req, res) => {
-  const { cerebro } = req.body;
-  const ok = await salvarCerebroDoGusthavo(cerebro);
-  res.json({ ok });
 });
 
 // ============================================================================
@@ -74,6 +50,5 @@ app.listen(PORTA, () => {
   console.log('  Aguardando mensagens do WhatsApp...');
   console.log('');
 
-  // Inicia o agendamento do relatório semanal
   iniciarAgendamento();
 });

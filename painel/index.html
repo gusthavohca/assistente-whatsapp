@@ -1,259 +1,817 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Le Club - Painel Admin</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>GIA Admin — Le Club</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: Arial, sans-serif; background: #0a0a0a; color: #fff; min-height: 100vh; }
 
-    /* LOGIN */
-    #tela-login { display: flex; align-items: center; justify-content: center; min-height: 100vh; }
-    .login-box { background: #1a1a1a; border: 1px solid #333; border-radius: 12px; padding: 40px; width: 100%; max-width: 360px; }
-    .login-box h1 { text-align: center; font-size: 22px; margin-bottom: 8px; letter-spacing: 2px; }
-    .login-box p { text-align: center; color: #888; font-size: 13px; margin-bottom: 28px; }
-    .login-box input { width: 100%; padding: 12px; background: #111; border: 1px solid #333; border-radius: 8px; color: #fff; font-size: 15px; margin-bottom: 12px; }
-    .login-box button { width: 100%; padding: 12px; background: #c9a84c; border: none; border-radius: 8px; color: #000; font-size: 15px; font-weight: bold; cursor: pointer; }
-    .login-box button:hover { background: #e0bc6a; }
-    .erro-login { color: #ff4444; font-size: 13px; text-align: center; margin-top: 10px; display: none; }
+    body {
+      background: #0a0a0a;
+      color: #f0f0f0;
+      font-family: 'Segoe UI', sans-serif;
+      min-height: 100vh;
+    }
 
-    /* PAINEL */
+    /* ── LOGIN ── */
+    #tela-login {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+
+    .login-box {
+      background: #141414;
+      border: 1px solid #2a2a2a;
+      border-radius: 16px;
+      padding: 48px 40px;
+      width: 100%;
+      max-width: 380px;
+      text-align: center;
+    }
+
+    .login-box h1 {
+      font-size: 28px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 4px;
+    }
+
+    .login-box p {
+      color: #666;
+      font-size: 14px;
+      margin-bottom: 32px;
+    }
+
+    .login-box input {
+      width: 100%;
+      background: #1e1e1e;
+      border: 1px solid #2a2a2a;
+      border-radius: 8px;
+      padding: 12px 16px;
+      color: #fff;
+      font-size: 15px;
+      margin-bottom: 12px;
+      outline: none;
+    }
+
+    .login-box input:focus { border-color: #c9a84c; }
+
+    .btn-primary {
+      width: 100%;
+      background: #c9a84c;
+      color: #000;
+      border: none;
+      border-radius: 8px;
+      padding: 13px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn-primary:hover { background: #e0bc5a; }
+
+    .erro-msg {
+      color: #e05a5a;
+      font-size: 13px;
+      margin-top: 10px;
+    }
+
+    /* ── PAINEL ── */
     #tela-painel { display: none; }
-    header { background: #1a1a1a; border-bottom: 1px solid #333; padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; }
-    header h1 { font-size: 18px; letter-spacing: 2px; color: #c9a84c; }
-    header button { background: none; border: 1px solid #555; color: #aaa; padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 13px; }
 
-    .container { max-width: 900px; margin: 0 auto; padding: 24px 16px; }
+    header {
+      background: #141414;
+      border-bottom: 1px solid #2a2a2a;
+      padding: 16px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
 
-    /* ABAS */
-    .abas { display: flex; gap: 8px; margin-bottom: 24px; flex-wrap: wrap; }
-    .aba { padding: 10px 20px; border-radius: 8px; border: 1px solid #333; background: #1a1a1a; color: #aaa; cursor: pointer; font-size: 14px; }
-    .aba.ativa { background: #c9a84c; color: #000; border-color: #c9a84c; font-weight: bold; }
+    header h1 { font-size: 20px; font-weight: 700; color: #c9a84c; }
+    header span { font-size: 13px; color: #666; }
 
-    /* SEÇÕES */
+    .btn-logout {
+      background: transparent;
+      border: 1px solid #333;
+      color: #999;
+      padding: 7px 16px;
+      border-radius: 7px;
+      cursor: pointer;
+      font-size: 13px;
+      transition: all 0.2s;
+    }
+
+    .btn-logout:hover { border-color: #e05a5a; color: #e05a5a; }
+
+    /* ── STATUS BAR ── */
+    .status-bar {
+      background: #141414;
+      border-bottom: 1px solid #2a2a2a;
+      padding: 12px 32px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .status-label { font-size: 14px; color: #999; }
+
+    .toggle {
+      position: relative;
+      width: 48px;
+      height: 26px;
+    }
+
+    .toggle input { display: none; }
+
+    .toggle-slider {
+      position: absolute;
+      inset: 0;
+      background: #333;
+      border-radius: 26px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .toggle-slider:before {
+      content: '';
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      background: #fff;
+      border-radius: 50%;
+      left: 3px;
+      top: 3px;
+      transition: 0.3s;
+    }
+
+    .toggle input:checked + .toggle-slider { background: #4caf50; }
+    .toggle input:checked + .toggle-slider:before { transform: translateX(22px); }
+
+    .status-text { font-size: 14px; font-weight: 600; }
+    .status-text.ativo { color: #4caf50; }
+    .status-text.pausado { color: #e05a5a; }
+
+    /* ── TABS ── */
+    .tabs {
+      display: flex;
+      gap: 4px;
+      padding: 20px 32px 0;
+      border-bottom: 1px solid #2a2a2a;
+    }
+
+    .tab {
+      padding: 10px 20px;
+      border-radius: 8px 8px 0 0;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      color: #666;
+      background: transparent;
+      border: none;
+      transition: all 0.2s;
+    }
+
+    .tab:hover { color: #c9a84c; }
+    .tab.ativa { color: #c9a84c; border-bottom: 2px solid #c9a84c; }
+
+    /* ── CONTEÚDO ── */
+    .conteudo { padding: 32px; max-width: 900px; }
+
     .secao { display: none; }
     .secao.ativa { display: block; }
 
-    .card { background: #1a1a1a; border: 1px solid #333; border-radius: 12px; padding: 24px; margin-bottom: 20px; }
-    .card h2 { font-size: 16px; margin-bottom: 16px; color: #c9a84c; }
-    .campo { margin-bottom: 14px; }
-    .campo label { display: block; font-size: 13px; color: #aaa; margin-bottom: 6px; }
-    .campo input, .campo textarea { width: 100%; padding: 10px 12px; background: #111; border: 1px solid #333; border-radius: 8px; color: #fff; font-size: 14px; }
-    .campo textarea { resize: vertical; min-height: 120px; font-family: Arial, sans-serif; }
-    .campo input:focus, .campo textarea:focus { outline: none; border-color: #c9a84c; }
+    .secao h2 {
+      font-size: 18px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 6px;
+    }
 
-    .btn-salvar { background: #c9a84c; color: #000; border: none; padding: 12px 28px; border-radius: 8px; font-size: 14px; font-weight: bold; cursor: pointer; }
-    .btn-salvar:hover { background: #e0bc6a; }
-    .btn-salvar:disabled { background: #555; color: #888; cursor: not-allowed; }
+    .secao p.desc {
+      font-size: 13px;
+      color: #666;
+      margin-bottom: 24px;
+    }
 
-    .status { font-size: 13px; margin-top: 10px; height: 18px; }
-    .status.ok { color: #44cc88; }
-    .status.erro { color: #ff4444; }
+    /* ── FLYERS GRID ── */
+    .flyers-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 16px;
+    }
 
-    .cerebro-textarea { min-height: 400px !important; font-family: monospace !important; font-size: 13px !important; line-height: 1.5; }
+    .flyer-card {
+      background: #141414;
+      border: 1px solid #2a2a2a;
+      border-radius: 12px;
+      overflow: hidden;
+    }
 
-    @media (max-width: 600px) {
-      .card { padding: 16px; }
-      header { padding: 12px 16px; }
-      header h1 { font-size: 15px; }
+    .flyer-preview {
+      width: 100%;
+      height: 140px;
+      object-fit: cover;
+      background: #1e1e1e;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #444;
+      font-size: 12px;
+    }
+
+    .flyer-preview img {
+      width: 100%;
+      height: 140px;
+      object-fit: cover;
+    }
+
+    .flyer-info {
+      padding: 12px;
+    }
+
+    .flyer-info label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: #c9a84c;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .flyer-upload {
+      width: 100%;
+      background: #1e1e1e;
+      border: 1px dashed #333;
+      border-radius: 6px;
+      padding: 7px;
+      color: #999;
+      font-size: 12px;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.2s;
+    }
+
+    .flyer-upload:hover { border-color: #c9a84c; color: #c9a84c; }
+
+    .flyer-upload input[type="file"] { display: none; }
+
+    .btn-enviar-flyer {
+      width: 100%;
+      margin-top: 8px;
+      background: #c9a84c;
+      color: #000;
+      border: none;
+      border-radius: 6px;
+      padding: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      display: none;
+      transition: background 0.2s;
+    }
+
+    .btn-enviar-flyer:hover { background: #e0bc5a; }
+
+    /* ── CÉREBRO ── */
+    textarea {
+      width: 100%;
+      background: #141414;
+      border: 1px solid #2a2a2a;
+      border-radius: 10px;
+      padding: 16px;
+      color: #f0f0f0;
+      font-size: 14px;
+      line-height: 1.6;
+      resize: vertical;
+      outline: none;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    textarea:focus { border-color: #c9a84c; }
+
+    .btn-salvar {
+      margin-top: 12px;
+      background: #c9a84c;
+      color: #000;
+      border: none;
+      border-radius: 8px;
+      padding: 12px 28px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn-salvar:hover { background: #e0bc5a; }
+
+    /* ── RELATÓRIO ── */
+    .relatorio-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+
+    .stat-card {
+      background: #141414;
+      border: 1px solid #2a2a2a;
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .stat-card .numero {
+      font-size: 36px;
+      font-weight: 700;
+      color: #c9a84c;
+    }
+
+    .stat-card .label {
+      font-size: 12px;
+      color: #666;
+      margin-top: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .perguntas-lista {
+      background: #141414;
+      border: 1px solid #2a2a2a;
+      border-radius: 12px;
+      padding: 20px;
+    }
+
+    .perguntas-lista h3 {
+      font-size: 14px;
+      font-weight: 600;
+      color: #999;
+      margin-bottom: 16px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .pergunta-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid #1e1e1e;
+      font-size: 13px;
+    }
+
+    .pergunta-item:last-child { border-bottom: none; }
+    .pergunta-item .count { color: #c9a84c; font-weight: 700; }
+
+    /* ── CALENDÁRIO ── */
+    .calendario-form {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .calendario-form input {
+      background: #141414;
+      border: 1px solid #2a2a2a;
+      border-radius: 8px;
+      padding: 10px 14px;
+      color: #fff;
+      font-size: 14px;
+      outline: none;
+    }
+
+    .calendario-form input:focus { border-color: #c9a84c; }
+    .calendario-form input:first-child { width: 130px; }
+    .calendario-form input:last-of-type { flex: 1; }
+
+    .calendario-atual {
+      background: #141414;
+      border: 1px solid #2a2a2a;
+      border-radius: 12px;
+      padding: 20px;
+    }
+
+    .calendario-atual h3 {
+      font-size: 14px;
+      font-weight: 600;
+      color: #999;
+      margin-bottom: 16px;
+      text-transform: uppercase;
+    }
+
+    .calendario-item {
+      padding: 10px 0;
+      border-bottom: 1px solid #1e1e1e;
+      font-size: 14px;
+      color: #ccc;
+    }
+
+    .calendario-item:last-child { border-bottom: none; }
+    .calendario-item span { color: #c9a84c; font-weight: 600; margin-right: 10px; }
+
+    /* ── TOAST ── */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #1e1e1e;
+      border: 1px solid #2a2a2a;
+      border-radius: 10px;
+      padding: 14px 20px;
+      font-size: 14px;
+      color: #fff;
+      display: none;
+      z-index: 9999;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    }
+
+    .toast.ok { border-left: 3px solid #4caf50; }
+    .toast.erro { border-left: 3px solid #e05a5a; }
+
+    /* ── LOADING ── */
+    .loading {
+      color: #666;
+      font-size: 14px;
+      padding: 20px 0;
     }
   </style>
 </head>
 <body>
 
-<!-- TELA DE LOGIN -->
+<!-- ══════════════ TELA DE LOGIN ══════════════ -->
 <div id="tela-login">
   <div class="login-box">
-    <h1>LE CLUB</h1>
-    <p>Painel Administrativo</p>
-    <input type="password" id="campo-senha" placeholder="Senha de acesso" onkeydown="if(event.key==='Enter') fazerLogin()">
-    <button onclick="fazerLogin()">Entrar</button>
-    <div class="erro-login" id="erro-login">Senha incorreta</div>
+    <h1>Le Club</h1>
+    <p>Painel Administrativo — GIA</p>
+    <input type="password" id="input-senha" placeholder="Senha" onkeydown="if(event.key==='Enter') fazerLogin()" />
+    <button class="btn-primary" onclick="fazerLogin()">Entrar</button>
+    <div class="erro-msg" id="erro-login"></div>
   </div>
 </div>
 
-<!-- TELA DO PAINEL -->
+<!-- ══════════════ TELA DO PAINEL ══════════════ -->
 <div id="tela-painel">
+
   <header>
-    <h1>LE CLUB — Admin</h1>
-    <button onclick="sair()">Sair</button>
+    <h1>GIA Admin — Le Club</h1>
+    <span id="header-status"></span>
+    <button class="btn-logout" onclick="fazerLogout()">Sair</button>
   </header>
 
-  <div class="container">
-    <div class="abas">
-      <div class="aba ativa" onclick="trocarAba('atracoes')">Atrações</div>
-      <div class="aba" onclick="trocarAba('cerebro')">Cérebro</div>
+  <!-- Status GIA -->
+  <div class="status-bar">
+    <span class="status-label">GIA:</span>
+    <label class="toggle">
+      <input type="checkbox" id="toggle-gia" onchange="alternarGia()" />
+      <span class="toggle-slider"></span>
+    </label>
+    <span class="status-text" id="status-text">carregando...</span>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab ativa" onclick="abrirTab('flyers', this)">🖼️ Flyers</button>
+    <button class="tab" onclick="abrirTab('cerebro', this)">🧠 Cérebro</button>
+    <button class="tab" onclick="abrirTab('calendario', this)">📅 Calendário</button>
+    <button class="tab" onclick="abrirTab('relatorio', this)">📊 Relatório</button>
+  </div>
+
+  <div class="conteudo">
+
+    <!-- ── FLYERS ── -->
+    <div class="secao ativa" id="secao-flyers">
+      <h2>Flyers</h2>
+      <p class="desc">Faça upload das imagens para cada categoria. A GIA enviará automaticamente quando solicitado.</p>
+      <div class="flyers-grid" id="flyers-grid">
+        <div class="loading">Carregando flyers...</div>
+      </div>
     </div>
 
-    <!-- SEÇÃO: ATRAÇÕES -->
-    <div class="secao ativa" id="secao-atracoes">
-
-      <div class="card">
-        <h2>Sexta-feira</h2>
-        <div class="campo">
-          <label>DJ / Atração</label>
-          <input type="text" id="sexta-dj" placeholder="Nome do DJ">
-        </div>
-        <div class="campo">
-          <label>Horário de abertura</label>
-          <input type="text" id="sexta-horario" placeholder="Ex: 23:00">
-        </div>
-        <div class="campo">
-          <label>URL do Flyer (link da imagem)</label>
-          <input type="text" id="sexta-flyer" placeholder="https://...">
-        </div>
-        <button class="btn-salvar" onclick="salvarAtracao('sexta')">Salvar Sexta</button>
-        <div class="status" id="status-sexta"></div>
-      </div>
-
-      <div class="card">
-        <h2>Sábado</h2>
-        <div class="campo">
-          <label>DJ / Atração</label>
-          <input type="text" id="sabado-dj" placeholder="Nome do DJ">
-        </div>
-        <div class="campo">
-          <label>Horário de abertura</label>
-          <input type="text" id="sabado-horario" placeholder="Ex: 23:00">
-        </div>
-        <div class="campo">
-          <label>URL do Flyer (link da imagem)</label>
-          <input type="text" id="sabado-flyer" placeholder="https://...">
-        </div>
-        <button class="btn-salvar" onclick="salvarAtracao('sabado')">Salvar Sábado</button>
-        <div class="status" id="status-sabado"></div>
-      </div>
-
-    </div>
-
-    <!-- SEÇÃO: CÉREBRO -->
+    <!-- ── CÉREBRO ── -->
     <div class="secao" id="secao-cerebro">
-      <div class="card">
-        <h2>Cérebro do Gusthavo</h2>
-        <p style="color:#888; font-size:13px; margin-bottom:16px;">Edite o comportamento da IA. Salvar aqui atualiza o Gusthavo em tempo real.</p>
-        <div class="campo">
-          <textarea class="cerebro-textarea" id="campo-cerebro" placeholder="Carregando..."></textarea>
-        </div>
-        <button class="btn-salvar" onclick="salvarCerebro()">Salvar Cérebro</button>
-        <div class="status" id="status-cerebro"></div>
+      <h2>Cérebro da GIA</h2>
+      <p class="desc">Edite aqui o comportamento e a personalidade da GIA. Salve para aplicar imediatamente.</p>
+      <textarea id="textarea-cerebro" rows="20" placeholder="Carregando..."></textarea>
+      <br/>
+      <button class="btn-salvar" onclick="salvarCerebro()">Salvar Cérebro</button>
+    </div>
+
+    <!-- ── CALENDÁRIO ── -->
+    <div class="secao" id="secao-calendario">
+      <h2>Calendário</h2>
+      <p class="desc">Adicione eventos por data. A GIA usará essas informações para responder sobre a programação.</p>
+      <div class="calendario-form">
+        <input type="text" id="cal-dia" placeholder="DD/MM" maxlength="5" />
+        <input type="text" id="cal-desc" placeholder="Ex: Festa Trap — DJ Luan" />
+        <button class="btn-salvar" onclick="salvarEvento()">Adicionar</button>
+      </div>
+      <div class="calendario-atual" id="calendario-atual">
+        <div class="loading">Carregando calendário...</div>
+      </div>
+    </div>
+
+    <!-- ── RELATÓRIO ── -->
+    <div class="secao" id="secao-relatorio">
+      <h2>Relatório da Semana</h2>
+      <p class="desc">Dados dos últimos 7 dias de atendimento da GIA.</p>
+      <div class="relatorio-grid" id="relatorio-grid">
+        <div class="loading">Carregando relatório...</div>
+      </div>
+      <div class="perguntas-lista" id="perguntas-lista" style="display:none">
+        <h3>Perguntas mais frequentes</h3>
+        <div id="perguntas-conteudo"></div>
       </div>
     </div>
 
   </div>
 </div>
 
+<!-- Toast de notificação -->
+<div class="toast" id="toast"></div>
+
 <script>
-  const SENHA = 'leclub2025';
+  // ── CONFIGURAÇÃO ──
+  const API = '';  // mesmo servidor
+  let TOKEN = localStorage.getItem('gia_token') || '';
 
-  function fazerLogin() {
-    const senha = document.getElementById('campo-senha').value;
-    if (senha === SENHA) {
-      document.getElementById('tela-login').style.display = 'none';
-      document.getElementById('tela-painel').style.display = 'block';
-      carregarDados();
-    } else {
-      document.getElementById('erro-login').style.display = 'block';
-    }
+  const FLYERS_LABELS = {
+    programacao_sexta:  'Programação Sexta',
+    programacao_sabado: 'Programação Sábado',
+    entrada_sexta:      'Entrada Sexta',
+    entrada_sabado:     'Entrada Sábado',
+    camarote_sexta:     'Camarote Sexta',
+    camarote_sabado:    'Camarote Sábado',
+    aniversario_sexta:  'Aniversário Sexta',
+    aniversario_sabado: 'Aniversário Sábado',
+  };
+
+  // ── TOAST ──
+  function mostrarToast(msg, tipo = 'ok') {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast ' + tipo;
+    t.style.display = 'block';
+    setTimeout(() => t.style.display = 'none', 3000);
   }
 
-  function sair() {
-    document.getElementById('tela-login').style.display = 'flex';
-    document.getElementById('tela-painel').style.display = 'none';
-    document.getElementById('campo-senha').value = '';
-  }
-
-  function trocarAba(aba) {
-    document.querySelectorAll('.aba').forEach(a => a.classList.remove('ativa'));
-    document.querySelectorAll('.secao').forEach(s => s.classList.remove('ativa'));
-    event.target.classList.add('ativa');
-    document.getElementById('secao-' + aba).classList.add('ativa');
-  }
-
-  async function carregarDados() {
+  // ── LOGIN ──
+  async function fazerLogin() {
+    const senha = document.getElementById('input-senha').value;
     try {
-      const res = await fetch('/api/dados');
-      const dados = await res.json();
-
-      if (dados.atracoes) {
-        if (dados.atracoes.sexta) {
-          document.getElementById('sexta-dj').value = dados.atracoes.sexta.dj || '';
-          document.getElementById('sexta-horario').value = dados.atracoes.sexta.horario || '';
-          document.getElementById('sexta-flyer').value = dados.atracoes.sexta.urlFlyer || '';
-        }
-        if (dados.atracoes.sabado) {
-          document.getElementById('sabado-dj').value = dados.atracoes.sabado.dj || '';
-          document.getElementById('sabado-horario').value = dados.atracoes.sabado.horario || '';
-          document.getElementById('sabado-flyer').value = dados.atracoes.sabado.urlFlyer || '';
-        }
-      }
-
-      if (dados.cerebro) {
-        document.getElementById('campo-cerebro').value = dados.cerebro;
-      }
-    } catch (e) {
-      console.error('Erro ao carregar dados:', e);
-    }
-  }
-
-  async function salvarAtracao(dia) {
-    const btn = event.target;
-    const status = document.getElementById('status-' + dia);
-    btn.disabled = true;
-    btn.textContent = 'Salvando...';
-
-    const dados = {
-      dj: document.getElementById(dia + '-dj').value,
-      horario: document.getElementById(dia + '-horario').value,
-      urlFlyer: document.getElementById(dia + '-flyer').value,
-    };
-
-    try {
-      const res = await fetch('/api/salvar-atracao', {
+      const res = await fetch('/painel/api/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ dia, dados })
+        body: JSON.stringify({ senha })
       });
-      const resultado = await res.json();
-      status.textContent = resultado.ok ? 'Salvo com sucesso!' : 'Erro ao salvar';
-      status.className = 'status ' + (resultado.ok ? 'ok' : 'erro');
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.erro);
+      TOKEN = data.token;
+      localStorage.setItem('gia_token', TOKEN);
+      abrirPainel();
     } catch (e) {
-      status.textContent = 'Erro de conexão';
-      status.className = 'status erro';
+      document.getElementById('erro-login').textContent = 'Senha incorreta.';
     }
+  }
 
-    btn.disabled = false;
-    btn.textContent = 'Salvar ' + (dia === 'sexta' ? 'Sexta' : 'Sábado');
-    setTimeout(() => { status.textContent = ''; }, 3000);
+  function abrirPainel() {
+    document.getElementById('tela-login').style.display = 'none';
+    document.getElementById('tela-painel').style.display = 'block';
+    carregarTudo();
+  }
+
+  async function fazerLogout() {
+    await fetch('/painel/api/logout', {
+      method: 'POST',
+      headers: { 'Authorization': TOKEN }
+    });
+    TOKEN = '';
+    localStorage.removeItem('gia_token');
+    location.reload();
+  }
+
+  // ── TABS ──
+  function abrirTab(nome, btn) {
+    document.querySelectorAll('.secao').forEach(s => s.classList.remove('ativa'));
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('ativa'));
+    document.getElementById('secao-' + nome).classList.add('ativa');
+    btn.classList.add('ativa');
+
+    if (nome === 'relatorio') carregarRelatorio();
+    if (nome === 'calendario') carregarCalendario();
+    if (nome === 'cerebro') carregarCerebro();
+  }
+
+  // ── CARREGAR TUDO ──
+  function carregarTudo() {
+    carregarStatus();
+    carregarFlyers();
+  }
+
+  // ── STATUS ──
+  async function carregarStatus() {
+    const res = await fetch('/painel/api/status', { headers: { 'Authorization': TOKEN } });
+    const data = await res.json();
+    const toggle = document.getElementById('toggle-gia');
+    const texto = document.getElementById('status-text');
+    toggle.checked = data.ativo;
+    texto.textContent = data.ativo ? 'Ativa' : 'Pausada';
+    texto.className = 'status-text ' + (data.ativo ? 'ativo' : 'pausado');
+  }
+
+  async function alternarGia() {
+    const ativo = document.getElementById('toggle-gia').checked;
+    const texto = document.getElementById('status-text');
+    await fetch('/painel/api/status', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': TOKEN },
+      body: JSON.stringify({ ativo })
+    });
+    texto.textContent = ativo ? 'Ativa' : 'Pausada';
+    texto.className = 'status-text ' + (ativo ? 'ativo' : 'pausado');
+    mostrarToast(ativo ? '✅ GIA ativada' : '⏸️ GIA pausada');
+  }
+
+  // ── FLYERS ──
+  async function carregarFlyers() {
+    const res = await fetch('/painel/api/flyers', { headers: { 'Authorization': TOKEN } });
+    const flyers = await res.json();
+    const grid = document.getElementById('flyers-grid');
+    grid.innerHTML = '';
+
+    Object.entries(FLYERS_LABELS).forEach(([tipo, label]) => {
+      const url = flyers[tipo] || '';
+      const card = document.createElement('div');
+      card.className = 'flyer-card';
+      card.innerHTML = `
+        <div class="flyer-preview" id="preview-${tipo}">
+          ${url ? `<img src="${url}" alt="${label}" />` : 'Sem imagem'}
+        </div>
+        <div class="flyer-info">
+          <label>${label}</label>
+          <label class="flyer-upload" onclick="document.getElementById('file-${tipo}').click()">
+            📎 Escolher imagem
+            <input type="file" id="file-${tipo}" accept="image/*" onchange="selecionouImagem('${tipo}')" />
+          </label>
+          <button class="btn-enviar-flyer" id="btn-${tipo}" onclick="enviarFlyer('${tipo}')">
+            ⬆️ Enviar
+          </button>
+        </div>
+      `;
+      grid.appendChild(card);
+    });
+  }
+
+  function selecionouImagem(tipo) {
+    const file = document.getElementById('file-' + tipo).files[0];
+    if (!file) return;
+    const btn = document.getElementById('btn-' + tipo);
+    btn.style.display = 'block';
+    btn.textContent = `⬆️ Enviar: ${file.name}`;
+
+    // Preview local
+    const reader = new FileReader();
+    reader.onload = e => {
+      const prev = document.getElementById('preview-' + tipo);
+      prev.innerHTML = `<img src="${e.target.result}" />`;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  async function enviarFlyer(tipo) {
+    const fileInput = document.getElementById('file-' + tipo);
+    const btn = document.getElementById('btn-' + tipo);
+    const file = fileInput.files[0];
+    if (!file) return;
+
+    btn.textContent = '⏳ Enviando...';
+    btn.disabled = true;
+
+    const formData = new FormData();
+    formData.append('imagem', file);
+
+    try {
+      const res = await fetch(`/painel/api/flyer/${tipo}`, {
+        method: 'POST',
+        headers: { 'Authorization': TOKEN },
+        body: formData
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.erro);
+      mostrarToast(`✅ Flyer "${FLYERS_LABELS[tipo]}" atualizado!`);
+      btn.style.display = 'none';
+      btn.disabled = false;
+    } catch (e) {
+      mostrarToast('❌ Erro ao enviar flyer', 'erro');
+      btn.textContent = '⬆️ Tentar novamente';
+      btn.disabled = false;
+    }
+  }
+
+  // ── CÉREBRO ──
+  async function carregarCerebro() {
+    const textarea = document.getElementById('textarea-cerebro');
+    textarea.value = 'Carregando...';
+    const res = await fetch('/painel/api/cerebro', { headers: { 'Authorization': TOKEN } });
+    const data = await res.json();
+    textarea.value = data.cerebro || '';
   }
 
   async function salvarCerebro() {
-    const btn = event.target;
-    const status = document.getElementById('status-cerebro');
-    btn.disabled = true;
-    btn.textContent = 'Salvando...';
+    const cerebro = document.getElementById('textarea-cerebro').value;
+    const res = await fetch('/painel/api/cerebro', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': TOKEN },
+      body: JSON.stringify({ cerebro })
+    });
+    const data = await res.json();
+    if (data.ok) mostrarToast('✅ Cérebro salvo com sucesso!');
+    else mostrarToast('❌ Erro ao salvar', 'erro');
+  }
 
-    const cerebro = document.getElementById('campo-cerebro').value;
+  // ── CALENDÁRIO ──
+  async function carregarCalendario() {
+    const container = document.getElementById('calendario-atual');
+    const res = await fetch('/painel/api/calendario', { headers: { 'Authorization': TOKEN } });
+    const data = await res.json();
 
-    try {
-      const res = await fetch('/api/salvar-cerebro', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ cerebro })
-      });
-      const resultado = await res.json();
-      status.textContent = resultado.ok ? 'Cérebro atualizado!' : 'Erro ao salvar';
-      status.className = 'status ' + (resultado.ok ? 'ok' : 'erro');
-    } catch (e) {
-      status.textContent = 'Erro de conexão';
-      status.className = 'status erro';
+    if (!data.calendario) {
+      container.innerHTML = '<h3>Próximos Eventos</h3><div class="loading">Nenhum evento cadastrado.</div>';
+      return;
     }
 
-    btn.disabled = false;
-    btn.textContent = 'Salvar Cérebro';
-    setTimeout(() => { status.textContent = ''; }, 3000);
+    const linhas = data.calendario.split('\n').map(linha => {
+      const [dia, ...resto] = linha.split(' - ');
+      return `<div class="calendario-item"><span>${dia}</span>${resto.join(' - ')}</div>`;
+    }).join('');
+
+    container.innerHTML = `<h3>Próximos Eventos</h3>${linhas}`;
+  }
+
+  async function salvarEvento() {
+    const dia = document.getElementById('cal-dia').value.trim();
+    const descricao = document.getElementById('cal-desc').value.trim();
+    if (!dia || !descricao) return mostrarToast('Preencha o dia e a descrição.', 'erro');
+
+    const res = await fetch('/painel/api/calendario', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': TOKEN },
+      body: JSON.stringify({ dia, descricao })
+    });
+    const data = await res.json();
+    if (data.ok) {
+      mostrarToast('✅ Evento adicionado!');
+      document.getElementById('cal-dia').value = '';
+      document.getElementById('cal-desc').value = '';
+      carregarCalendario();
+    } else {
+      mostrarToast('❌ Erro ao salvar evento', 'erro');
+    }
+  }
+
+  // ── RELATÓRIO ──
+  async function carregarRelatorio() {
+    const grid = document.getElementById('relatorio-grid');
+    grid.innerHTML = '<div class="loading">Carregando...</div>';
+
+    const res = await fetch('/painel/api/relatorio', { headers: { 'Authorization': TOKEN } });
+    const data = await res.json();
+
+    if (!data) {
+      grid.innerHTML = '<div class="loading">Sem dados disponíveis.</div>';
+      return;
+    }
+
+    grid.innerHTML = `
+      <div class="stat-card"><div class="numero">${data.atendimentos || 0}</div><div class="label">Atendimentos</div></div>
+      <div class="stat-card"><div class="numero">${data.lista || 0}</div><div class="label">Pedidos de Lista</div></div>
+      <div class="stat-card"><div class="numero">${data.camarote || 0}</div><div class="label">Camarote</div></div>
+      <div class="stat-card"><div class="numero">${data.aniversario || 0}</div><div class="label">Aniversário</div></div>
+    `;
+
+    const perguntas = data.perguntas || {};
+    const entries = Object.entries(perguntas).sort((a, b) => b[1] - a[1]).slice(0, 10);
+
+    if (entries.length > 0) {
+      const lista = document.getElementById('perguntas-lista');
+      const conteudo = document.getElementById('perguntas-conteudo');
+      lista.style.display = 'block';
+      conteudo.innerHTML = entries.map(([p, n]) =>
+        `<div class="pergunta-item"><span>${p}</span><span class="count">${n}x</span></div>`
+      ).join('');
+    }
+  }
+
+  // ── INIT ──
+  if (TOKEN) {
+    fetch('/painel/api/status', { headers: { 'Authorization': TOKEN } })
+      .then(r => { if (r.ok) abrirPainel(); })
+      .catch(() => {});
   }
 </script>
-
 </body>
 </html>
