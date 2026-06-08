@@ -653,16 +653,26 @@
         </div>
         <div class="flyer-info">
           <label>${label}</label>
-          <label class="flyer-upload" onclick="document.getElementById('file-${tipo}').click()">
+          <div class="flyer-upload" id="upload-label-${tipo}">
             📎 Escolher imagem
-            <input type="file" id="file-${tipo}" accept="image/*" onchange="selecionouImagem('${tipo}')" />
-          </label>
+          </div>
+          <input type="file" id="file-${tipo}" accept="image/*,image/jpeg,image/png,image/webp" style="display:none" />
           <button class="btn-enviar-flyer" id="btn-${tipo}" onclick="enviarFlyer('${tipo}')">
             ⬆️ Enviar
           </button>
         </div>
       `;
       grid.appendChild(card);
+
+      // Evento de clique no label
+      document.getElementById('upload-label-' + tipo).addEventListener('click', function() {
+        document.getElementById('file-' + tipo).click();
+      });
+
+      // Evento de seleção de arquivo — compatível com mobile
+      document.getElementById('file-' + tipo).addEventListener('change', function() {
+        selecionouImagem(tipo);
+      });
     });
   }
 
