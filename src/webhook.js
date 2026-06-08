@@ -5,35 +5,23 @@
 const claude = require('./claude');
 const zapi = require('./zapi');
 const { processarComandoAdmin } = require('./admin');
-const { lerCerebroDoGusthavo, lerFlyers, salvarFlyer, lerStatusGia, registrarPedido, registrarAtendimento } = require('./firebase');
+const { lerCerebroDoGusthavo, lerFlyers, lerStatusGia, registrarPedido, registrarAtendimento } = require('./firebase');
 const NUMERO_ADMIN = process.env.NUMERO_GUSTHAVO_PESSOAL;
 
-// Armazena a última imagem enviada pelo admin
-let ultimaImagemAdmin = null;
-
 // ============================================================================
-// MAPA DOS FLYERS
+// BUSCAR FLYERS DO FIREBASE (somente painel)
 // ============================================================================
 
-const FLYERS_PADRAO = {
-  entrada: 'https://raw.githubusercontent.com/gusthavohca/assistente-whatsapp/main/assets/flyers/entrada.jpeg',
-  camarotes: 'https://raw.githubusercontent.com/gusthavohca/assistente-whatsapp/main/assets/flyers/camarotes.jpeg',
-  aniversario: 'https://raw.githubusercontent.com/gusthavohca/assistente-whatsapp/main/assets/flyers/aniversario.jpeg',
-};
-
-async function obterFlyers(dia) {
+async function obterFlyers() {
   const flyersFirebase = await lerFlyers();
   return {
-    entrada: flyersFirebase[`entrada_${dia}`] || FLYERS_PADRAO.entrada,
-    camarotes: flyersFirebase[`camarote_${dia}`] || FLYERS_PADRAO.camarotes,
-    aniversario: flyersFirebase['aniversario'] || FLYERS_PADRAO.aniversario,
-    programacao_sexta: flyersFirebase['programacao_sexta'] || null,
+    programacao_sexta:  flyersFirebase['programacao_sexta']  || null,
     programacao_sabado: flyersFirebase['programacao_sabado'] || null,
-    entrada_sexta: flyersFirebase['entrada_sexta'] || null,
-    entrada_sabado: flyersFirebase['entrada_sabado'] || null,
-    camarote_sexta: flyersFirebase['camarote_sexta'] || null,
-    camarote_sabado: flyersFirebase['camarote_sabado'] || null,
-    aniversario_sexta: flyersFirebase['aniversario_sexta'] || null,
+    entrada_sexta:      flyersFirebase['entrada_sexta']      || null,
+    entrada_sabado:     flyersFirebase['entrada_sabado']     || null,
+    camarote_sexta:     flyersFirebase['camarote_sexta']     || null,
+    camarote_sabado:    flyersFirebase['camarote_sabado']    || null,
+    aniversario_sexta:  flyersFirebase['aniversario_sexta']  || null,
     aniversario_sabado: flyersFirebase['aniversario_sabado'] || null,
   };
 }
@@ -75,7 +63,6 @@ async function processarMensagem(dadosDoWebhook) {
     }
 
     // Verifica se é admin
-    // Verifica se é admin
     const telefoneAdminLimpo = NUMERO_ADMIN ? NUMERO_ADMIN.replace(/\D/g, '') : '';
     const telefoneClienteLimpo = telefoneCliente.replace(/\D/g, '');
     const ehAdmin = telefoneAdminLimpo && telefoneClienteLimpo.includes(telefoneAdminLimpo.slice(-8));
@@ -89,46 +76,8 @@ async function processarMensagem(dadosDoWebhook) {
       }
     }
 
-    // Se não tem texto, verifica se é imagem do admin
-    if (!textoRecebido) {
-      if (ehAdmin && dadosDoWebhook.image?.imageUrl) {
-        ultimaImagemAdmin = dadosDoWebhook.image.imageUrl;
-        console.log('📸 Imagem do admin armazenada:', ultimaImagemAdmin);
-      }
-      return;
-    }
-
-    // Verifica se admin mandou comando de flyer após imagem
-    if (ehAdmin && ultimaImagemAdmin) {
-      const texto = textoRecebido.toLowerCase().trim();
-      let tipoFlyer = null;
-
-      if (texto.includes('programacao sexta') || texto.includes('programação sexta') || texto.includes('flyer programacao sexta') || texto.includes('flyer programação sexta')) {
-        tipoFlyer = 'programacao_sexta';
-      } else if (texto.includes('programacao sabado') || texto.includes('programação sábado') || texto.includes('flyer programacao sabado')) {
-        tipoFlyer = 'programacao_sabado';
-      } else if (texto.includes('entrada sexta') || texto.includes('flyer entrada sexta')) {
-        tipoFlyer = 'entrada_sexta';
-      } else if (texto.includes('entrada sabado') || texto.includes('entrada sábado') || texto.includes('flyer entrada sabado')) {
-        tipoFlyer = 'entrada_sabado';
-      } else if (texto.includes('camarote sexta') || texto.includes('flyer camarote sexta')) {
-        tipoFlyer = 'camarote_sexta';
-      } else if (texto.includes('camarote sabado') || texto.includes('camarote sábado') || texto.includes('flyer camarote sabado')) {
-        tipoFlyer = 'camarote_sabado';
-      } else if (texto.includes('aniversario sexta') || texto.includes('aniversário sexta') || texto.includes('flyer aniversario sexta')) {
-        tipoFlyer = 'aniversario_sexta';
-      } else if (texto.includes('aniversario sabado') || texto.includes('aniversário sábado') || texto.includes('flyer aniversario sabado')) {
-        tipoFlyer = 'aniversario_sabado';
-      }
-
-      if (tipoFlyer) {
-        await salvarFlyer(tipoFlyer, ultimaImagemAdmin);
-        ultimaImagemAdmin = null;
-        await zapi.enviarTexto(telefoneCliente, `Beleza! Flyer de ${tipoFlyer.replace('_', ' ')} atualizado.`);
-        console.log(`✅ Flyer ${tipoFlyer} salvo no Firebase`);
-        return;
-      }
-    }
+    // Se não tem texto, ignorar
+    if (!textoRecebido) return;
 
     console.log(`📥 Mensagem recebida de ${telefoneCliente}: "${textoRecebido}"`);
 
@@ -190,15 +139,15 @@ async function processarBufferDoCliente(telefoneCliente) {
     const telefoneClean = telefoneCliente.replace(/\D/g, '');
     const ehAdmin = telefoneAdmin && telefoneClean.includes(telefoneAdmin.slice(-8));
 
+    // ── ADMIN ──
     if (ehAdmin) {
       console.log('🔑 Modo Admin ativado');
-      const cerebroAtual = await lerCerebroDoGusthavo();
-      const respostaAdmin = await processarComandoAdmin(textoFinal, cerebroAtual);
+      const respostaAdmin = await processarComandoAdmin(textoFinal);
       await zapi.enviarTexto(telefoneCliente, respostaAdmin);
       return;
     }
 
-    // Chama o Claude — agora retorna { tipo, url } ou { tipo, mensagem }
+    // ── CLIENTE ──
     const resposta = await claude.perguntarParaClaude(telefoneCliente, textoFinal);
 
     console.log(`🤖 Resposta tipo: "${resposta.tipo}"`);
@@ -214,17 +163,19 @@ async function processarBufferDoCliente(telefoneCliente) {
     // Se for texto normal
     const respostaDaClaude = resposta.mensagem;
 
-    const flyersSolicitados = [];
     let precisaAlertar = false;
     let textoLimpo = respostaDaClaude;
+    const flyersSolicitados = [];
 
-    const regexFlyer = /\[ENVIAR_FLYER:(entrada|camarotes|aniversario|programacao_sexta|programacao_sabado|entrada_sexta|entrada_sabado|camarote_sexta|camarote_sabado|aniversario_sexta|aniversario_sabado)\]/g;
+    // Detectar flyers solicitados pela GIA
+    const regexFlyer = /\[ENVIAR_FLYER:(programacao_sexta|programacao_sabado|entrada_sexta|entrada_sabado|camarote_sexta|camarote_sabado|aniversario_sexta|aniversario_sabado)\]/g;
     let matchFlyer;
     while ((matchFlyer = regexFlyer.exec(respostaDaClaude)) !== null) {
       flyersSolicitados.push(matchFlyer[1]);
     }
     textoLimpo = textoLimpo.replace(regexFlyer, '').trim();
 
+    // Detectar alerta
     if (textoLimpo.includes('[ALERTAR_GUSTHAVO]')) {
       precisaAlertar = true;
       textoLimpo = textoLimpo.replace(/\[ALERTAR_GUSTHAVO\]/g, '').trim();
@@ -232,13 +183,15 @@ async function processarBufferDoCliente(telefoneCliente) {
 
     textoLimpo = textoLimpo.replace(/\n{3,}/g, '\n\n').trim();
 
+    // Enviar texto em pedaços
     const pedacos = textoLimpo.split(/\n\s*\n/).filter((p) => p.trim() !== '');
     for (const pedaco of pedacos) {
       await zapi.enviarTexto(telefoneCliente, pedaco.trim());
       await esperar(1500);
     }
 
-    const flyersAtuais = await obterFlyers('sexta');
+    // Enviar flyers solicitados (todos do Firebase/painel)
+    const flyersAtuais = await obterFlyers();
     for (const nomeFlyer of flyersSolicitados) {
       const urlFlyer = flyersAtuais[nomeFlyer];
       if (urlFlyer) {
@@ -247,10 +200,12 @@ async function processarBufferDoCliente(telefoneCliente) {
       }
     }
 
+    // Alertar admin se necessário
     if (precisaAlertar) {
       await zapi.alertarDono(telefoneCliente, textoFinal);
     }
 
+    // Registrar relatório
     await registrarAtendimento(textoFinal.substring(0, 50));
     if (textoLimpo.toLowerCase().includes('lista')) await registrarPedido('lista');
     if (textoLimpo.toLowerCase().includes('camarote')) await registrarPedido('camarote');
