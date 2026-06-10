@@ -15,7 +15,8 @@ const {
   salvarStatusGia,
   lerStatusGia,
   salvarCalendario,
-  lerCalendario
+  deletarCalendario,
+  lerCalendarioCompleto
 } = require('./firebase');
 
 // Configurar Cloudinary
@@ -94,9 +95,7 @@ router.post('/flyer/:tipo', verificarToken, upload.single('imagem'), async (req,
 router.delete('/flyer/:tipo', verificarToken, async (req, res) => {
   try {
     const { tipo } = req.params;
-    // Remove do Cloudinary
     await cloudinary.uploader.destroy(`leclub-flyers/${tipo}`);
-    // Remove do Firebase
     await deletarFlyer(tipo);
     res.json({ ok: true });
   } catch (erro) {
@@ -137,14 +136,25 @@ router.get('/relatorio', verificarToken, async (req, res) => {
 
 // ── CALENDÁRIO ─────────────────────────────────────────
 router.get('/calendario', verificarToken, async (req, res) => {
-  const calendario = await lerCalendario();
-  res.json({ calendario });
+  const eventos = await lerCalendarioCompleto();
+  res.json({ eventos });
 });
 
 router.post('/calendario', verificarToken, async (req, res) => {
   const { dia, descricao } = req.body;
   const ok = await salvarCalendario(dia, descricao);
   res.json({ ok });
+});
+
+router.delete('/calendario/:dia', verificarToken, async (req, res) => {
+  try {
+    const dia = decodeURIComponent(req.params.dia);
+    const ok = await deletarCalendario(dia);
+    res.json({ ok });
+  } catch (erro) {
+    console.error('Erro ao deletar evento:', erro);
+    res.status(500).json({ erro: erro.message });
+  }
 });
 
 module.exports = router;

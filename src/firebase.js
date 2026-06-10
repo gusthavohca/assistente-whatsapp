@@ -322,6 +322,17 @@ async function salvarCalendario(dia, descricao) {
   }
 }
 
+async function deletarCalendario(dia) {
+  try {
+    await db.collection('calendario').doc(dia).delete();
+    console.log(`✅ Evento do dia ${dia} deletado do calendário`);
+    return true;
+  } catch (erro) {
+    console.log('⚠️ Erro ao deletar evento do calendário:', erro.message);
+    return false;
+  }
+}
+
 async function lerCalendario() {
   try {
     const snapshot = await db.collection('calendario').get();
@@ -339,6 +350,26 @@ async function lerCalendario() {
   } catch (erro) {
     console.log('⚠️ Erro ao ler calendário:', erro.message);
     return null;
+  }
+}
+
+async function lerCalendarioCompleto() {
+  try {
+    const snapshot = await db.collection('calendario').get();
+    if (snapshot.empty) return [];
+    const dias = [];
+    snapshot.forEach(doc => {
+      dias.push({ dia: doc.id, descricao: doc.data().descricao });
+    });
+    dias.sort((a, b) => {
+      const [dA, mA] = a.dia.split('/').map(Number);
+      const [dB, mB] = b.dia.split('/').map(Number);
+      return mA !== mB ? mA - mB : dA - dB;
+    });
+    return dias;
+  } catch (erro) {
+    console.log('⚠️ Erro ao ler calendário completo:', erro.message);
+    return [];
   }
 }
 
@@ -365,5 +396,7 @@ module.exports = {
   registrarAtendimento,
   lerRelatorioSemana,
   salvarCalendario,
-  lerCalendario
+  deletarCalendario,
+  lerCalendario,
+  lerCalendarioCompleto
 };
