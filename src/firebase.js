@@ -374,6 +374,46 @@ async function lerCalendarioCompleto() {
 }
 
 // ============================================================================
+// LINKS
+// ============================================================================
+
+async function salvarLink(tipo, url) {
+  try {
+    await db.collection('links').doc(tipo).set({
+      url,
+      atualizadoEm: new Date()
+    });
+    console.log(`✅ Link "${tipo}" salvo no Firebase`);
+    return true;
+  } catch (erro) {
+    console.log('⚠️ Erro ao salvar link:', erro.message);
+    return false;
+  }
+}
+
+async function lerLink(tipo) {
+  try {
+    const doc = await db.collection('links').doc(tipo).get();
+    if (!doc.exists) return null;
+    return doc.data().url || null;
+  } catch (erro) {
+    console.log('⚠️ Erro ao ler link:', erro.message);
+    return null;
+  }
+}
+
+async function deletarLink(tipo) {
+  try {
+    await db.collection('links').doc(tipo).delete();
+    console.log(`✅ Link "${tipo}" deletado do Firebase`);
+    return true;
+  } catch (erro) {
+    console.log('⚠️ Erro ao deletar link:', erro.message);
+    return false;
+  }
+}
+
+// ============================================================================
 // EXPORTAÇÃO
 // ============================================================================
 
@@ -398,5 +438,8 @@ module.exports = {
   salvarCalendario,
   deletarCalendario,
   lerCalendario,
-  lerCalendarioCompleto
+  lerCalendarioCompleto,
+  salvarLink,
+  lerLink,
+  deletarLink
 };

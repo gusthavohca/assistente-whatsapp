@@ -1,25 +1,57 @@
 require('dotenv').config();
 const Anthropic = require('@anthropic-ai/sdk');
 const { montarSystemPrompt } = require('./prompt');
-const { lerHistorico, salvarHistorico, lerFlyer, lerCalendario } = require('./firebase');
+const { lerHistorico, salvarHistorico, lerFlyer, lerCalendario, lerLink } = require('./firebase');
 
 const claude = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
 });
 
-// Detecta se o cliente está perguntando sobre programação do fim de semana atual
+// ============================================================================
+// CONTROLE DE PAUSA POR RESPOSTA MANUAL DO ADMIN
+// ============================================================================
+
+const PAUSA_APOS_MANUAL_MS = 30 * 60 * 1000; // 30 minutos
+const ultimaRespostaManual = {};
+
+function registrarRespostaManual(telefone) {
+  ultimaRespostaManual[telefone] = Date.now();
+  console.log(`⏸️ Pausa de 30min ativada para ${telefone} após resposta manual`);
+}
+
+function estaEmPausaManual(telefone) {
+  const ultima = ultimaRespostaManual[telefone];
+  if (!ultima) return false;
+  const passado = Date.now() - ultima;
+  if (passado < PAUSA_APOS_MANUAL_MS) {
+    const restante = Math.ceil((PAUSA_APOS_MANUAL_MS - passado) / 60000);
+    console.log(`⏸️ GIA em pausa manual para ${telefone}. Restam ~${restante} min`);
+    return true;
+  }
+  delete ultimaRespostaManual[telefone];
+  return false;
+}
+
+// ============================================================================
+// DETECTAR PERGUNTA DE PROGRAMAÇÃO DO FIM DE SEMANA
+// ============================================================================
+
 function detectarPerguntaProgramacao(mensagem) {
   const msg = mensagem.toLowerCase();
 
-  // Palavras que indicam pergunta de VALOR/ENTRADA — não deve enviar flyer de programação
   const termosValor = ['valor', 'preço', 'preco', 'quanto', 'ingresso', 'entrada', 'pagar', 'custa'];
   if (termosValor.some(t => msg.includes(t))) return null;
 
-  // Palavras que indicam pergunta de CALENDÁRIO/DATA FUTURA — não deve enviar flyer
-  const termosCalendario = ['mês', 'mes', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro', 'janeiro', 'fevereiro', 'março', 'marco', 'abril', 'calendário', 'calendario', 'próximo', 'proximo', 'dia '];
+  const termosCalendario = [
+    'calendário', 'calendario',
+    'próximas semanas',
+    'maio', 'junho', 'julho', 'agosto', 'setembro',
+    'outubro', 'novembro', 'dezembro', 'janeiro',
+    'fevereiro', 'março', 'marco', 'abril',
+    'tem show no dia', 'o que tem no dia'
+  ];
   if (termosCalendario.some(t => msg.includes(t))) return null;
 
-  // Palavras que indicam pergunta de PROGRAMAÇÃO do fim de semana
   const termosGerais = ['programação', 'programacao', 'o que vai ter', 'o que tem', 'quem toca', 'quem canta', 'line up', 'lineup', 'atração', 'atracao', 'show'];
   const termosSexta = ['sexta', 'sex', '6ª', 'friday'];
   const termosSabado = ['sábado', 'sabado', 'sab', '7ª', 'saturday'];
@@ -35,23 +67,54 @@ function detectarPerguntaProgramacao(mensagem) {
   return null;
 }
 
-// Detecta se o cliente está perguntando sobre calendário ou datas futuras
+// ============================================================================
+// DETECTAR PERGUNTA DE CALENDÁRIO
+// ============================================================================
+
 function detectarPerguntaCalendario(mensagem) {
   const msg = mensagem.toLowerCase();
 
   const termosCalendario = [
-    'calendário', 'calendario', 'mês', 'mes',
+    'calendário', 'calendario',
+    'próximas semanas',
     'maio', 'junho', 'julho', 'agosto', 'setembro',
     'outubro', 'novembro', 'dezembro', 'janeiro',
     'fevereiro', 'março', 'marco', 'abril',
-    'próximo', 'proximo', 'próximas semanas',
-    'tem show no dia', 'o que tem no dia', 'dia '
+    'tem show no dia', 'o que tem no dia'
   ];
 
   return termosCalendario.some(t => msg.includes(t));
 }
 
+// ============================================================================
+// DETECTAR PERGUNTA DE INGRESSO ANTECIPADO
+// ============================================================================
+
+function detectarPerguntaIngresso(mensagem) {
+  const msg = mensagem.toLowerCase();
+
+  const termosIngresso = [
+    'ingresso', 'antecipado', 'comprar ingresso',
+    'ingresso online', 'sympla', 'link do ingresso',
+    'link para comprar', 'onde compro', 'como compro',
+    'comprar online', 'ingresso antecipado'
+  ];
+
+  return termosIngresso.some(t => msg.includes(t));
+}
+
+// ============================================================================
+// FUNÇÃO PRINCIPAL
+// ============================================================================
+
 async function perguntarParaClaude(telefone, mensagemDoCliente) {
+
+  // Verifica pausa por resposta manual
+  if (estaEmPausaManual(telefone)) {
+    console.log(`🔇 Mensagem ignorada — GIA em pausa manual para ${telefone}`);
+    return null;
+  }
+
   let historico = [];
   try {
     historico = await lerHistorico(telefone) || [];
@@ -76,6 +139,16 @@ async function perguntarParaClaude(telefone, mensagemDoCliente) {
     if (calendarioCompleto) {
       console.log(`📅 Pergunta de calendário detectada`);
       return { tipo: 'texto', mensagem: `Segue a programação do mês:\n\n${calendarioCompleto}` };
+    }
+  }
+
+  // Verifica se é pergunta sobre ingresso antecipado
+  const ehPerguntaIngresso = detectarPerguntaIngresso(mensagemDoCliente);
+  if (ehPerguntaIngresso) {
+    const linkSympla = await lerLink('sympla');
+    if (linkSympla) {
+      console.log(`🎟️ Pergunta de ingresso detectada — enviando link Sympla`);
+      return { tipo: 'texto', mensagem: `Segue o link para comprar o ingresso antecipado:\n\n${linkSympla}` };
     }
   }
 
@@ -110,4 +183,4 @@ async function perguntarParaClaude(telefone, mensagemDoCliente) {
   return { tipo: 'texto', mensagem: textoResposta };
 }
 
-module.exports = { perguntarParaClaude };
+module.exports = { perguntarParaClaude, registrarRespostaManual, estaEmPausaManual };

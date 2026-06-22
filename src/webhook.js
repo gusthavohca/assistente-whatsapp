@@ -56,16 +56,20 @@ async function processarMensagem(dadosDoWebhook) {
       return;
     }
 
-    // Se foi enviada por nós mesmos, ignorar
-    if (enviadaPorNos) {
-      console.log('↩️  Mensagem enviada por nós mesmos, ignorando.');
-      return;
-    }
-
     // Verifica se é admin
     const telefoneAdminLimpo = NUMERO_ADMIN ? NUMERO_ADMIN.replace(/\D/g, '') : '';
     const telefoneClienteLimpo = telefoneCliente.replace(/\D/g, '');
     const ehAdmin = telefoneAdminLimpo && telefoneClienteLimpo.includes(telefoneAdminLimpo.slice(-8));
+
+    // Se foi enviada por nós mesmos (resposta manual do admin)
+    if (enviadaPorNos) {
+      // Se é uma conversa com cliente (não admin falando consigo mesmo)
+      if (!ehAdmin) {
+        claude.registrarRespostaManual(telefoneCliente);
+        console.log(`✍️ Resposta manual enviada para ${telefoneCliente} — GIA pausada por 30min`);
+      }
+      return;
+    }
 
     // Se não é admin, verifica se o GIA está ativo
     if (!ehAdmin) {
@@ -150,6 +154,12 @@ async function processarBufferDoCliente(telefoneCliente) {
     // ── CLIENTE ──
     const resposta = await claude.perguntarParaClaude(telefoneCliente, textoFinal);
 
+    // Se retornou null, GIA está em pausa manual — não responde
+    if (!resposta) {
+      console.log(`🔇 GIA em pausa manual — sem resposta para ${telefoneCliente}`);
+      return;
+    }
+
     console.log(`🤖 Resposta tipo: "${resposta.tipo}"`);
 
     // Se for flyer de programação
@@ -190,7 +200,7 @@ async function processarBufferDoCliente(telefoneCliente) {
       await esperar(1500);
     }
 
-    // Enviar flyers solicitados (todos do Firebase/painel)
+    // Enviar flyers solicitados
     const flyersAtuais = await obterFlyers();
     for (const nomeFlyer of flyersSolicitados) {
       const urlFlyer = flyersAtuais[nomeFlyer];

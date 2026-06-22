@@ -184,7 +184,6 @@
 
     .btn-novo-flyer:hover { background: #e0bc5a; }
 
-    /* ── MODAL ── */
     .modal-overlay {
       position: fixed;
       inset: 0;
@@ -271,7 +270,6 @@
 
     .btn-salvar-modal:hover { background: #e0bc5a; }
 
-    /* ── FLYERS ── */
     .flyers-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -379,7 +377,6 @@
       text-transform: uppercase;
     }
 
-    /* ── CÉREBRO ── */
     textarea {
       width: 100%;
       background: #141414;
@@ -411,7 +408,6 @@
 
     .btn-salvar:hover { background: #e0bc5a; }
 
-    /* ── ADICIONAR INSTRUÇÃO ── */
     .instrucao-box {
       background: #141414;
       border: 1px solid #2a2a2a;
@@ -474,7 +470,6 @@
       letter-spacing: 0.5px;
     }
 
-    /* ── RELATÓRIO ── */
     .relatorio-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
@@ -514,7 +509,6 @@
     .pergunta-item:last-child { border-bottom: none; }
     .pergunta-item .count { color: #c9a84c; font-weight: 700; }
 
-    /* ── CALENDÁRIO ── */
     .calendario-form { display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; }
 
     .calendario-form input {
@@ -590,7 +584,73 @@
 
     .btn-deletar-evento:hover { border-color: #e05a5a; color: #e05a5a; background: rgba(224,90,90,0.1); }
 
-    /* ── TOAST ── */
+    .link-box {
+      background: #141414;
+      border: 1px solid #2a2a2a;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+
+    .link-box h3 {
+      font-size: 14px;
+      font-weight: 700;
+      color: #c9a84c;
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .link-box p {
+      font-size: 12px;
+      color: #555;
+      margin-bottom: 14px;
+    }
+
+    .link-form {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .link-form input {
+      flex: 1;
+      min-width: 260px;
+      background: #1e1e1e;
+      border: 1px solid #2a2a2a;
+      border-radius: 8px;
+      padding: 11px 14px;
+      color: #fff;
+      font-size: 14px;
+      outline: none;
+    }
+
+    .link-form input:focus { border-color: #c9a84c; }
+
+    .btn-remover-link {
+      background: transparent;
+      border: 1px solid #333;
+      color: #999;
+      border-radius: 8px;
+      padding: 11px 18px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+
+    .btn-remover-link:hover { border-color: #e05a5a; color: #e05a5a; }
+
+    .link-atual {
+      margin-top: 10px;
+      font-size: 12px;
+      color: #555;
+      word-break: break-all;
+    }
+
+    .link-atual.ativo { color: #4caf50; }
+
     .toast {
       position: fixed;
       bottom: 24px;
@@ -657,6 +717,7 @@
     <button class="tab ativa" onclick="abrirTab('flyers', this)">🖼️ Flyers</button>
     <button class="tab" onclick="abrirTab('cerebro', this)">🧠 Cérebro</button>
     <button class="tab" onclick="abrirTab('calendario', this)">📅 Calendário</button>
+    <button class="tab" onclick="abrirTab('links', this)">🔗 Links</button>
     <button class="tab" onclick="abrirTab('relatorio', this)">📊 Relatório</button>
   </div>
 
@@ -678,8 +739,6 @@
     <div class="secao" id="secao-cerebro">
       <h2>Cérebro da GIA</h2>
       <p class="desc">Adicione novas instruções rapidamente ou edite o comportamento completo da GIA.</p>
-
-      <!-- Adicionar instrução rápida -->
       <div class="instrucao-box">
         <h3>+ Adicionar Instrução</h3>
         <p>Digite uma nova regra ou comportamento. Ela será adicionada automaticamente ao cérebro.</p>
@@ -688,8 +747,6 @@
           <button class="btn-adicionar-instrucao" onclick="adicionarInstrucao()">Adicionar</button>
         </div>
       </div>
-
-      <!-- Editor completo -->
       <p class="cerebro-editor-titulo">Editor completo</p>
       <textarea id="textarea-cerebro" rows="20" placeholder="Carregando..."></textarea>
       <br/>
@@ -709,6 +766,22 @@
       </div>
       <div id="calendario-lista">
         <div class="loading">Carregando calendário...</div>
+      </div>
+    </div>
+
+    <!-- LINKS -->
+    <div class="secao" id="secao-links">
+      <h2>Links</h2>
+      <p class="desc">Gerencie o link de ingresso antecipado. A GIA enviará automaticamente quando o cliente solicitar.</p>
+      <div class="link-box">
+        <h3>Link Sympla</h3>
+        <p>Cole o link atualizado do evento. Atualize toda semana conforme o evento muda.</p>
+        <div class="link-form">
+          <input type="text" id="input-link-sympla" placeholder="https://www.sympla.com.br/evento/..." />
+          <button class="btn-salvar" style="margin-top:0;" onclick="salvarLinkSympla()">Salvar</button>
+          <button class="btn-remover-link" onclick="removerLinkSympla()">Remover</button>
+        </div>
+        <div class="link-atual" id="link-sympla-atual">Carregando...</div>
       </div>
     </div>
 
@@ -817,6 +890,7 @@
     if (nome === 'relatorio') carregarRelatorio();
     if (nome === 'calendario') carregarCalendario();
     if (nome === 'cerebro') carregarCerebro();
+    if (nome === 'links') carregarLinks();
   }
 
   function carregarTudo() {
@@ -1042,15 +1116,11 @@
     const instrucao = document.getElementById('nova-instrucao').value.trim();
     if (!instrucao) return mostrarToast('Digite uma instrução antes de adicionar.', 'erro');
 
-    // Busca o cérebro atual
     const res = await fetch('/painel/api/cerebro', { headers: { 'Authorization': TOKEN } });
     const data = await res.json();
     const cerebroAtual = data.cerebro || '';
-
-    // Anexa a nova instrução
     const novoCerebro = cerebroAtual + `\n\n[INSTRUÇÃO ADICIONADA]: ${instrucao}`;
 
-    // Salva
     const resSalvar = await fetch('/painel/api/cerebro', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': TOKEN },
@@ -1061,7 +1131,6 @@
     if (dataSalvar.ok) {
       mostrarToast('✅ Instrução adicionada ao cérebro!');
       document.getElementById('nova-instrucao').value = '';
-      // Atualiza o editor completo
       document.getElementById('textarea-cerebro').value = novoCerebro;
     } else {
       mostrarToast('❌ Erro ao adicionar instrução', 'erro');
@@ -1150,6 +1219,55 @@
       carregarCalendario();
     } catch (e) {
       mostrarToast('❌ Erro ao remover evento', 'erro');
+    }
+  }
+
+  // ── LINKS ──
+  async function carregarLinks() {
+    const res = await fetch('/painel/api/link/sympla', { headers: { 'Authorization': TOKEN } });
+    const data = await res.json();
+    const el = document.getElementById('link-sympla-atual');
+    const input = document.getElementById('input-link-sympla');
+    if (data.url) {
+      input.value = data.url;
+      el.textContent = 'Link atual: ' + data.url;
+      el.className = 'link-atual ativo';
+    } else {
+      input.value = '';
+      el.textContent = 'Nenhum link cadastrado.';
+      el.className = 'link-atual';
+    }
+  }
+
+  async function salvarLinkSympla() {
+    const url = document.getElementById('input-link-sympla').value.trim();
+    if (!url) return mostrarToast('Cole o link antes de salvar.', 'erro');
+    const res = await fetch('/painel/api/link/sympla', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': TOKEN },
+      body: JSON.stringify({ url })
+    });
+    const data = await res.json();
+    if (data.ok) {
+      mostrarToast('✅ Link Sympla salvo!');
+      carregarLinks();
+    } else {
+      mostrarToast('❌ Erro ao salvar link', 'erro');
+    }
+  }
+
+  async function removerLinkSympla() {
+    if (!confirm('Remover o link do Sympla?')) return;
+    const res = await fetch('/painel/api/link/sympla', {
+      method: 'DELETE',
+      headers: { 'Authorization': TOKEN }
+    });
+    const data = await res.json();
+    if (data.ok) {
+      mostrarToast('✅ Link removido!');
+      carregarLinks();
+    } else {
+      mostrarToast('❌ Erro ao remover link', 'erro');
     }
   }
 

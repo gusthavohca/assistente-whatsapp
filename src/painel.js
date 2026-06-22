@@ -16,7 +16,10 @@ const {
   lerStatusGia,
   salvarCalendario,
   deletarCalendario,
-  lerCalendarioCompleto
+  lerCalendarioCompleto,
+  salvarLink,
+  lerLink,
+  deletarLink
 } = require('./firebase');
 
 // Configurar Cloudinary
@@ -153,6 +156,42 @@ router.delete('/calendario/:dia', verificarToken, async (req, res) => {
     res.json({ ok });
   } catch (erro) {
     console.error('Erro ao deletar evento:', erro);
+    res.status(500).json({ erro: erro.message });
+  }
+});
+
+// ── LINKS ──────────────────────────────────────────────
+router.get('/link/:tipo', verificarToken, async (req, res) => {
+  try {
+    const { tipo } = req.params;
+    const url = await lerLink(tipo);
+    res.json({ url });
+  } catch (erro) {
+    console.error('Erro ao ler link:', erro);
+    res.status(500).json({ erro: erro.message });
+  }
+});
+
+router.post('/link/:tipo', verificarToken, async (req, res) => {
+  try {
+    const { tipo } = req.params;
+    const { url } = req.body;
+    if (!url) return res.status(400).json({ erro: 'URL não informada' });
+    const ok = await salvarLink(tipo, url);
+    res.json({ ok });
+  } catch (erro) {
+    console.error('Erro ao salvar link:', erro);
+    res.status(500).json({ erro: erro.message });
+  }
+});
+
+router.delete('/link/:tipo', verificarToken, async (req, res) => {
+  try {
+    const { tipo } = req.params;
+    const ok = await deletarLink(tipo);
+    res.json({ ok });
+  } catch (erro) {
+    console.error('Erro ao deletar link:', erro);
     res.status(500).json({ erro: erro.message });
   }
 });
