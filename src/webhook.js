@@ -9,6 +9,19 @@ const { lerCerebroDoGusthavo, lerFlyers, lerStatusGia, registrarPedido, registra
 const NUMERO_ADMIN = process.env.NUMERO_GUSTHAVO_PESSOAL;
 
 // ============================================================================
+// MENSAGENS DE FECHAMENTO POR TIPO DE FLYER
+// ============================================================================
+
+const MENSAGENS_FECHAMENTO = {
+  entrada_sexta:      'O que acha? Posso deixar seu nome na lista ou prefere garantir o ingresso antecipado?',
+  entrada_sabado:     'O que acha? Posso deixar seu nome na lista ou prefere garantir o ingresso antecipado?',
+  camarote_sexta:     'O que acha? Quer que eu reserve uma opção para você?',
+  camarote_sabado:    'O que acha? Quer que eu reserve uma opção para você?',
+  aniversario_sexta:  'O que acha? Vamos comemorar na Le Club?',
+  aniversario_sabado: 'O que acha? Vamos comemorar na Le Club?',
+};
+
+// ============================================================================
 // BUSCAR FLYERS DO FIREBASE (somente painel)
 // ============================================================================
 
@@ -63,7 +76,6 @@ async function processarMensagem(dadosDoWebhook) {
 
     // Se foi enviada por nós mesmos (resposta manual do admin)
     if (enviadaPorNos) {
-      // Se é uma conversa com cliente (não admin falando consigo mesmo)
       if (!ehAdmin) {
         claude.registrarRespostaManual(telefoneCliente);
         console.log(`✍️ Resposta manual enviada para ${telefoneCliente} — GIA pausada por 30min`);
@@ -162,7 +174,7 @@ async function processarBufferDoCliente(telefoneCliente) {
 
     console.log(`🤖 Resposta tipo: "${resposta.tipo}"`);
 
-    // Se for flyer de programação
+    // Se for flyer direto (programação detectada pelo claude.js)
     if (resposta.tipo === 'flyer') {
       await zapi.enviarImagem(telefoneCliente, resposta.url);
       await registrarAtendimento(textoFinal.substring(0, 50));
@@ -200,13 +212,20 @@ async function processarBufferDoCliente(telefoneCliente) {
       await esperar(1500);
     }
 
-    // Enviar flyers solicitados
+    // Enviar flyers solicitados + mensagem de fechamento
     const flyersAtuais = await obterFlyers();
     for (const nomeFlyer of flyersSolicitados) {
       const urlFlyer = flyersAtuais[nomeFlyer];
       if (urlFlyer) {
         await zapi.enviarImagem(telefoneCliente, urlFlyer);
-        await esperar(1000);
+        await esperar(1500);
+
+        // Enviar mensagem de fechamento se houver para este tipo de flyer
+        const mensagemFechamento = MENSAGENS_FECHAMENTO[nomeFlyer];
+        if (mensagemFechamento) {
+          await zapi.enviarTexto(telefoneCliente, mensagemFechamento);
+          await esperar(1000);
+        }
       }
     }
 

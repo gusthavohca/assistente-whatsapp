@@ -6,681 +6,126 @@
   <title>GIA Admin — Le Club</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-
-    body {
-      background: #0a0a0a;
-      color: #f0f0f0;
-      font-family: 'Segoe UI', sans-serif;
-      min-height: 100vh;
-    }
-
-    #tela-login {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-    }
-
-    .login-box {
-      background: #141414;
-      border: 1px solid #2a2a2a;
-      border-radius: 16px;
-      padding: 48px 40px;
-      width: 100%;
-      max-width: 380px;
-      text-align: center;
-    }
-
+    body { background: #0a0a0a; color: #f0f0f0; font-family: 'Segoe UI', sans-serif; min-height: 100vh; }
+    #tela-login { display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+    .login-box { background: #141414; border: 1px solid #2a2a2a; border-radius: 16px; padding: 48px 40px; width: 100%; max-width: 380px; text-align: center; }
     .login-box h1 { font-size: 28px; font-weight: 700; color: #fff; margin-bottom: 4px; }
     .login-box p { color: #666; font-size: 14px; margin-bottom: 32px; }
-
-    .login-box input {
-      width: 100%;
-      background: #1e1e1e;
-      border: 1px solid #2a2a2a;
-      border-radius: 8px;
-      padding: 12px 16px;
-      color: #fff;
-      font-size: 15px;
-      margin-bottom: 12px;
-      outline: none;
-    }
-
+    .login-box input { width: 100%; background: #1e1e1e; border: 1px solid #2a2a2a; border-radius: 8px; padding: 12px 16px; color: #fff; font-size: 15px; margin-bottom: 12px; outline: none; }
     .login-box input:focus { border-color: #c9a84c; }
-
-    .btn-primary {
-      width: 100%;
-      background: #c9a84c;
-      color: #000;
-      border: none;
-      border-radius: 8px;
-      padding: 13px;
-      font-size: 15px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-
+    .btn-primary { width: 100%; background: #c9a84c; color: #000; border: none; border-radius: 8px; padding: 13px; font-size: 15px; font-weight: 700; cursor: pointer; transition: background 0.2s; }
     .btn-primary:hover { background: #e0bc5a; }
     .erro-msg { color: #e05a5a; font-size: 13px; margin-top: 10px; }
-
     #tela-painel { display: none; }
-
-    header {
-      background: #141414;
-      border-bottom: 1px solid #2a2a2a;
-      padding: 16px 32px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
+    header { background: #141414; border-bottom: 1px solid #2a2a2a; padding: 16px 32px; display: flex; align-items: center; justify-content: space-between; }
     header h1 { font-size: 20px; font-weight: 700; color: #c9a84c; }
-
-    .btn-logout {
-      background: transparent;
-      border: 1px solid #333;
-      color: #999;
-      padding: 7px 16px;
-      border-radius: 7px;
-      cursor: pointer;
-      font-size: 13px;
-      transition: all 0.2s;
-    }
-
+    .btn-logout { background: transparent; border: 1px solid #333; color: #999; padding: 7px 16px; border-radius: 7px; cursor: pointer; font-size: 13px; transition: all 0.2s; }
     .btn-logout:hover { border-color: #e05a5a; color: #e05a5a; }
-
-    .status-bar {
-      background: #141414;
-      border-bottom: 1px solid #2a2a2a;
-      padding: 12px 32px;
-      display: flex;
-      align-items: center;
-      gap: 16px;
-    }
-
+    .status-bar { background: #141414; border-bottom: 1px solid #2a2a2a; padding: 12px 32px; display: flex; align-items: center; gap: 16px; }
     .status-label { font-size: 14px; color: #999; }
-
     .toggle { position: relative; width: 48px; height: 26px; }
     .toggle input { display: none; }
-
-    .toggle-slider {
-      position: absolute;
-      inset: 0;
-      background: #333;
-      border-radius: 26px;
-      cursor: pointer;
-      transition: 0.3s;
-    }
-
-    .toggle-slider:before {
-      content: '';
-      position: absolute;
-      width: 20px;
-      height: 20px;
-      background: #fff;
-      border-radius: 50%;
-      left: 3px;
-      top: 3px;
-      transition: 0.3s;
-    }
-
+    .toggle-slider { position: absolute; inset: 0; background: #333; border-radius: 26px; cursor: pointer; transition: 0.3s; }
+    .toggle-slider:before { content: ''; position: absolute; width: 20px; height: 20px; background: #fff; border-radius: 50%; left: 3px; top: 3px; transition: 0.3s; }
     .toggle input:checked + .toggle-slider { background: #4caf50; }
     .toggle input:checked + .toggle-slider:before { transform: translateX(22px); }
-
     .status-text { font-size: 14px; font-weight: 600; }
     .status-text.ativo { color: #4caf50; }
     .status-text.pausado { color: #e05a5a; }
-
-    .tabs {
-      display: flex;
-      gap: 4px;
-      padding: 20px 32px 0;
-      border-bottom: 1px solid #2a2a2a;
-    }
-
-    .tab {
-      padding: 10px 20px;
-      border-radius: 8px 8px 0 0;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      color: #666;
-      background: transparent;
-      border: none;
-      transition: all 0.2s;
-    }
-
+    .tabs { display: flex; gap: 4px; padding: 20px 32px 0; border-bottom: 1px solid #2a2a2a; }
+    .tab { padding: 10px 20px; border-radius: 8px 8px 0 0; font-size: 14px; font-weight: 600; cursor: pointer; color: #666; background: transparent; border: none; transition: all 0.2s; }
     .tab:hover { color: #c9a84c; }
     .tab.ativa { color: #c9a84c; border-bottom: 2px solid #c9a84c; }
-
     .conteudo { padding: 32px; max-width: 960px; }
-
     .secao { display: none; }
     .secao.ativa { display: block; }
-
-    .secao-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 6px;
-    }
-
+    .secao-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
     .secao h2 { font-size: 18px; font-weight: 700; color: #fff; }
     .secao p.desc { font-size: 13px; color: #666; margin-bottom: 24px; }
-
-    .btn-novo-flyer {
-      background: #c9a84c;
-      color: #000;
-      border: none;
-      border-radius: 8px;
-      padding: 9px 18px;
-      font-size: 13px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: background 0.2s;
-      white-space: nowrap;
-    }
-
+    .btn-novo-flyer { background: #c9a84c; color: #000; border: none; border-radius: 8px; padding: 9px 18px; font-size: 13px; font-weight: 700; cursor: pointer; transition: background 0.2s; white-space: nowrap; }
     .btn-novo-flyer:hover { background: #e0bc5a; }
-
-    .modal-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.7);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-    }
-
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center; z-index: 1000; }
     .modal-overlay.aberto { display: flex; }
-
-    .modal {
-      background: #141414;
-      border: 1px solid #2a2a2a;
-      border-radius: 16px;
-      padding: 32px;
-      width: 100%;
-      max-width: 420px;
-    }
-
+    .modal { background: #141414; border: 1px solid #2a2a2a; border-radius: 16px; padding: 32px; width: 100%; max-width: 420px; }
     .modal h3 { font-size: 18px; font-weight: 700; margin-bottom: 20px; color: #fff; }
-
-    .modal input[type="text"] {
-      width: 100%;
-      background: #1e1e1e;
-      border: 1px solid #2a2a2a;
-      border-radius: 8px;
-      padding: 11px 14px;
-      color: #fff;
-      font-size: 14px;
-      outline: none;
-      margin-bottom: 12px;
-    }
-
+    .modal input[type="text"] { width: 100%; background: #1e1e1e; border: 1px solid #2a2a2a; border-radius: 8px; padding: 11px 14px; color: #fff; font-size: 14px; outline: none; margin-bottom: 12px; }
     .modal input[type="text"]:focus { border-color: #c9a84c; }
-
-    .modal-preview {
-      width: 100%;
-      height: 140px;
-      background: #1e1e1e;
-      border: 1px dashed #333;
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #555;
-      font-size: 13px;
-      margin-bottom: 12px;
-      overflow: hidden;
-      cursor: pointer;
-    }
-
+    .modal-preview { width: 100%; height: 140px; background: #1e1e1e; border: 1px dashed #333; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #555; font-size: 13px; margin-bottom: 12px; overflow: hidden; cursor: pointer; }
     .modal-preview img { width: 100%; height: 140px; object-fit: cover; }
-
     .modal-btns { display: flex; gap: 10px; margin-top: 4px; }
-
-    .btn-cancelar {
-      flex: 1;
-      background: transparent;
-      border: 1px solid #333;
-      color: #999;
-      border-radius: 8px;
-      padding: 11px;
-      font-size: 14px;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
+    .btn-cancelar { flex: 1; background: transparent; border: 1px solid #333; color: #999; border-radius: 8px; padding: 11px; font-size: 14px; cursor: pointer; transition: all 0.2s; }
     .btn-cancelar:hover { border-color: #e05a5a; color: #e05a5a; }
-
-    .btn-salvar-modal {
-      flex: 1;
-      background: #c9a84c;
-      color: #000;
-      border: none;
-      border-radius: 8px;
-      padding: 11px;
-      font-size: 14px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-
+    .btn-salvar-modal { flex: 1; background: #c9a84c; color: #000; border: none; border-radius: 8px; padding: 11px; font-size: 14px; font-weight: 700; cursor: pointer; transition: background 0.2s; }
     .btn-salvar-modal:hover { background: #e0bc5a; }
-
-    .flyers-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-      gap: 16px;
-    }
-
-    .flyer-card {
-      background: #141414;
-      border: 1px solid #2a2a2a;
-      border-radius: 12px;
-      overflow: hidden;
-      position: relative;
-    }
-
+    .flyers-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; }
+    .flyer-card { background: #141414; border: 1px solid #2a2a2a; border-radius: 12px; overflow: hidden; position: relative; }
     .flyer-card.customizado { border-color: #c9a84c44; }
-
-    .flyer-preview {
-      width: 100%;
-      height: 140px;
-      background: #1e1e1e;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #444;
-      font-size: 12px;
-    }
-
+    .flyer-preview { width: 100%; height: 140px; background: #1e1e1e; display: flex; align-items: center; justify-content: center; color: #444; font-size: 12px; }
     .flyer-preview img { width: 100%; height: 140px; object-fit: cover; }
-
     .flyer-info { padding: 12px; }
-
-    .flyer-info label {
-      display: block;
-      font-size: 12px;
-      font-weight: 600;
-      color: #c9a84c;
-      margin-bottom: 8px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    .flyer-upload {
-      width: 100%;
-      background: #1e1e1e;
-      border: 1px dashed #333;
-      border-radius: 6px;
-      padding: 7px;
-      color: #999;
-      font-size: 12px;
-      cursor: pointer;
-      text-align: center;
-      transition: all 0.2s;
-    }
-
+    .flyer-info label { display: block; font-size: 12px; font-weight: 600; color: #c9a84c; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .flyer-upload { width: 100%; background: #1e1e1e; border: 1px dashed #333; border-radius: 6px; padding: 7px; color: #999; font-size: 12px; cursor: pointer; text-align: center; transition: all 0.2s; }
     .flyer-upload:hover { border-color: #c9a84c; color: #c9a84c; }
-
-    .btn-enviar-flyer {
-      width: 100%;
-      margin-top: 8px;
-      background: #c9a84c;
-      color: #000;
-      border: none;
-      border-radius: 6px;
-      padding: 8px;
-      font-size: 12px;
-      font-weight: 700;
-      cursor: pointer;
-      display: none;
-      transition: background 0.2s;
-    }
-
+    .btn-enviar-flyer { width: 100%; margin-top: 8px; background: #c9a84c; color: #000; border: none; border-radius: 6px; padding: 8px; font-size: 12px; font-weight: 700; cursor: pointer; display: none; transition: background 0.2s; }
     .btn-enviar-flyer:hover { background: #e0bc5a; }
-
-    .btn-deletar-flyer {
-      position: absolute;
-      top: 8px;
-      right: 8px;
-      background: rgba(0,0,0,0.7);
-      border: 1px solid #e05a5a;
-      color: #e05a5a;
-      border-radius: 6px;
-      width: 28px;
-      height: 28px;
-      font-size: 16px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.2s;
-      line-height: 1;
-    }
-
+    .btn-deletar-flyer { position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.7); border: 1px solid #e05a5a; color: #e05a5a; border-radius: 6px; width: 28px; height: 28px; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; line-height: 1; }
     .btn-deletar-flyer:hover { background: #e05a5a; color: #fff; }
-
-    .badge-custom {
-      position: absolute;
-      top: 8px;
-      left: 8px;
-      background: #c9a84c;
-      color: #000;
-      font-size: 10px;
-      font-weight: 700;
-      padding: 2px 7px;
-      border-radius: 4px;
-      text-transform: uppercase;
-    }
-
-    textarea {
-      width: 100%;
-      background: #141414;
-      border: 1px solid #2a2a2a;
-      border-radius: 10px;
-      padding: 16px;
-      color: #f0f0f0;
-      font-size: 14px;
-      line-height: 1.6;
-      resize: vertical;
-      outline: none;
-      font-family: 'Segoe UI', sans-serif;
-    }
-
+    .badge-custom { position: absolute; top: 8px; left: 8px; background: #c9a84c; color: #000; font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 4px; text-transform: uppercase; }
+    textarea { width: 100%; background: #141414; border: 1px solid #2a2a2a; border-radius: 10px; padding: 16px; color: #f0f0f0; font-size: 14px; line-height: 1.6; resize: vertical; outline: none; font-family: 'Segoe UI', sans-serif; }
     textarea:focus { border-color: #c9a84c; }
-
-    .btn-salvar {
-      margin-top: 12px;
-      background: #c9a84c;
-      color: #000;
-      border: none;
-      border-radius: 8px;
-      padding: 12px 28px;
-      font-size: 14px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-
+    .btn-salvar { margin-top: 12px; background: #c9a84c; color: #000; border: none; border-radius: 8px; padding: 12px 28px; font-size: 14px; font-weight: 700; cursor: pointer; transition: background 0.2s; }
     .btn-salvar:hover { background: #e0bc5a; }
-
-    .instrucao-box {
-      background: #141414;
-      border: 1px solid #2a2a2a;
-      border-radius: 12px;
-      padding: 20px;
-      margin-bottom: 24px;
-    }
-
-    .instrucao-box h3 {
-      font-size: 14px;
-      font-weight: 700;
-      color: #c9a84c;
-      margin-bottom: 4px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    .instrucao-box p {
-      font-size: 12px;
-      color: #555;
-      margin-bottom: 14px;
-    }
-
-    .instrucao-form {
-      display: flex;
-      gap: 10px;
-      align-items: flex-start;
-    }
-
-    .instrucao-form textarea {
-      flex: 1;
-      min-height: 70px;
-      font-size: 13px;
-      padding: 10px 14px;
-      resize: none;
-      border-radius: 8px;
-    }
-
-    .btn-adicionar-instrucao {
-      background: #c9a84c;
-      color: #000;
-      border: none;
-      border-radius: 8px;
-      padding: 10px 18px;
-      font-size: 13px;
-      font-weight: 700;
-      cursor: pointer;
-      white-space: nowrap;
-      transition: background 0.2s;
-      height: 70px;
-    }
-
+    .instrucao-box { background: #141414; border: 1px solid #2a2a2a; border-radius: 12px; padding: 20px; margin-bottom: 24px; }
+    .instrucao-box h3 { font-size: 14px; font-weight: 700; color: #c9a84c; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .instrucao-box p { font-size: 12px; color: #555; margin-bottom: 14px; }
+    .instrucao-form { display: flex; gap: 10px; align-items: flex-start; }
+    .instrucao-form textarea { flex: 1; min-height: 70px; font-size: 13px; padding: 10px 14px; resize: none; border-radius: 8px; }
+    .btn-adicionar-instrucao { background: #c9a84c; color: #000; border: none; border-radius: 8px; padding: 10px 18px; font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap; transition: background 0.2s; height: 70px; }
     .btn-adicionar-instrucao:hover { background: #e0bc5a; }
-
-    .cerebro-editor-titulo {
-      font-size: 13px;
-      color: #555;
-      margin-bottom: 8px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    .relatorio-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-      gap: 16px;
-      margin-bottom: 28px;
-    }
-
-    .stat-card {
-      background: #141414;
-      border: 1px solid #2a2a2a;
-      border-radius: 12px;
-      padding: 20px;
-      text-align: center;
-    }
-
+    .cerebro-editor-titulo { font-size: 13px; color: #555; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .relatorio-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 16px; margin-bottom: 28px; }
+    .stat-card { background: #141414; border: 1px solid #2a2a2a; border-radius: 12px; padding: 20px; text-align: center; }
     .stat-card .numero { font-size: 36px; font-weight: 700; color: #c9a84c; }
     .stat-card .label { font-size: 12px; color: #666; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
-
-    .perguntas-lista {
-      background: #141414;
-      border: 1px solid #2a2a2a;
-      border-radius: 12px;
-      padding: 20px;
-    }
-
+    .perguntas-lista { background: #141414; border: 1px solid #2a2a2a; border-radius: 12px; padding: 20px; }
     .perguntas-lista h3 { font-size: 14px; font-weight: 600; color: #999; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.5px; }
-
-    .pergunta-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 8px 0;
-      border-bottom: 1px solid #1e1e1e;
-      font-size: 13px;
-    }
-
+    .pergunta-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #1e1e1e; font-size: 13px; }
     .pergunta-item:last-child { border-bottom: none; }
     .pergunta-item .count { color: #c9a84c; font-weight: 700; }
-
     .calendario-form { display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; }
-
-    .calendario-form input {
-      background: #141414;
-      border: 1px solid #2a2a2a;
-      border-radius: 8px;
-      padding: 10px 14px;
-      color: #fff;
-      font-size: 14px;
-      outline: none;
-    }
-
+    .calendario-form input { background: #141414; border: 1px solid #2a2a2a; border-radius: 8px; padding: 10px 14px; color: #fff; font-size: 14px; outline: none; }
     .calendario-form input:focus { border-color: #c9a84c; }
     .calendario-form input:first-child { width: 120px; }
     .calendario-form input:nth-child(2) { flex: 1; min-width: 180px; }
-
-    .mes-bloco {
-      background: #141414;
-      border: 1px solid #2a2a2a;
-      border-radius: 12px;
-      margin-bottom: 16px;
-      overflow: hidden;
-    }
-
-    .mes-header {
-      padding: 12px 20px;
-      background: #1a1a1a;
-      border-bottom: 1px solid #2a2a2a;
-      font-size: 13px;
-      font-weight: 700;
-      color: #c9a84c;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
-
-    .evento-item {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 12px 20px;
-      border-bottom: 1px solid #1e1e1e;
-      font-size: 14px;
-      color: #ccc;
-    }
-
+    .mes-bloco { background: #141414; border: 1px solid #2a2a2a; border-radius: 12px; margin-bottom: 16px; overflow: hidden; }
+    .mes-header { padding: 12px 20px; background: #1a1a1a; border-bottom: 1px solid #2a2a2a; font-size: 13px; font-weight: 700; color: #c9a84c; text-transform: uppercase; letter-spacing: 1px; }
+    .evento-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 20px; border-bottom: 1px solid #1e1e1e; font-size: 14px; color: #ccc; }
     .evento-item:last-child { border-bottom: none; }
-
-    .evento-dia {
-      color: #c9a84c;
-      font-weight: 700;
-      margin-right: 12px;
-      min-width: 40px;
-    }
-
+    .evento-dia { color: #c9a84c; font-weight: 700; margin-right: 12px; min-width: 40px; }
     .evento-desc { flex: 1; }
-
-    .btn-deletar-evento {
-      background: transparent;
-      border: 1px solid #333;
-      color: #666;
-      border-radius: 6px;
-      width: 26px;
-      height: 26px;
-      font-size: 14px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.2s;
-      flex-shrink: 0;
-      margin-left: 12px;
-    }
-
+    .btn-deletar-evento { background: transparent; border: 1px solid #333; color: #666; border-radius: 6px; width: 26px; height: 26px; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0; margin-left: 12px; }
     .btn-deletar-evento:hover { border-color: #e05a5a; color: #e05a5a; background: rgba(224,90,90,0.1); }
-
-    .link-box {
-      background: #141414;
-      border: 1px solid #2a2a2a;
-      border-radius: 12px;
-      padding: 20px;
-      margin-bottom: 16px;
-    }
-
-    .link-box h3 {
-      font-size: 14px;
-      font-weight: 700;
-      color: #c9a84c;
-      margin-bottom: 4px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    .link-box p {
-      font-size: 12px;
-      color: #555;
-      margin-bottom: 14px;
-    }
-
-    .link-form {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-      flex-wrap: wrap;
-    }
-
-    .link-form input {
-      flex: 1;
-      min-width: 260px;
-      background: #1e1e1e;
-      border: 1px solid #2a2a2a;
-      border-radius: 8px;
-      padding: 11px 14px;
-      color: #fff;
-      font-size: 14px;
-      outline: none;
-    }
-
-    .link-form input:focus { border-color: #c9a84c; }
-
-    .btn-remover-link {
-      background: transparent;
-      border: 1px solid #333;
-      color: #999;
-      border-radius: 8px;
-      padding: 11px 18px;
-      font-size: 14px;
-      cursor: pointer;
-      transition: all 0.2s;
-      white-space: nowrap;
-    }
-
-    .btn-remover-link:hover { border-color: #e05a5a; color: #e05a5a; }
-
-    .link-atual {
-      margin-top: 10px;
-      font-size: 12px;
-      color: #555;
-      word-break: break-all;
-    }
-
-    .link-atual.ativo { color: #4caf50; }
-
-    .toast {
-      position: fixed;
-      bottom: 24px;
-      right: 24px;
-      background: #1e1e1e;
-      border: 1px solid #2a2a2a;
-      border-radius: 10px;
-      padding: 14px 20px;
-      font-size: 14px;
-      color: #fff;
-      display: none;
-      z-index: 9999;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.5);
-    }
-
+    .link-evento-form { background: #141414; border: 1px solid #2a2a2a; border-radius: 12px; padding: 20px; margin-bottom: 24px; }
+    .link-evento-form h3 { font-size: 14px; font-weight: 700; color: #c9a84c; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .link-evento-form p { font-size: 12px; color: #555; margin-bottom: 14px; }
+    .link-evento-inputs { display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-start; }
+    .link-evento-inputs input { background: #1e1e1e; border: 1px solid #2a2a2a; border-radius: 8px; padding: 11px 14px; color: #fff; font-size: 14px; outline: none; }
+    .link-evento-inputs input:focus { border-color: #c9a84c; }
+    .input-data { width: 100px; }
+    .input-atracao { flex: 1; min-width: 160px; }
+    .input-url { flex: 2; min-width: 220px; }
+    .link-card { background: #141414; border: 1px solid #2a2a2a; border-radius: 10px; padding: 16px 20px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .link-card-info { flex: 1; }
+    .link-card-data { font-size: 13px; font-weight: 700; color: #c9a84c; margin-bottom: 2px; }
+    .link-card-atracao { font-size: 14px; color: #fff; margin-bottom: 4px; }
+    .link-card-url { font-size: 12px; color: #555; word-break: break-all; }
+    .btn-deletar-link { background: transparent; border: 1px solid #333; color: #666; border-radius: 6px; width: 26px; height: 26px; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0; }
+    .btn-deletar-link:hover { border-color: #e05a5a; color: #e05a5a; background: rgba(224,90,90,0.1); }
+    .toast { position: fixed; bottom: 24px; right: 24px; background: #1e1e1e; border: 1px solid #2a2a2a; border-radius: 10px; padding: 14px 20px; font-size: 14px; color: #fff; display: none; z-index: 9999; box-shadow: 0 8px 32px rgba(0,0,0,0.5); }
     .toast.ok { border-left: 3px solid #4caf50; }
     .toast.erro { border-left: 3px solid #e05a5a; }
-
     .loading { color: #666; font-size: 14px; padding: 20px 0; }
-
-    .divisor-flyers {
-      grid-column: 1 / -1;
-      border-top: 1px solid #2a2a2a;
-      padding-top: 16px;
-      margin-top: 8px;
-      font-size: 12px;
-      color: #555;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
+    .divisor-flyers { grid-column: 1 / -1; border-top: 1px solid #2a2a2a; padding-top: 16px; margin-top: 8px; font-size: 12px; color: #555; text-transform: uppercase; letter-spacing: 1px; }
   </style>
 </head>
 <body>
@@ -698,7 +143,6 @@
 
 <!-- PAINEL -->
 <div id="tela-painel">
-
   <header>
     <h1>GIA Admin — Le Club</h1>
     <button class="btn-logout" onclick="fazerLogout()">Sair</button>
@@ -755,9 +199,7 @@
 
     <!-- CALENDÁRIO -->
     <div class="secao" id="secao-calendario">
-      <div class="secao-header">
-        <h2>Calendário</h2>
-      </div>
+      <div class="secao-header"><h2>Calendário</h2></div>
       <p class="desc">Adicione eventos por data. A GIA usará essas informações para responder sobre a programação.</p>
       <div class="calendario-form">
         <input type="text" id="cal-dia" placeholder="DD/MM" maxlength="5" />
@@ -771,17 +213,20 @@
 
     <!-- LINKS -->
     <div class="secao" id="secao-links">
-      <h2>Links</h2>
-      <p class="desc">Gerencie o link de ingresso antecipado. A GIA enviará automaticamente quando o cliente solicitar.</p>
-      <div class="link-box">
-        <h3>Link Sympla</h3>
-        <p>Cole o link atualizado do evento. Atualize toda semana conforme o evento muda.</p>
-        <div class="link-form">
-          <input type="text" id="input-link-sympla" placeholder="https://www.sympla.com.br/evento/..." />
-          <button class="btn-salvar" style="margin-top:0;" onclick="salvarLinkSympla()">Salvar</button>
-          <button class="btn-remover-link" onclick="removerLinkSympla()">Remover</button>
+      <h2>Links de Ingresso</h2>
+      <p class="desc">Cadastre os links do Sympla por evento. A GIA enviará todos quando o cliente pedir ingresso antecipado.</p>
+      <div class="link-evento-form">
+        <h3>+ Adicionar Link</h3>
+        <p>Preencha a data, a atração e o link do Sympla para o evento.</p>
+        <div class="link-evento-inputs">
+          <input type="text" class="input-data" id="link-data" placeholder="DD/MM" maxlength="5" />
+          <input type="text" class="input-atracao" id="link-atracao" placeholder="Ex: DJ Malifoo" />
+          <input type="text" class="input-url" id="link-url" placeholder="https://www.sympla.com.br/..." />
+          <button class="btn-salvar" style="margin-top:0;" onclick="adicionarLink()">Adicionar</button>
         </div>
-        <div class="link-atual" id="link-sympla-atual">Carregando...</div>
+      </div>
+      <div id="links-lista">
+        <div class="loading">Carregando links...</div>
       </div>
     </div>
 
@@ -822,26 +267,9 @@
 <script>
   const API = '';
   let TOKEN = localStorage.getItem('gia_token') || '';
-
   const MESES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
-
-  const FLYERS_FIXOS = [
-    'programacao_sexta', 'programacao_sabado',
-    'entrada_sexta', 'entrada_sabado',
-    'camarote_sexta', 'camarote_sabado',
-    'aniversario_sexta', 'aniversario_sabado'
-  ];
-
-  const FLYERS_LABELS = {
-    programacao_sexta:  'Programação Sexta',
-    programacao_sabado: 'Programação Sábado',
-    entrada_sexta:      'Entrada Sexta',
-    entrada_sabado:     'Entrada Sábado',
-    camarote_sexta:     'Camarote Sexta',
-    camarote_sabado:    'Camarote Sábado',
-    aniversario_sexta:  'Aniversário Sexta',
-    aniversario_sabado: 'Aniversário Sábado',
-  };
+  const FLYERS_FIXOS = ['programacao_sexta','programacao_sabado','entrada_sexta','entrada_sabado','camarote_sexta','camarote_sabado','aniversario_sexta','aniversario_sabado'];
+  const FLYERS_LABELS = { programacao_sexta:'Programação Sexta', programacao_sabado:'Programação Sábado', entrada_sexta:'Entrada Sexta', entrada_sabado:'Entrada Sábado', camarote_sexta:'Camarote Sexta', camarote_sabado:'Camarote Sábado', aniversario_sexta:'Aniversário Sexta', aniversario_sabado:'Aniversário Sábado' };
 
   function mostrarToast(msg, tipo = 'ok') {
     const t = document.getElementById('toast');
@@ -854,11 +282,7 @@
   async function fazerLogin() {
     const senha = document.getElementById('input-senha').value;
     try {
-      const res = await fetch('/painel/api/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ senha })
-      });
+      const res = await fetch('/painel/api/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ senha }) });
       const data = await res.json();
       if (!res.ok) throw new Error(data.erro);
       TOKEN = data.token;
@@ -893,10 +317,7 @@
     if (nome === 'links') carregarLinks();
   }
 
-  function carregarTudo() {
-    carregarStatus();
-    carregarFlyers();
-  }
+  function carregarTudo() { carregarStatus(); carregarFlyers(); }
 
   async function carregarStatus() {
     const res = await fetch('/painel/api/status', { headers: { 'Authorization': TOKEN } });
@@ -911,37 +332,28 @@
   async function alternarGia() {
     const ativo = document.getElementById('toggle-gia').checked;
     const texto = document.getElementById('status-text');
-    await fetch('/painel/api/status', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': TOKEN },
-      body: JSON.stringify({ ativo })
-    });
+    await fetch('/painel/api/status', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': TOKEN }, body: JSON.stringify({ ativo }) });
     texto.textContent = ativo ? 'Ativa' : 'Pausada';
     texto.className = 'status-text ' + (ativo ? 'ativo' : 'pausado');
     mostrarToast(ativo ? '✅ GIA ativada' : '⏸️ GIA pausada');
   }
 
-  // ── FLYERS ──
   async function carregarFlyers() {
     const res = await fetch('/painel/api/flyers', { headers: { 'Authorization': TOKEN } });
     const flyers = await res.json();
     const grid = document.getElementById('flyers-grid');
     grid.innerHTML = '';
-
     FLYERS_FIXOS.forEach(tipo => {
       const url = flyers[tipo] || '';
       grid.appendChild(criarCardFlyer(tipo, FLYERS_LABELS[tipo] || tipo, url, false));
     });
-
     const customizados = Object.keys(flyers).filter(k => !FLYERS_FIXOS.includes(k));
     if (customizados.length > 0) {
       const div = document.createElement('div');
       div.className = 'divisor-flyers';
       div.textContent = 'Flyers Personalizados';
       grid.appendChild(div);
-      customizados.forEach(tipo => {
-        grid.appendChild(criarCardFlyer(tipo, tipo.replace(/_/g, ' '), flyers[tipo], true));
-      });
+      customizados.forEach(tipo => { grid.appendChild(criarCardFlyer(tipo, tipo.replace(/_/g, ' '), flyers[tipo], true)); });
     }
   }
 
@@ -949,21 +361,16 @@
     const card = document.createElement('div');
     card.className = 'flyer-card' + (customizado ? ' customizado' : '');
     card.id = 'card-' + tipo;
-
     card.innerHTML = `
       ${customizado ? '<span class="badge-custom">Custom</span>' : ''}
       ${customizado ? `<button class="btn-deletar-flyer" onclick="deletarFlyer('${tipo}')" title="Remover flyer">×</button>` : ''}
-      <div class="flyer-preview" id="preview-${tipo}">
-        ${url ? `<img src="${url}" alt="${label}" />` : 'Sem imagem'}
-      </div>
+      <div class="flyer-preview" id="preview-${tipo}">${url ? `<img src="${url}" alt="${label}" />` : 'Sem imagem'}</div>
       <div class="flyer-info">
         <label>${label}</label>
         <div class="flyer-upload" id="upload-label-${tipo}">📎 Escolher imagem</div>
         <input type="file" id="file-${tipo}" accept="image/*" style="display:none" />
         <button class="btn-enviar-flyer" id="btn-${tipo}" onclick="enviarFlyer('${tipo}')">⬆️ Enviar</button>
-      </div>
-    `;
-
+      </div>`;
     setTimeout(() => {
       const uploadLabel = document.getElementById('upload-label-' + tipo);
       const fileInput = document.getElementById('file-' + tipo);
@@ -972,7 +379,6 @@
         fileInput.addEventListener('change', () => selecionouImagem(tipo));
       }
     }, 0);
-
     return card;
   }
 
@@ -983,9 +389,7 @@
     btn.style.display = 'block';
     btn.textContent = `⬆️ Enviar: ${file.name}`;
     const reader = new FileReader();
-    reader.onload = e => {
-      document.getElementById('preview-' + tipo).innerHTML = `<img src="${e.target.result}" />`;
-    };
+    reader.onload = e => { document.getElementById('preview-' + tipo).innerHTML = `<img src="${e.target.result}" />`; };
     reader.readAsDataURL(file);
   }
 
@@ -994,19 +398,12 @@
     const btn = document.getElementById('btn-' + tipo);
     const file = fileInput.files[0];
     if (!file) return;
-
     btn.textContent = '⏳ Enviando...';
     btn.disabled = true;
-
     const formData = new FormData();
     formData.append('imagem', file);
-
     try {
-      const res = await fetch(`/painel/api/flyer/${tipo}`, {
-        method: 'POST',
-        headers: { 'Authorization': TOKEN },
-        body: formData
-      });
+      const res = await fetch(`/painel/api/flyer/${tipo}`, { method: 'POST', headers: { 'Authorization': TOKEN }, body: formData });
       const data = await res.json();
       if (!res.ok) throw new Error(data.erro);
       mostrarToast(`✅ Flyer "${tipo.replace(/_/g,' ')}" atualizado!`);
@@ -1022,76 +419,51 @@
   async function deletarFlyer(tipo) {
     if (!confirm(`Remover o flyer "${tipo.replace(/_/g,' ')}"?`)) return;
     try {
-      const res = await fetch(`/painel/api/flyer/${tipo}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': TOKEN }
-      });
+      const res = await fetch(`/painel/api/flyer/${tipo}`, { method: 'DELETE', headers: { 'Authorization': TOKEN } });
       const data = await res.json();
       if (!res.ok) throw new Error(data.erro);
       mostrarToast('✅ Flyer removido!');
       carregarFlyers();
-    } catch (e) {
-      mostrarToast('❌ Erro ao remover flyer', 'erro');
-    }
+    } catch (e) { mostrarToast('❌ Erro ao remover flyer', 'erro'); }
   }
 
-  // ── MODAL NOVO FLYER ──
   function abrirModalNovoFlyer() {
     document.getElementById('modal-nome').value = '';
     document.getElementById('modal-preview').innerHTML = '📎 Clique para escolher a imagem';
     document.getElementById('modal-file').value = '';
     document.getElementById('modal-novo-flyer').classList.add('aberto');
-
     document.getElementById('modal-file').onchange = function() {
       const file = this.files[0];
       if (!file) return;
       const reader = new FileReader();
-      reader.onload = e => {
-        document.getElementById('modal-preview').innerHTML = `<img src="${e.target.result}" />`;
-      };
+      reader.onload = e => { document.getElementById('modal-preview').innerHTML = `<img src="${e.target.result}" />`; };
       reader.readAsDataURL(file);
     };
   }
 
-  function fecharModalNovoFlyer() {
-    document.getElementById('modal-novo-flyer').classList.remove('aberto');
-  }
+  function fecharModalNovoFlyer() { document.getElementById('modal-novo-flyer').classList.remove('aberto'); }
 
   async function salvarNovoFlyer() {
-    const nome = document.getElementById('modal-nome').value.trim()
-      .toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
+    const nome = document.getElementById('modal-nome').value.trim().toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
     const file = document.getElementById('modal-file').files[0];
-
     if (!nome) return mostrarToast('Digite um nome para o flyer.', 'erro');
     if (!file) return mostrarToast('Escolha uma imagem.', 'erro');
-
     const btn = document.getElementById('btn-salvar-modal');
     btn.textContent = '⏳ Enviando...';
     btn.disabled = true;
-
     const formData = new FormData();
     formData.append('imagem', file);
-
     try {
-      const res = await fetch(`/painel/api/flyer/${nome}`, {
-        method: 'POST',
-        headers: { 'Authorization': TOKEN },
-        body: formData
-      });
+      const res = await fetch(`/painel/api/flyer/${nome}`, { method: 'POST', headers: { 'Authorization': TOKEN }, body: formData });
       const data = await res.json();
       if (!res.ok) throw new Error(data.erro);
       mostrarToast(`✅ Flyer "${nome.replace(/_/g,' ')}" criado!`);
       fecharModalNovoFlyer();
       carregarFlyers();
-    } catch (e) {
-      mostrarToast('❌ Erro ao criar flyer', 'erro');
-    } finally {
-      btn.textContent = 'Salvar';
-      btn.disabled = false;
-    }
+    } catch (e) { mostrarToast('❌ Erro ao criar flyer', 'erro'); }
+    finally { btn.textContent = 'Salvar'; btn.disabled = false; }
   }
 
-  // ── CÉREBRO ──
   async function carregarCerebro() {
     const textarea = document.getElementById('textarea-cerebro');
     textarea.value = 'Carregando...';
@@ -1102,11 +474,7 @@
 
   async function salvarCerebro() {
     const cerebro = document.getElementById('textarea-cerebro').value;
-    const res = await fetch('/painel/api/cerebro', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': TOKEN },
-      body: JSON.stringify({ cerebro })
-    });
+    const res = await fetch('/painel/api/cerebro', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': TOKEN }, body: JSON.stringify({ cerebro }) });
     const data = await res.json();
     if (data.ok) mostrarToast('✅ Cérebro salvo com sucesso!');
     else mostrarToast('❌ Erro ao salvar', 'erro');
@@ -1115,42 +483,26 @@
   async function adicionarInstrucao() {
     const instrucao = document.getElementById('nova-instrucao').value.trim();
     if (!instrucao) return mostrarToast('Digite uma instrução antes de adicionar.', 'erro');
-
     const res = await fetch('/painel/api/cerebro', { headers: { 'Authorization': TOKEN } });
     const data = await res.json();
     const cerebroAtual = data.cerebro || '';
     const novoCerebro = cerebroAtual + `\n\n[INSTRUÇÃO ADICIONADA]: ${instrucao}`;
-
-    const resSalvar = await fetch('/painel/api/cerebro', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': TOKEN },
-      body: JSON.stringify({ cerebro: novoCerebro })
-    });
+    const resSalvar = await fetch('/painel/api/cerebro', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': TOKEN }, body: JSON.stringify({ cerebro: novoCerebro }) });
     const dataSalvar = await resSalvar.json();
-
     if (dataSalvar.ok) {
       mostrarToast('✅ Instrução adicionada ao cérebro!');
       document.getElementById('nova-instrucao').value = '';
       document.getElementById('textarea-cerebro').value = novoCerebro;
-    } else {
-      mostrarToast('❌ Erro ao adicionar instrução', 'erro');
-    }
+    } else { mostrarToast('❌ Erro ao adicionar instrução', 'erro'); }
   }
 
-  // ── CALENDÁRIO ──
   async function carregarCalendario() {
     const container = document.getElementById('calendario-lista');
     container.innerHTML = '<div class="loading">Carregando calendário...</div>';
-
     const res = await fetch('/painel/api/calendario', { headers: { 'Authorization': TOKEN } });
     const data = await res.json();
     const eventos = data.eventos || [];
-
-    if (eventos.length === 0) {
-      container.innerHTML = '<div class="loading">Nenhum evento cadastrado.</div>';
-      return;
-    }
-
+    if (eventos.length === 0) { container.innerHTML = '<div class="loading">Nenhum evento cadastrado.</div>'; return; }
     const porMes = {};
     eventos.forEach(ev => {
       const partes = ev.dia.split('/');
@@ -1158,29 +510,20 @@
       if (!porMes[mes]) porMes[mes] = [];
       porMes[mes].push(ev);
     });
-
     container.innerHTML = '';
-
     Object.keys(porMes).sort((a, b) => a - b).forEach(mes => {
       const bloco = document.createElement('div');
       bloco.className = 'mes-bloco';
-
       const header = document.createElement('div');
       header.className = 'mes-header';
       header.textContent = MESES[mes];
       bloco.appendChild(header);
-
       porMes[mes].forEach(ev => {
         const item = document.createElement('div');
         item.className = 'evento-item';
-        item.innerHTML = `
-          <span class="evento-dia">${ev.dia.split('/')[0]}</span>
-          <span class="evento-desc">${ev.descricao}</span>
-          <button class="btn-deletar-evento" onclick="deletarEvento('${ev.dia}')" title="Remover evento">×</button>
-        `;
+        item.innerHTML = `<span class="evento-dia">${ev.dia.split('/')[0]}</span><span class="evento-desc">${ev.descricao}</span><button class="btn-deletar-evento" onclick="deletarEvento('${ev.dia}')" title="Remover evento">×</button>`;
         bloco.appendChild(item);
       });
-
       container.appendChild(bloco);
     });
   }
@@ -1189,122 +532,97 @@
     const dia = document.getElementById('cal-dia').value.trim();
     const descricao = document.getElementById('cal-desc').value.trim();
     if (!dia || !descricao) return mostrarToast('Preencha o dia e a descrição.', 'erro');
-
-    const res = await fetch('/painel/api/calendario', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': TOKEN },
-      body: JSON.stringify({ dia, descricao })
-    });
+    const res = await fetch('/painel/api/calendario', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': TOKEN }, body: JSON.stringify({ dia, descricao }) });
     const data = await res.json();
     if (data.ok) {
       mostrarToast('✅ Evento adicionado!');
       document.getElementById('cal-dia').value = '';
       document.getElementById('cal-desc').value = '';
       carregarCalendario();
-    } else {
-      mostrarToast('❌ Erro ao salvar evento', 'erro');
-    }
+    } else { mostrarToast('❌ Erro ao salvar evento', 'erro'); }
   }
 
   async function deletarEvento(dia) {
     if (!confirm(`Remover o evento do dia ${dia}?`)) return;
     try {
-      const res = await fetch(`/painel/api/calendario/${encodeURIComponent(dia)}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': TOKEN }
-      });
+      const res = await fetch(`/painel/api/calendario/${encodeURIComponent(dia)}`, { method: 'DELETE', headers: { 'Authorization': TOKEN } });
       const data = await res.json();
       if (!res.ok) throw new Error(data.erro);
       mostrarToast('✅ Evento removido!');
       carregarCalendario();
-    } catch (e) {
-      mostrarToast('❌ Erro ao remover evento', 'erro');
-    }
+    } catch (e) { mostrarToast('❌ Erro ao remover evento', 'erro'); }
   }
 
-  // ── LINKS ──
   async function carregarLinks() {
-    const res = await fetch('/painel/api/link/sympla', { headers: { 'Authorization': TOKEN } });
+    const container = document.getElementById('links-lista');
+    container.innerHTML = '<div class="loading">Carregando links...</div>';
+    const res = await fetch('/painel/api/links', { headers: { 'Authorization': TOKEN } });
     const data = await res.json();
-    const el = document.getElementById('link-sympla-atual');
-    const input = document.getElementById('input-link-sympla');
-    if (data.url) {
-      input.value = data.url;
-      el.textContent = 'Link atual: ' + data.url;
-      el.className = 'link-atual ativo';
-    } else {
-      input.value = '';
-      el.textContent = 'Nenhum link cadastrado.';
-      el.className = 'link-atual';
-    }
+    const eventos = data.eventos || [];
+    if (eventos.length === 0) { container.innerHTML = '<div class="loading">Nenhum link cadastrado.</div>'; return; }
+    container.innerHTML = '';
+    eventos.forEach(ev => {
+      const card = document.createElement('div');
+      card.className = 'link-card';
+      card.innerHTML = `
+        <div class="link-card-info">
+          <div class="link-card-data">${ev.data}</div>
+          <div class="link-card-atracao">${ev.atracao}</div>
+          <div class="link-card-url">${ev.url}</div>
+        </div>
+        <button class="btn-deletar-link" onclick="deletarLink('${ev.id}')" title="Remover link">×</button>`;
+      container.appendChild(card);
+    });
   }
 
-  async function salvarLinkSympla() {
-    const url = document.getElementById('input-link-sympla').value.trim();
-    if (!url) return mostrarToast('Cole o link antes de salvar.', 'erro');
-    const res = await fetch('/painel/api/link/sympla', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': TOKEN },
-      body: JSON.stringify({ url })
-    });
-    const data = await res.json();
-    if (data.ok) {
-      mostrarToast('✅ Link Sympla salvo!');
+  async function adicionarLink() {
+    const data = document.getElementById('link-data').value.trim();
+    const atracao = document.getElementById('link-atracao').value.trim();
+    const url = document.getElementById('link-url').value.trim();
+    if (!data || !atracao || !url) return mostrarToast('Preencha todos os campos.', 'erro');
+    const res = await fetch('/painel/api/links', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': TOKEN }, body: JSON.stringify({ data, atracao, url }) });
+    const resData = await res.json();
+    if (resData.ok) {
+      mostrarToast('✅ Link adicionado!');
+      document.getElementById('link-data').value = '';
+      document.getElementById('link-atracao').value = '';
+      document.getElementById('link-url').value = '';
       carregarLinks();
-    } else {
-      mostrarToast('❌ Erro ao salvar link', 'erro');
-    }
+    } else { mostrarToast('❌ Erro ao salvar link', 'erro'); }
   }
 
-  async function removerLinkSympla() {
-    if (!confirm('Remover o link do Sympla?')) return;
-    const res = await fetch('/painel/api/link/sympla', {
-      method: 'DELETE',
-      headers: { 'Authorization': TOKEN }
-    });
-    const data = await res.json();
-    if (data.ok) {
+  async function deletarLink(id) {
+    if (!confirm('Remover este link?')) return;
+    try {
+      const res = await fetch(`/painel/api/links/${encodeURIComponent(id)}`, { method: 'DELETE', headers: { 'Authorization': TOKEN } });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.erro);
       mostrarToast('✅ Link removido!');
       carregarLinks();
-    } else {
-      mostrarToast('❌ Erro ao remover link', 'erro');
-    }
+    } catch (e) { mostrarToast('❌ Erro ao remover link', 'erro'); }
   }
 
-  // ── RELATÓRIO ──
   async function carregarRelatorio() {
     const grid = document.getElementById('relatorio-grid');
     grid.innerHTML = '<div class="loading">Carregando...</div>';
-
     const res = await fetch('/painel/api/relatorio', { headers: { 'Authorization': TOKEN } });
     const data = await res.json();
-
-    if (!data) {
-      grid.innerHTML = '<div class="loading">Sem dados disponíveis.</div>';
-      return;
-    }
-
+    if (!data) { grid.innerHTML = '<div class="loading">Sem dados disponíveis.</div>'; return; }
     grid.innerHTML = `
       <div class="stat-card"><div class="numero">${data.atendimentos || 0}</div><div class="label">Atendimentos</div></div>
       <div class="stat-card"><div class="numero">${data.lista || 0}</div><div class="label">Pedidos de Lista</div></div>
       <div class="stat-card"><div class="numero">${data.camarote || 0}</div><div class="label">Camarote</div></div>
-      <div class="stat-card"><div class="numero">${data.aniversario || 0}</div><div class="label">Aniversário</div></div>
-    `;
-
+      <div class="stat-card"><div class="numero">${data.aniversario || 0}</div><div class="label">Aniversário</div></div>`;
     const perguntas = data.perguntas || {};
     const entries = Object.entries(perguntas).sort((a, b) => b[1] - a[1]).slice(0, 10);
-
     if (entries.length > 0) {
       const lista = document.getElementById('perguntas-lista');
       const conteudo = document.getElementById('perguntas-conteudo');
       lista.style.display = 'block';
-      conteudo.innerHTML = entries.map(([p, n]) =>
-        `<div class="pergunta-item"><span>${p}</span><span class="count">${n}x</span></div>`
-      ).join('');
+      conteudo.innerHTML = entries.map(([p, n]) => `<div class="pergunta-item"><span>${p}</span><span class="count">${n}x</span></div>`).join('');
     }
   }
 
-  // ── INIT ──
   if (TOKEN) {
     fetch('/painel/api/status', { headers: { 'Authorization': TOKEN } })
       .then(r => { if (r.ok) abrirPainel(); })

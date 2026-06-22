@@ -1,7 +1,7 @@
 require('dotenv').config();
 const Anthropic = require('@anthropic-ai/sdk');
 const { montarSystemPrompt } = require('./prompt');
-const { lerHistorico, salvarHistorico, lerFlyer, lerCalendario, lerLink } = require('./firebase');
+const { lerHistorico, salvarHistorico, lerFlyer, lerCalendario, lerLinksEventos } = require('./firebase');
 
 const claude = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -11,7 +11,7 @@ const claude = new Anthropic({
 // CONTROLE DE PAUSA POR RESPOSTA MANUAL DO ADMIN
 // ============================================================================
 
-const PAUSA_APOS_MANUAL_MS = 30 * 60 * 1000; // 30 minutos
+const PAUSA_APOS_MANUAL_MS = 30 * 60 * 1000;
 const ultimaRespostaManual = {};
 
 function registrarRespostaManual(telefone) {
@@ -104,12 +104,21 @@ function detectarPerguntaIngresso(mensagem) {
 }
 
 // ============================================================================
+// MONTAR TEXTO DOS LINKS DE EVENTOS
+// ============================================================================
+
+function montarTextoLinks(eventos) {
+  if (!eventos || eventos.length === 0) return null;
+  const linhas = eventos.map(ev => `${ev.data} — ${ev.atracao}\n${ev.url}`);
+  return `Segue o link para comprar o ingresso antecipado:\n\n${linhas.join('\n\n')}`;
+}
+
+// ============================================================================
 // FUNÇÃO PRINCIPAL
 // ============================================================================
 
 async function perguntarParaClaude(telefone, mensagemDoCliente) {
 
-  // Verifica pausa por resposta manual
   if (estaEmPausaManual(telefone)) {
     console.log(`🔇 Mensagem ignorada — GIA em pausa manual para ${telefone}`);
     return null;
@@ -145,10 +154,11 @@ async function perguntarParaClaude(telefone, mensagemDoCliente) {
   // Verifica se é pergunta sobre ingresso antecipado
   const ehPerguntaIngresso = detectarPerguntaIngresso(mensagemDoCliente);
   if (ehPerguntaIngresso) {
-    const linkSympla = await lerLink('sympla');
-    if (linkSympla) {
-      console.log(`🎟️ Pergunta de ingresso detectada — enviando link Sympla`);
-      return { tipo: 'texto', mensagem: `Segue o link para comprar o ingresso antecipado:\n\n${linkSympla}` };
+    const eventos = await lerLinksEventos();
+    const textoLinks = montarTextoLinks(eventos);
+    if (textoLinks) {
+      console.log(`🎟️ Pergunta de ingresso detectada — enviando links dos eventos`);
+      return { tipo: 'texto', mensagem: textoLinks };
     }
   }
 

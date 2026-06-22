@@ -374,42 +374,53 @@ async function lerCalendarioCompleto() {
 }
 
 // ============================================================================
-// LINKS
+// LINKS (Data + Atração + URL Sympla)
 // ============================================================================
 
-async function salvarLink(tipo, url) {
+async function salvarLinkEvento(id, data, atracao, url) {
   try {
-    await db.collection('links').doc(tipo).set({
+    await db.collection('links_eventos').doc(id).set({
+      data,
+      atracao,
       url,
       atualizadoEm: new Date()
     });
-    console.log(`✅ Link "${tipo}" salvo no Firebase`);
+    console.log(`✅ Link evento "${id}" salvo no Firebase`);
     return true;
   } catch (erro) {
-    console.log('⚠️ Erro ao salvar link:', erro.message);
+    console.log('⚠️ Erro ao salvar link evento:', erro.message);
     return false;
   }
 }
 
-async function lerLink(tipo) {
+async function deletarLinkEvento(id) {
   try {
-    const doc = await db.collection('links').doc(tipo).get();
-    if (!doc.exists) return null;
-    return doc.data().url || null;
+    await db.collection('links_eventos').doc(id).delete();
+    console.log(`✅ Link evento "${id}" deletado do Firebase`);
+    return true;
   } catch (erro) {
-    console.log('⚠️ Erro ao ler link:', erro.message);
-    return null;
+    console.log('⚠️ Erro ao deletar link evento:', erro.message);
+    return false;
   }
 }
 
-async function deletarLink(tipo) {
+async function lerLinksEventos() {
   try {
-    await db.collection('links').doc(tipo).delete();
-    console.log(`✅ Link "${tipo}" deletado do Firebase`);
-    return true;
+    const snapshot = await db.collection('links_eventos').get();
+    if (snapshot.empty) return [];
+    const eventos = [];
+    snapshot.forEach(doc => {
+      eventos.push({ id: doc.id, ...doc.data() });
+    });
+    eventos.sort((a, b) => {
+      const [dA, mA] = a.data.split('/').map(Number);
+      const [dB, mB] = b.data.split('/').map(Number);
+      return mA !== mB ? mA - mB : dA - dB;
+    });
+    return eventos;
   } catch (erro) {
-    console.log('⚠️ Erro ao deletar link:', erro.message);
-    return false;
+    console.log('⚠️ Erro ao ler links eventos:', erro.message);
+    return [];
   }
 }
 
@@ -439,7 +450,7 @@ module.exports = {
   deletarCalendario,
   lerCalendario,
   lerCalendarioCompleto,
-  salvarLink,
-  lerLink,
-  deletarLink
+  salvarLinkEvento,
+  deletarLinkEvento,
+  lerLinksEventos,
 };

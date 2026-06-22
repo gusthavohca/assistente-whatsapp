@@ -17,22 +17,18 @@ const {
   salvarCalendario,
   deletarCalendario,
   lerCalendarioCompleto,
-  salvarLink,
-  lerLink,
-  deletarLink
+  salvarLinkEvento,
+  deletarLinkEvento,
+  lerLinksEventos,
 } = require('./firebase');
 
-// Configurar Cloudinary
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-// Multer - armazena imagem em memória
 const upload = multer({ storage: multer.memoryStorage() });
-
-// Tokens de login ativos
 const tokensAtivos = new Set();
 
 function gerarToken() {
@@ -160,24 +156,25 @@ router.delete('/calendario/:dia', verificarToken, async (req, res) => {
   }
 });
 
-// ── LINKS ──────────────────────────────────────────────
-router.get('/link/:tipo', verificarToken, async (req, res) => {
+// ── LINKS DE EVENTOS ───────────────────────────────────
+router.get('/links', verificarToken, async (req, res) => {
   try {
-    const { tipo } = req.params;
-    const url = await lerLink(tipo);
-    res.json({ url });
+    const eventos = await lerLinksEventos();
+    res.json({ eventos });
   } catch (erro) {
-    console.error('Erro ao ler link:', erro);
+    console.error('Erro ao ler links:', erro);
     res.status(500).json({ erro: erro.message });
   }
 });
 
-router.post('/link/:tipo', verificarToken, async (req, res) => {
+router.post('/links', verificarToken, async (req, res) => {
   try {
-    const { tipo } = req.params;
-    const { url } = req.body;
-    if (!url) return res.status(400).json({ erro: 'URL não informada' });
-    const ok = await salvarLink(tipo, url);
+    const { data, atracao, url } = req.body;
+    if (!data || !atracao || !url) {
+      return res.status(400).json({ erro: 'Data, atração e URL são obrigatórios' });
+    }
+    const id = `${data.replace(/\//g, '-')}_${Date.now()}`;
+    const ok = await salvarLinkEvento(id, data, atracao, url);
     res.json({ ok });
   } catch (erro) {
     console.error('Erro ao salvar link:', erro);
@@ -185,10 +182,10 @@ router.post('/link/:tipo', verificarToken, async (req, res) => {
   }
 });
 
-router.delete('/link/:tipo', verificarToken, async (req, res) => {
+router.delete('/links/:id', verificarToken, async (req, res) => {
   try {
-    const { tipo } = req.params;
-    const ok = await deletarLink(tipo);
+    const { id } = req.params;
+    const ok = await deletarLinkEvento(id);
     res.json({ ok });
   } catch (erro) {
     console.error('Erro ao deletar link:', erro);
