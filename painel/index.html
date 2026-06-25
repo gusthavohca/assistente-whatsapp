@@ -313,9 +313,9 @@
     <h3>+ Novo Flyer</h3>
     <input type="text" id="modal-nome" placeholder="Nome do comando (ex: quinta_especial)" />
     <div class="modal-preview" id="modal-preview" onclick="document.getElementById('modal-file').click()">
-      📎 Clique para escolher a imagem
+      📎 Clique para escolher a imagem ou vídeo
     </div>
-    <input type="file" id="modal-file" accept="image/*" style="display:none" />
+    <input type="file" id="modal-file" accept="image/*,video/*" style="display:none" />
     <div class="modal-btns">
       <button class="btn-cancelar" onclick="fecharModalNovoFlyer()">Cancelar</button>
       <button class="btn-salvar-modal" id="btn-salvar-modal" onclick="salvarNovoFlyer()">Salvar</button>
