@@ -7,6 +7,7 @@ const path = require('path');
 const webhook = require('./src/webhook');
 const painel = require('./src/painel');
 const { iniciarAgendamento } = require('./src/relatorio');
+const { iniciarDisparos } = require('./src/disparos');
 
 const app = express();
 const PORTA = process.env.PORT || 3000;
@@ -51,4 +52,5 @@ app.listen(PORTA, () => {
   console.log('');
 
   iniciarAgendamento();
+  iniciarDisparos();
 });

@@ -3,7 +3,7 @@
 // ============================================================================
 
 const express = require('express');
-const multer = require('multer');
+const multer  = require('multer');
 const cloudinary = require('cloudinary').v2;
 const {
   lerCerebroDoGusthavo,
@@ -20,15 +20,29 @@ const {
   salvarLinkEvento,
   deletarLinkEvento,
   lerLinksEventos,
+  lerDisparos,
+  salvarDisparos,
 } = require('./firebase');
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
+  api_key:    process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-const upload = multer({ storage: multer.memoryStorage() });
+// Aceita imagens E vídeos
+const upload = multer({
+  storage: multer.memoryStorage(),
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype.startsWith('image/') || file.mimetype.startsWith('video/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Formato não suportado. Use imagem ou vídeo.'));
+    }
+  },
+  limits: { fileSize: 100 * 1024 * 1024 }, // 100MB para vídeos
+});
+
 const tokensAtivos = new Set();
 
 function gerarToken() {
@@ -62,7 +76,10 @@ router.post('/logout', verificarToken, (req, res) => {
   res.json({ ok: true });
 });
 
-// ── FLYERS ─────────────────────────────────────────────
+// ── FLYERS E VÍDEOS ────────────────────────────────────
+// A coleção "flyers" no Firebase armazena tanto imagens quanto vídeos.
+// O tipo de mídia (imagem/vídeo) é detectado pelo mimetype no upload.
+
 router.get('/flyers', verificarToken, async (req, res) => {
   const flyers = await lerFlyers();
   res.json(flyers);
@@ -71,11 +88,14 @@ router.get('/flyers', verificarToken, async (req, res) => {
 router.post('/flyer/:tipo', verificarToken, upload.single('imagem'), async (req, res) => {
   try {
     const { tipo } = req.params;
-    if (!req.file) return res.status(400).json({ erro: 'Nenhuma imagem enviada' });
+    if (!req.file) return res.status(400).json({ erro: 'Nenhum arquivo enviado' });
+
+    const isVideo    = req.file.mimetype.startsWith('video/');
+    const resourceType = isVideo ? 'video' : 'image';
 
     const resultado = await new Promise((resolve, reject) => {
       cloudinary.uploader.upload_stream(
-        { folder: 'leclub-flyers', public_id: tipo, overwrite: true },
+        { folder: 'leclub-flyers', public_id: tipo, overwrite: true, resource_type: resourceType },
         (error, result) => {
           if (error) reject(error);
           else resolve(result);
@@ -84,9 +104,9 @@ router.post('/flyer/:tipo', verificarToken, upload.single('imagem'), async (req,
     });
 
     await salvarFlyer(tipo, resultado.secure_url);
-    res.json({ ok: true, url: resultado.secure_url });
+    res.json({ ok: true, url: resultado.secure_url, isVideo });
   } catch (erro) {
-    console.error('Erro upload flyer:', erro);
+    console.error('Erro upload flyer/vídeo:', erro);
     res.status(500).json({ erro: erro.message });
   }
 });
@@ -94,11 +114,16 @@ router.post('/flyer/:tipo', verificarToken, upload.single('imagem'), async (req,
 router.delete('/flyer/:tipo', verificarToken, async (req, res) => {
   try {
     const { tipo } = req.params;
-    await cloudinary.uploader.destroy(`leclub-flyers/${tipo}`);
+    // Tenta deletar como imagem; se falhar, tenta como vídeo
+    try {
+      await cloudinary.uploader.destroy(`leclub-flyers/${tipo}`);
+    } catch {
+      await cloudinary.uploader.destroy(`leclub-flyers/${tipo}`, { resource_type: 'video' });
+    }
     await deletarFlyer(tipo);
     res.json({ ok: true });
   } catch (erro) {
-    console.error('Erro ao deletar flyer:', erro);
+    console.error('Erro ao deletar flyer/vídeo:', erro);
     res.status(500).json({ erro: erro.message });
   }
 });
@@ -191,6 +216,49 @@ router.delete('/links/:id', verificarToken, async (req, res) => {
     console.error('Erro ao deletar link:', erro);
     res.status(500).json({ erro: erro.message });
   }
+});
+
+// ── DISPAROS ───────────────────────────────────────────
+// Estrutura Firebase esperada:
+// {
+//   ativo: bool,
+//   mencionarTodos: bool,
+//   grupos: ["id1@g.us", "id2@g.us", "id3@g.us"],
+//   dias: {
+//     segunda: { "14": [{tipo,categoria,texto}], "16": [...], "18": [...] },
+//     terca:   { "11": [...], "18": [...] },
+//     quarta:  { "11": [...], "18": [...] },
+//     quinta:  { "11": [...], "18": [...] },
+//     sexta:   { "12": [...], "17": [...], "21": [...] },
+//     sabado:  { "12": [...], "18": [...], "21": [...] },
+//     domingo: {}
+//   }
+// }
+
+const DEFAULT_DISPAROS = {
+  ativo: false,
+  mencionarTodos: true,
+  grupos: [],
+  dias: {
+    segunda: { '14': [], '16': [], '18': [] },
+    terca:   { '11': [], '18': [] },
+    quarta:  { '11': [], '18': [] },
+    quinta:  { '11': [], '18': [] },
+    sexta:   { '12': [], '17': [], '21': [] },
+    sabado:  { '12': [], '18': [], '21': [] },
+    domingo: {},
+  }
+};
+
+router.get('/disparos', verificarToken, async (req, res) => {
+  const config = await lerDisparos();
+  res.json(config || DEFAULT_DISPAROS);
+});
+
+router.post('/disparos', verificarToken, async (req, res) => {
+  const { ativo, mencionarTodos, grupos, dias } = req.body;
+  const ok = await salvarDisparos({ ativo, mencionarTodos, grupos, dias });
+  res.json({ ok });
 });
 
 module.exports = router;

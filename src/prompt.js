@@ -1,5 +1,37 @@
 const { lerFlyers } = require('./firebase');
 
+// ============================================================================
+// DATAS SP
+// ============================================================================
+// Gera a lista das próximas 10 sextas e sábados com datas exatas.
+// Isso evita que a IA tente calcular o dia da semana por conta própria,
+// o que gera erros. Com a lista pronta, ela apenas consulta.
+
+function proximasSextasESabados() {
+  // SP = UTC-3 (Brasil não usa horário de verão desde 2019)
+  const agora = new Date();
+  const agoraSP = new Date(agora.getTime() - 3 * 60 * 60 * 1000);
+
+  const resultado = [];
+  for (let i = 0; i <= 35; i++) {
+    const d = new Date(agoraSP);
+    d.setUTCDate(agoraSP.getUTCDate() + i);
+    const dow = d.getUTCDay(); // 5 = sexta, 6 = sábado
+    if (dow === 5 || dow === 6) {
+      const dia = String(d.getUTCDate()).padStart(2, '0');
+      const mes = String(d.getUTCMonth() + 1).padStart(2, '0');
+      const ano = d.getUTCFullYear();
+      const nomeDia = dow === 5 ? 'SEXTA-FEIRA' : 'SÁBADO';
+      resultado.push(`${dia}/${mes}/${ano} → ${nomeDia}`);
+    }
+  }
+  return resultado.slice(0, 10).join('\n');
+}
+
+// ============================================================================
+// MONTAR SYSTEM PROMPT
+// ============================================================================
+
 async function montarSystemPrompt() {
   const flyers = await lerFlyers();
 
@@ -29,13 +61,30 @@ async function montarSystemPrompt() {
   const temCamaroteSabado = !!flyers['camarote_sabado'];
   const temAniversarioSabado = !!flyers['aniversario_sabado'];
 
+  const listaProximasDatas = proximasSextasESabados();
+
   return `Você é o Gusthavo, promoter oficial da LE CLUB — casa noturna rooftop premium na Av. Brigadeiro Faria Lima, 4509, São Paulo.
 
 DATA E HORA ATUAL (horário de São Paulo): ${dataAtual}, ${horaAtual}
-Use essa data e hora para responder perguntas sobre dias da semana e datas futuras.
-NUNCA erre o dia da semana. Se o cliente disser "dia 29/05", confira na data atual qual dia da semana cai nessa data antes de responder.
 
-SOBRE A LE CLUB:
+════════════════════════════════
+CALENDÁRIO DE ABERTURA — PRÓXIMAS DATAS
+════════════════════════════════
+A Le Club abre APENAS nas datas abaixo. Consulte esta lista SEMPRE que um cliente mencionar uma data específica.
+
+${listaProximasDatas}
+
+REGRAS DE DATA:
+- Quando o cliente mencionar qualquer data (ex: "dia 26/06", "26.06", "dia 28", "sábado que vem"), consulte a lista acima PRIMEIRO.
+- Se a data estiver na lista como SEXTA-FEIRA → é noite de eletrônico.
+- Se a data estiver na lista como SÁBADO → é noite de funk/open format.
+- Se a data NÃO estiver na lista (segunda, terça, quarta, quinta ou domingo) → a Le Club não abre nesse dia. Diga isso claramente.
+- NUNCA diga que uma data é sexta ou sábado sem verificar na lista acima.
+- Datas podem ser escritas como: "26/06", "26.06", "dia 26", "26 de junho". Trate todos os formatos da mesma forma.
+
+════════════════════════════════
+SOBRE A LE CLUB
+════════════════════════════════
 - Abre sexta e sábado
 - SEXTA: música eletrônica
 - SÁBADO: funk e open format

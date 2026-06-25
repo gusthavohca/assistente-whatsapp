@@ -374,6 +374,35 @@ async function lerCalendarioCompleto() {
 }
 
 // ============================================================================
+// DISPAROS
+// ============================================================================
+
+async function lerDisparos() {
+  try {
+    const doc = await db.collection('configuracoes').doc('disparos').get();
+    if (!doc.exists) return null;
+    return doc.data();
+  } catch (erro) {
+    console.log('⚠️ Erro ao ler disparos:', erro.message);
+    return null;
+  }
+}
+
+async function salvarDisparos(dados) {
+  try {
+    await db.collection('configuracoes').doc('disparos').set({
+      ...dados,
+      atualizadoEm: new Date()
+    });
+    console.log('✅ Disparos atualizados no Firebase');
+    return true;
+  } catch (erro) {
+    console.log('⚠️ Erro ao salvar disparos:', erro.message);
+    return false;
+  }
+}
+
+// ============================================================================
 // LINKS (Data + Atração + URL Sympla)
 // ============================================================================
 
@@ -431,6 +460,8 @@ async function lerLinksEventos() {
 module.exports = {
   lerCerebroDoGusthavo,
   salvarCerebroDoGusthavo,
+  lerDisparos,
+  salvarDisparos,
   lerAtracoes,
   salvarAtracao,
   lerHistorico,

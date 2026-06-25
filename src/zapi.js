@@ -1,11 +1,6 @@
 // ============================================================================
 // ZAPI.JS - Comunicação com o WhatsApp via Z-API
 // ============================================================================
-// Este arquivo é responsável por:
-// 1. Enviar mensagens de texto pro cliente
-// 2. Enviar imagens (flyers) pro cliente
-// 3. Enviar alertas pro WhatsApp pessoal do dono (Gusthavo)
-// ============================================================================
 
 require('dotenv').config();
 const axios = require('axios');
@@ -14,18 +9,13 @@ const axios = require('axios');
 // CONFIGURAÇÃO
 // ============================================================================
 
-// Dados de acesso à Z-API (vêm do .env)
-const ZAPI_INSTANCE_ID = process.env.ZAPI_INSTANCE_ID;
-const ZAPI_TOKEN = process.env.ZAPI_TOKEN;
+const ZAPI_INSTANCE_ID  = process.env.ZAPI_INSTANCE_ID;
+const ZAPI_TOKEN        = process.env.ZAPI_TOKEN;
 const ZAPI_CLIENT_TOKEN = process.env.ZAPI_CLIENT_TOKEN;
+const NUMERO_GUSTHAVO   = process.env.NUMERO_GUSTHAVO_PESSOAL;
 
-// Número pessoal do dono pra receber os alertas
-const NUMERO_GUSTHAVO = process.env.NUMERO_GUSTHAVO_PESSOAL;
-
-// URL base da Z-API (todos os comandos partem daqui)
 const URL_BASE = `https://api.z-api.io/instances/${ZAPI_INSTANCE_ID}/token/${ZAPI_TOKEN}`;
 
-// Cabeçalho obrigatório da Z-API (pra autenticar as requisições)
 const HEADERS = {
   'Content-Type': 'application/json',
   'Client-Token': ZAPI_CLIENT_TOKEN,
@@ -34,18 +24,14 @@ const HEADERS = {
 // ============================================================================
 // FUNÇÃO 1: ENVIAR MENSAGEM DE TEXTO
 // ============================================================================
-// Envia uma mensagem de texto simples pro cliente via WhatsApp
+// mencionarTodos = true → usa mentionEveryOne (quebra silêncio em grupos)
 
-async function enviarTexto(telefoneCliente, textoMensagem) {
+async function enviarTexto(telefoneCliente, textoMensagem, mencionarTodos = false) {
   try {
-    await axios.post(
-      `${URL_BASE}/send-text`,
-      {
-        phone: telefoneCliente,
-        message: textoMensagem,
-      },
-      { headers: HEADERS }
-    );
+    const body = { phone: telefoneCliente, message: textoMensagem };
+    if (mencionarTodos) body.mentionEveryOne = true;
+
+    await axios.post(`${URL_BASE}/send-text`, body, { headers: HEADERS });
     console.log(`✅ Texto enviado para ${telefoneCliente}`);
   } catch (erro) {
     console.log(`❌ Erro ao enviar texto para ${telefoneCliente}:`);
@@ -56,20 +42,13 @@ async function enviarTexto(telefoneCliente, textoMensagem) {
 // ============================================================================
 // FUNÇÃO 2: ENVIAR IMAGEM (FLYER)
 // ============================================================================
-// Envia uma imagem hospedada publicamente na internet pro cliente
-// A Z-API precisa de uma URL pública da imagem (não aceita caminho local)
 
-async function enviarImagem(telefoneCliente, urlImagem, legenda = '') {
+async function enviarImagem(telefoneCliente, urlImagem, legenda = '', mencionarTodos = false) {
   try {
-    await axios.post(
-      `${URL_BASE}/send-image`,
-      {
-        phone: telefoneCliente,
-        image: urlImagem,
-        caption: legenda,
-      },
-      { headers: HEADERS }
-    );
+    const body = { phone: telefoneCliente, image: urlImagem, caption: legenda };
+    if (mencionarTodos) body.mentionEveryOne = true;
+
+    await axios.post(`${URL_BASE}/send-image`, body, { headers: HEADERS });
     console.log(`✅ Imagem enviada para ${telefoneCliente}`);
   } catch (erro) {
     console.log(`❌ Erro ao enviar imagem para ${telefoneCliente}:`);
@@ -78,10 +57,25 @@ async function enviarImagem(telefoneCliente, urlImagem, legenda = '') {
 }
 
 // ============================================================================
-// FUNÇÃO 3: ENVIAR ALERTA PRO WHATSAPP PESSOAL DO DONO
+// FUNÇÃO 3: ENVIAR VÍDEO
 // ============================================================================
-// Quando o Gusthavo IA detectar [ALERTAR_GUSTHAVO], essa função dispara
-// um aviso pro teu número pessoal com o contexto do cliente
+
+async function enviarVideo(telefoneCliente, urlVideo, legenda = '', mencionarTodos = false) {
+  try {
+    const body = { phone: telefoneCliente, video: urlVideo, caption: legenda };
+    if (mencionarTodos) body.mentionEveryOne = true;
+
+    await axios.post(`${URL_BASE}/send-video`, body, { headers: HEADERS });
+    console.log(`✅ Vídeo enviado para ${telefoneCliente}`);
+  } catch (erro) {
+    console.log(`❌ Erro ao enviar vídeo para ${telefoneCliente}:`);
+    console.log(erro.response?.data || erro.message);
+  }
+}
+
+// ============================================================================
+// FUNÇÃO 4: ENVIAR ALERTA PRO WHATSAPP PESSOAL DO DONO
+// ============================================================================
 
 async function alertarDono(telefoneCliente, ultimaMensagemDoCliente) {
   const mensagemAlerta =
@@ -94,10 +88,7 @@ async function alertarDono(telefoneCliente, ultimaMensagemDoCliente) {
   try {
     await axios.post(
       `${URL_BASE}/send-text`,
-      {
-        phone: NUMERO_GUSTHAVO,
-        message: mensagemAlerta,
-      },
+      { phone: NUMERO_GUSTHAVO, message: mensagemAlerta },
       { headers: HEADERS }
     );
     console.log(`🔔 Alerta enviado pro Gusthavo sobre ${telefoneCliente}`);
@@ -106,27 +97,23 @@ async function alertarDono(telefoneCliente, ultimaMensagemDoCliente) {
     console.log(erro.response?.data || erro.message);
   }
 }
+
 // ============================================================================
-// FUNÇÃO 4: MOSTRAR "DIGITANDO..." PRO CLIENTE
+// FUNÇÃO 5: MOSTRAR "DIGITANDO..." PRO CLIENTE
 // ============================================================================
-// Faz o WhatsApp do cliente mostrar "digitando..." abaixo do nome do Gusthavo.
-// Útil pra dar feedback enquanto a IA está processando a resposta.
-// O status some sozinho depois de alguns segundos se nada for enviado.
 
 async function mostrarDigitando(telefoneCliente) {
   try {
     await axios.post(
       `${URL_BASE}/send-chat-state`,
-      {
-        phone: telefoneCliente,
-        chatState: 'composing',
-      },
+      { phone: telefoneCliente, chatState: 'composing' },
       { headers: HEADERS }
     );
   } catch (erro) {
-    // Não loga erro pra não poluir o terminal — esse status é cosmético
+    // Status cosmético — não loga erro
   }
 }
+
 // ============================================================================
 // EXPORTAÇÃO
 // ============================================================================
@@ -134,6 +121,7 @@ async function mostrarDigitando(telefoneCliente) {
 module.exports = {
   enviarTexto,
   enviarImagem,
+  enviarVideo,
   alertarDono,
   mostrarDigitando,
 };

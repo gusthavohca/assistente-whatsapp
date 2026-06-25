@@ -126,6 +126,32 @@
     .toast.erro { border-left: 3px solid #e05a5a; }
     .loading { color: #666; font-size: 14px; padding: 20px 0; }
     .divisor-flyers { grid-column: 1 / -1; border-top: 1px solid #2a2a2a; padding-top: 16px; margin-top: 8px; font-size: 12px; color: #555; text-transform: uppercase; letter-spacing: 1px; }
+    .disparo-config-box { background: #141414; border: 1px solid #2a2a2a; border-radius: 12px; padding: 20px; margin-bottom: 16px; }
+    .disparo-config-box h3 { font-size: 13px; font-weight: 700; color: #c9a84c; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .disparo-config-row { display: flex; gap: 16px; align-items: center; margin-bottom: 14px; flex-wrap: wrap; }
+    .disparo-config-row label.campo-label { font-size: 13px; color: #999; min-width: 110px; }
+    .disparo-hint { font-size: 12px; color: #444; margin-top: 6px; line-height: 1.5; }
+    .grupo-row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+    .grupo-row label { font-size: 12px; color: #666; min-width: 60px; }
+    .grupo-row input { flex: 1; background: #1e1e1e; border: 1px solid #2a2a2a; border-radius: 8px; padding: 9px 14px; color: #fff; font-size: 13px; outline: none; }
+    .grupo-row input:focus { border-color: #c9a84c; }
+    .dia-bloco { background: #141414; border: 1px solid #2a2a2a; border-radius: 12px; margin-bottom: 12px; overflow: hidden; }
+    .dia-bloco-header { padding: 13px 20px; background: #1a1a1a; border-bottom: 1px solid #2a2a2a; font-size: 12px; font-weight: 700; color: #c9a84c; text-transform: uppercase; letter-spacing: 0.5px; }
+    .slot-bloco { border-top: 1px solid #1e1e1e; padding: 14px 20px; }
+    .slot-bloco:first-child { border-top: none; }
+    .slot-hora { font-size: 11px; font-weight: 700; color: #555; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+    .mensagem-card { background: #1e1e1e; border: 1px solid #2a2a2a; border-radius: 8px; padding: 12px; margin-bottom: 8px; position: relative; }
+    .mensagem-card-topo { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
+    .msg-num { font-size: 10px; font-weight: 700; color: #c9a84c; background: #141414; border: 1px solid #2a2a2a; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .mensagem-card select { background: #141414; border: 1px solid #2a2a2a; border-radius: 6px; padding: 7px 10px; color: #fff; font-size: 12px; outline: none; cursor: pointer; }
+    .mensagem-card select:focus { border-color: #c9a84c; }
+    .mensagem-card select option { background: #141414; }
+    .mensagem-card textarea { width: 100%; min-height: 72px; font-size: 12px; resize: vertical; padding: 9px 11px; border-radius: 6px; margin-top: 4px; }
+    .btn-remover-msg { position: absolute; top: 9px; right: 9px; background: transparent; border: 1px solid #2a2a2a; color: #444; border-radius: 5px; width: 22px; height: 22px; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+    .btn-remover-msg:hover { border-color: #e05a5a; color: #e05a5a; }
+    .btn-add-msg { background: transparent; border: 1px dashed #2a2a2a; color: #555; border-radius: 7px; padding: 7px 14px; font-size: 12px; cursor: pointer; transition: all 0.2s; width: 100%; margin-top: 4px; }
+    .btn-add-msg:hover { border-color: #c9a84c; color: #c9a84c; }
+    .slot-vazio { font-size: 12px; color: #333; padding: 4px 0 8px; }
   </style>
 </head>
 <body>
@@ -163,6 +189,7 @@
     <button class="tab" onclick="abrirTab('calendario', this)">📅 Calendário</button>
     <button class="tab" onclick="abrirTab('links', this)">🔗 Links</button>
     <button class="tab" onclick="abrirTab('relatorio', this)">📊 Relatório</button>
+    <button class="tab" onclick="abrirTab('disparos', this)">📤 Disparos</button>
   </div>
 
   <div class="conteudo">
@@ -228,6 +255,40 @@
       <div id="links-lista">
         <div class="loading">Carregando links...</div>
       </div>
+    </div>
+
+    <!-- DISPAROS -->
+    <div class="secao" id="secao-disparos">
+      <h2>Disparos Automáticos</h2>
+      <p class="desc">Mensagens diárias automáticas para grupos do WhatsApp. Os horários são fixos por dia. Configure o conteúdo de cada slot.</p>
+
+      <div class="disparo-config-box">
+        <h3>Configuração Geral</h3>
+        <div class="disparo-config-row">
+          <label class="campo-label">Status</label>
+          <label class="toggle"><input type="checkbox" id="disparo-ativo" onchange="atualizarStatusDisparo()" /><span class="toggle-slider"></span></label>
+          <span id="disparo-status-text" style="font-size:14px;color:#999;">Desativado</span>
+        </div>
+        <div class="disparo-config-row">
+          <label class="campo-label">@todos</label>
+          <label class="toggle"><input type="checkbox" id="disparo-mencionar" /><span class="toggle-slider"></span></label>
+          <span style="font-size:13px;color:#666;">Mencionar todos ao enviar (quebra o silêncio do grupo)</span>
+        </div>
+      </div>
+
+      <div class="disparo-config-box">
+        <h3>Grupos</h3>
+        <div class="grupo-row"><label>Grupo 1</label><input type="text" id="grupo-0" placeholder="120363xxxxxxxxxx@g.us" /></div>
+        <div class="grupo-row"><label>Grupo 2</label><input type="text" id="grupo-1" placeholder="120363xxxxxxxxxx@g.us" /></div>
+        <div class="grupo-row"><label>Grupo 3</label><input type="text" id="grupo-2" placeholder="120363xxxxxxxxxx@g.us" /></div>
+        <p class="disparo-hint">Para descobrir o ID: envie qualquer mensagem para o número da GIA pelo grupo. O ID aparecerá nos logs do Railway no formato <code style="color:#c9a84c;">120363xxxxxxxxxx@g.us</code></p>
+      </div>
+
+      <h3 style="font-size:14px;font-weight:700;color:#fff;margin-bottom:14px;">Mensagens por Dia</h3>
+      <p style="font-size:12px;color:#555;margin-bottom:16px;">Horários fixos — Segunda 14h/16h/18h · Terça–Quinta 11h/18h · Sexta 12h/17h/21h · Sábado 12h/18h/21h</p>
+      <div id="disparos-dias-container"></div>
+
+      <button class="btn-salvar" onclick="salvarDisparos()">Salvar Disparos</button>
     </div>
 
     <!-- RELATÓRIO -->
@@ -315,6 +376,7 @@
     if (nome === 'calendario') carregarCalendario();
     if (nome === 'cerebro') carregarCerebro();
     if (nome === 'links') carregarLinks();
+    if (nome === 'disparos') carregarDisparos();
   }
 
   function carregarTudo() { carregarStatus(); carregarFlyers(); }
@@ -622,6 +684,154 @@
       conteudo.innerHTML = entries.map(([p, n]) => `<div class="pergunta-item"><span>${p}</span><span class="count">${n}x</span></div>`).join('');
     }
   }
+
+  // ── DISPAROS ────────────────────────────────────────────────────────────────
+
+  const DIAS_CHAVE_D   = ['segunda','terca','quarta','quinta','sexta','sabado','domingo'];
+  const DIAS_LABEL_D   = ['Segunda-Feira','Terça-Feira','Quarta-Feira','Quinta-Feira','Sexta-Feira','Sábado','Domingo'];
+  const HORARIOS_POR_DIA = {
+    segunda: [14, 16, 18],
+    terca:   [11, 18],
+    quarta:  [11, 18],
+    quinta:  [11, 18],
+    sexta:   [12, 17, 21],
+    sabado:  [12, 18, 21],
+    domingo: [],
+  };
+  const FLYERS_OPCOES = [
+    { v: 'programacao_sexta',  l: 'Programação Sexta' },
+    { v: 'programacao_sabado', l: 'Programação Sábado' },
+    { v: 'entrada_sexta',      l: 'Entrada Sexta' },
+    { v: 'entrada_sabado',     l: 'Entrada Sábado' },
+    { v: 'camarote_sexta',     l: 'Camarote Sexta' },
+    { v: 'camarote_sabado',    l: 'Camarote Sábado' },
+    { v: 'aniversario_sexta',  l: 'Aniversário Sexta' },
+    { v: 'aniversario_sabado', l: 'Aniversário Sábado' },
+    { v: 'video_sexta',        l: '🎬 Vídeo Sexta' },
+    { v: 'video_sabado',       l: '🎬 Vídeo Sábado' },
+  ];
+
+  let diasState = {};
+
+  function flyerOpts(selected) {
+    return FLYERS_OPCOES.map(f =>
+      `<option value="${f.v}"${f.v === selected ? ' selected' : ''}>${f.l}</option>`
+    ).join('');
+  }
+
+  function capturarEstado() {
+    DIAS_CHAVE_D.forEach(dia => {
+      (HORARIOS_POR_DIA[dia] || []).forEach(h => {
+        ((diasState[dia] || {})[String(h)] || []).forEach((msg, i) => {
+          const tipoEl = document.getElementById(`tipo-${dia}-${h}-${i}`);
+          const catEl  = document.getElementById(`cat-${dia}-${h}-${i}`);
+          const txtEl  = document.getElementById(`txt-${dia}-${h}-${i}`);
+          if (tipoEl) msg.tipo = tipoEl.value;
+          if (catEl)  msg.categoria = catEl.value;
+          if (txtEl)  { if (msg.tipo === 'texto') msg.conteudo = txtEl.value; else msg.texto = txtEl.value; }
+        });
+      });
+    });
+  }
+
+  function renderDisparosDias() {
+    const container = document.getElementById('disparos-dias-container');
+    container.innerHTML = '';
+    DIAS_CHAVE_D.forEach((dia, di) => {
+      const horas = HORARIOS_POR_DIA[dia] || [];
+      if (horas.length === 0) return;
+      const bloco = document.createElement('div');
+      bloco.className = 'dia-bloco';
+      bloco.innerHTML = `<div class="dia-bloco-header">${DIAS_LABEL_D[di]}</div>` +
+        horas.map(h => {
+          const msgs = ((diasState[dia] || {})[String(h)] || []);
+          const msgsHtml = msgs.length === 0
+            ? '<p class="slot-vazio">Nenhuma mensagem.</p>'
+            : msgs.map((m, i) => {
+                const temCat = m.tipo === 'flyer' || m.tipo === 'video';
+                const catHtml = temCat ? `<select id="cat-${dia}-${h}-${i}">${flyerOpts(m.categoria)}</select>` : '';
+                const txtVal  = m.tipo === 'texto' ? (m.conteudo || '') : (m.texto || '');
+                return `<div class="mensagem-card">
+                  <div class="mensagem-card-topo">
+                    <span class="msg-num">${i+1}</span>
+                    <select id="tipo-${dia}-${h}-${i}" onchange="mudarTipoMsg('${dia}',${h},${i},this.value)">
+                      <option value="flyer"${m.tipo==='flyer'?' selected':''}>🖼️ Flyer</option>
+                      <option value="video"${m.tipo==='video'?' selected':''}>🎬 Vídeo</option>
+                      <option value="texto"${m.tipo==='texto'?' selected':''}>💬 Texto</option>
+                    </select>${catHtml}
+                  </div>
+                  <textarea id="txt-${dia}-${h}-${i}" placeholder="Texto / legenda (inclua o link aqui)">${txtVal}</textarea>
+                  <button class="btn-remover-msg" onclick="removerMsg('${dia}',${h},${i})">×</button>
+                </div>`;
+              }).join('');
+          return `<div class="slot-bloco"><div class="slot-hora">${String(h).padStart(2,'0')}:00</div><div id="slot-${dia}-${h}">${msgsHtml}</div><button class="btn-add-msg" onclick="adicionarMsg('${dia}',${h})">+ Adicionar mensagem</button></div>`;
+        }).join('');
+      container.appendChild(bloco);
+    });
+  }
+
+  function adicionarMsg(dia, h) {
+    capturarEstado();
+    if (!diasState[dia]) diasState[dia] = {};
+    if (!diasState[dia][String(h)]) diasState[dia][String(h)] = [];
+    diasState[dia][String(h)].push({ tipo: 'flyer', categoria: 'programacao_sexta', texto: '' });
+    renderDisparosDias();
+  }
+
+  function removerMsg(dia, h, i) {
+    capturarEstado();
+    if (diasState[dia] && diasState[dia][String(h)]) diasState[dia][String(h)].splice(i, 1);
+    renderDisparosDias();
+  }
+
+  function mudarTipoMsg(dia, h, i, valor) {
+    capturarEstado();
+    if (diasState[dia] && diasState[dia][String(h)] && diasState[dia][String(h)][i]) {
+      diasState[dia][String(h)][i].tipo = valor;
+      if (valor !== 'flyer' && valor !== 'video') diasState[dia][String(h)][i].categoria = '';
+    }
+    renderDisparosDias();
+  }
+
+  function atualizarStatusDisparo() {
+    const ativo = document.getElementById('disparo-ativo').checked;
+    const txt   = document.getElementById('disparo-status-text');
+    txt.textContent = ativo ? 'Ativado' : 'Desativado';
+    txt.style.color = ativo ? '#4caf50' : '#999';
+  }
+
+  async function carregarDisparos() {
+    const res    = await fetch('/painel/api/disparos', { headers: { 'Authorization': TOKEN } });
+    const config = await res.json();
+    document.getElementById('disparo-ativo').checked     = config.ativo || false;
+    document.getElementById('disparo-mencionar').checked = config.mencionarTodos || false;
+    atualizarStatusDisparo();
+    const grupos = config.grupos || [];
+    for (let i = 0; i < 3; i++) { const el = document.getElementById(`grupo-${i}`); if (el) el.value = grupos[i] || ''; }
+    diasState = {};
+    DIAS_CHAVE_D.forEach(dia => {
+      diasState[dia] = (config.dias || {})[dia] || {};
+      (HORARIOS_POR_DIA[dia] || []).forEach(h => { if (!diasState[dia][String(h)]) diasState[dia][String(h)] = []; });
+    });
+    renderDisparosDias();
+  }
+
+  async function salvarDisparos() {
+    capturarEstado();
+    const ativo        = document.getElementById('disparo-ativo').checked;
+    const mencionarTodos = document.getElementById('disparo-mencionar').checked;
+    const grupos       = [0,1,2].map(i => document.getElementById(`grupo-${i}`).value.trim()).filter(g => g);
+    const res = await fetch('/painel/api/disparos', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': TOKEN },
+      body: JSON.stringify({ ativo, mencionarTodos, grupos, dias: diasState })
+    });
+    const data = await res.json();
+    if (data.ok) mostrarToast('✅ Disparos salvos!');
+    else mostrarToast('❌ Erro ao salvar', 'erro');
+  }
+
+  // ── BOOT ────────────────────────────────────────────────────────────────────
 
   if (TOKEN) {
     fetch('/painel/api/status', { headers: { 'Authorization': TOKEN } })
