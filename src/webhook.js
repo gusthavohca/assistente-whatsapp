@@ -65,7 +65,7 @@ async function processarMensagem(dadosDoWebhook) {
       (telefoneCliente && telefoneCliente.includes('-group'));
 
     if (ehDeGrupo) {
-      console.log('👥 Mensagem de grupo ignorada.');
+      console.log(`👥 Mensagem de grupo ignorada. ID: ${telefoneCliente}`);
       return;
     }
 
