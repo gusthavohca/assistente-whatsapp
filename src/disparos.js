@@ -82,7 +82,14 @@ async function enviarMensagem(grupoId, msg, mencionarTodos, cacheFlyers) {
   if (msg.tipo === 'video' && msg.categoria) {
     const url = cacheFlyers[msg.categoria] || null;
     if (url) {
-      await zapi.enviarVideo(grupoId, url, msg.texto || '', mencionarTodos);
+      // mentionEveryOne só funciona em send-text — envia texto primeiro, depois vídeo
+      if (mencionarTodos && msg.texto) {
+        await zapi.enviarTexto(grupoId, msg.texto, true);
+        await sleep(1500);
+        await zapi.enviarVideo(grupoId, url, '', false);
+      } else {
+        await zapi.enviarVideo(grupoId, url, msg.texto || '', false);
+      }
     } else {
       console.log(`⚠️ Vídeo "${msg.categoria}" não encontrado no Cloudinary — slot pulado`);
       if (msg.texto) await zapi.enviarTexto(grupoId, msg.texto, mencionarTodos);
@@ -91,7 +98,14 @@ async function enviarMensagem(grupoId, msg, mencionarTodos, cacheFlyers) {
   } else if (msg.tipo === 'flyer' && msg.categoria) {
     const url = cacheFlyers[msg.categoria] || null;
     if (url) {
-      await zapi.enviarImagem(grupoId, url, msg.texto || '', mencionarTodos);
+      // mentionEveryOne só funciona em send-text — envia texto primeiro, depois imagem
+      if (mencionarTodos && msg.texto) {
+        await zapi.enviarTexto(grupoId, msg.texto, true);
+        await sleep(1500);
+        await zapi.enviarImagem(grupoId, url, '', false);
+      } else {
+        await zapi.enviarImagem(grupoId, url, msg.texto || '', false);
+      }
     } else {
       console.log(`⚠️ Flyer "${msg.categoria}" não encontrado no Cloudinary — slot pulado`);
       if (msg.texto) await zapi.enviarTexto(grupoId, msg.texto, mencionarTodos);
