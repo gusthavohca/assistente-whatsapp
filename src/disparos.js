@@ -26,7 +26,7 @@ const HORARIOS_FIXOS = {
   segunda: [14, 16, 18],
   terca:   [11, 18],
   quarta:  [11, 18],
-  quinta:  [11, 18],
+  quinta:  [11, 19],
   sexta:   [12, 17, 21],
   sabado:  [12, 18, 21],
   domingo: [],
