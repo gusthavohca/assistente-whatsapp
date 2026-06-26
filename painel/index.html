@@ -152,6 +152,15 @@
     .btn-add-msg { background: transparent; border: 1px dashed #2a2a2a; color: #555; border-radius: 7px; padding: 7px 14px; font-size: 12px; cursor: pointer; transition: all 0.2s; width: 100%; margin-top: 4px; }
     .btn-add-msg:hover { border-color: #c9a84c; color: #c9a84c; }
     .slot-vazio { font-size: 12px; color: #333; padding: 4px 0 8px; }
+    .pergunta-sem-resposta-card { background: #141414; border: 1px solid #2a2a2a; border-radius: 12px; padding: 16px 20px; margin-bottom: 12px; display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+    .pergunta-sem-resposta-card:hover { border-color: #3a3a3a; }
+    .psr-info { flex: 1; }
+    .psr-pergunta { font-size: 14px; color: #f0f0f0; margin-bottom: 6px; line-height: 1.5; }
+    .psr-meta { font-size: 12px; color: #555; }
+    .psr-meta span { margin-right: 12px; }
+    .btn-resolver { background: transparent; border: 1px solid #4caf50; color: #4caf50; border-radius: 7px; padding: 7px 14px; font-size: 12px; font-weight: 700; cursor: pointer; white-space: nowrap; transition: all 0.2s; flex-shrink: 0; }
+    .btn-resolver:hover { background: #4caf50; color: #000; }
+    .perguntas-vazio { font-size: 14px; color: #555; padding: 32px 0; text-align: center; }
   </style>
 </head>
 <body>
@@ -190,6 +199,7 @@
     <button class="tab" onclick="abrirTab('links', this)">🔗 Links</button>
     <button class="tab" onclick="abrirTab('relatorio', this)">📊 Relatório</button>
     <button class="tab" onclick="abrirTab('disparos', this)">📤 Disparos</button>
+    <button class="tab" id="tab-perguntas" onclick="abrirTab('perguntas', this)">❓ Perguntas</button>
   </div>
 
   <div class="conteudo">
@@ -289,6 +299,15 @@
       <div id="disparos-dias-container"></div>
 
       <button class="btn-salvar" onclick="salvarDisparos()">Salvar Disparos</button>
+
+      <div style="margin-top:16px;padding:16px;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:10px;">
+        <p style="font-size:13px;color:#999;margin-bottom:12px;">🧪 <strong style="color:#fff;">Teste manual</strong> — envia uma mensagem de texto para todos os grupos agora, sem depender de horário.</p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <button onclick="testarDisparo(false)" style="background:#2a2a2a;color:#fff;border:1px solid #444;border-radius:8px;padding:9px 16px;font-size:13px;cursor:pointer;">📤 Testar SEM @todos</button>
+          <button onclick="testarDisparo(true)" style="background:#2a2a2a;color:#fff;border:1px solid #444;border-radius:8px;padding:9px 16px;font-size:13px;cursor:pointer;">📤 Testar COM @todos</button>
+        </div>
+        <div id="teste-resultado" style="margin-top:10px;font-size:12px;color:#888;"></div>
+      </div>
     </div>
 
     <!-- RELATÓRIO -->
@@ -302,6 +321,13 @@
         <h3>Perguntas mais frequentes</h3>
         <div id="perguntas-conteudo"></div>
       </div>
+    </div>
+
+    <!-- PERGUNTAS SEM RESPOSTA -->
+    <div class="secao" id="secao-perguntas">
+      <h2>Perguntas sem resposta</h2>
+      <p class="desc">Perguntas que a GIA não soube responder. Clientes ficam pausados por 1h — você foi alertado no WhatsApp. Revise toda semana e atualize o cérebro.</p>
+      <div id="perguntas-sem-resposta-lista"><div class="loading">Carregando...</div></div>
     </div>
 
   </div>
@@ -377,6 +403,7 @@
     if (nome === 'cerebro') carregarCerebro();
     if (nome === 'links') carregarLinks();
     if (nome === 'disparos') carregarDisparos();
+    if (nome === 'perguntas') carregarPerguntasSemResposta();
   }
 
   function carregarTudo() { carregarStatus(); carregarFlyers(); }
@@ -817,6 +844,30 @@
     renderDisparosDias();
   }
 
+  async function testarDisparo(comMencao) {
+    const resultado = document.getElementById('teste-resultado');
+    resultado.textContent = 'Enviando...';
+    try {
+      const res = await fetch('/painel/api/disparos/testar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': TOKEN },
+        body: JSON.stringify({ comMencao })
+      });
+      const data = await res.json();
+      if (data.ok) {
+        const sucessos = data.resultados.filter(r => r.ok).length;
+        resultado.innerHTML = `✅ Enviado para ${sucessos}/${data.resultados.length} grupos`;
+        resultado.style.color = '#4caf50';
+      } else {
+        resultado.textContent = '❌ ' + (data.erro || 'Erro desconhecido');
+        resultado.style.color = '#e05a5a';
+      }
+    } catch (e) {
+      resultado.textContent = '❌ Erro: ' + e.message;
+      resultado.style.color = '#e05a5a';
+    }
+  }
+
   async function salvarDisparos() {
     capturarEstado();
     const ativo        = document.getElementById('disparo-ativo').checked;
@@ -830,6 +881,55 @@
     const data = await res.json();
     if (data.ok) mostrarToast('✅ Disparos salvos!');
     else mostrarToast('❌ Erro ao salvar', 'erro');
+  }
+
+  // ── PERGUNTAS SEM RESPOSTA ───────────────────────────────────────────────────
+
+  async function carregarPerguntasSemResposta() {
+    const cont = document.getElementById('perguntas-sem-resposta-lista');
+    cont.innerHTML = '<div class="loading">Carregando perguntas...</div>';
+    try {
+      const res = await fetch('/painel/api/perguntas', { headers: { 'Authorization': TOKEN } });
+      const data = await res.json();
+      const perguntas = data.perguntas || [];
+      if (perguntas.length === 0) {
+        cont.innerHTML = '<div class="perguntas-vazio">Nenhuma pergunta sem resposta. Ótimo!</div>';
+        return;
+      }
+      cont.innerHTML = perguntas.map(p => {
+        const data = p.criadoEm ? new Date(p.criadoEm).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '';
+        const tel = p.telefone ? p.telefone.replace(/(\d{2})(\d{2})(\d{5})(\d{4})/, '+$1 ($2) $3-$4') : '';
+        return `<div class="pergunta-sem-resposta-card" id="psr-${p.id}">
+          <div class="psr-info">
+            <div class="psr-pergunta">"${p.pergunta}"</div>
+            <div class="psr-meta">
+              <span>📱 ${tel}</span>
+              <span>🕐 ${data}</span>
+            </div>
+          </div>
+          <button class="btn-resolver" onclick="resolverPergunta('${p.id}')">✓ Resolvida</button>
+        </div>`;
+      }).join('');
+    } catch (e) {
+      cont.innerHTML = '<div class="perguntas-vazio">Erro ao carregar perguntas.</div>';
+    }
+  }
+
+  async function resolverPergunta(id) {
+    try {
+      const res = await fetch(`/painel/api/perguntas/${id}`, { method: 'DELETE', headers: { 'Authorization': TOKEN } });
+      const data = await res.json();
+      if (data.ok) {
+        document.getElementById(`psr-${id}`)?.remove();
+        const cont = document.getElementById('perguntas-sem-resposta-lista');
+        if (!cont.querySelector('.pergunta-sem-resposta-card')) {
+          cont.innerHTML = '<div class="perguntas-vazio">Nenhuma pergunta sem resposta. Ótimo!</div>';
+        }
+        mostrarToast('✅ Pergunta marcada como resolvida');
+      }
+    } catch (e) {
+      mostrarToast('❌ Erro ao resolver pergunta', 'erro');
+    }
   }
 
   // ── BOOT ────────────────────────────────────────────────────────────────────

@@ -403,6 +403,61 @@ async function salvarDisparos(dados) {
 }
 
 // ============================================================================
+// PERGUNTAS SEM RESPOSTA
+// ============================================================================
+
+async function salvarPerguntaSemResposta(telefone, pergunta) {
+  try {
+    const id = `${Date.now()}_${telefone.replace(/\D/g, '').slice(-8)}`;
+    await db.collection('perguntas_sem_resposta').doc(id).set({
+      telefone,
+      pergunta,
+      criadoEm: new Date(),
+      resolvido: false,
+    });
+    console.log(`📝 Pergunta sem resposta salva: "${pergunta}" de ${telefone}`);
+    return true;
+  } catch (erro) {
+    console.log('⚠️ Erro ao salvar pergunta sem resposta:', erro.message);
+    return false;
+  }
+}
+
+async function lerPerguntasSemResposta() {
+  try {
+    const snapshot = await db.collection('perguntas_sem_resposta')
+      .orderBy('criadoEm', 'desc')
+      .get();
+    const perguntas = [];
+    snapshot.forEach(doc => {
+      const d = doc.data();
+      perguntas.push({
+        id: doc.id,
+        telefone: d.telefone,
+        pergunta: d.pergunta,
+        criadoEm: d.criadoEm ? d.criadoEm.toDate().toISOString() : null,
+        resolvido: d.resolvido || false,
+      });
+    });
+    return perguntas;
+  } catch (erro) {
+    console.log('⚠️ Erro ao ler perguntas sem resposta:', erro.message);
+    return [];
+  }
+}
+
+async function deletarPerguntaSemResposta(id) {
+  try {
+    await db.collection('perguntas_sem_resposta').doc(id).delete();
+    console.log(`✅ Pergunta "${id}" deletada`);
+    return true;
+  } catch (erro) {
+    console.log('⚠️ Erro ao deletar pergunta:', erro.message);
+    return false;
+  }
+}
+
+// ============================================================================
 // LINKS (Data + Atração + URL Sympla)
 // ============================================================================
 
@@ -462,6 +517,9 @@ module.exports = {
   salvarCerebroDoGusthavo,
   lerDisparos,
   salvarDisparos,
+  salvarPerguntaSemResposta,
+  lerPerguntasSemResposta,
+  deletarPerguntaSemResposta,
   lerAtracoes,
   salvarAtracao,
   lerHistorico,

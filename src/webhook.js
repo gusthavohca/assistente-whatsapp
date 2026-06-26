@@ -5,7 +5,7 @@
 const claude = require('./claude');
 const zapi = require('./zapi');
 const { processarComandoAdmin } = require('./admin');
-const { lerCerebroDoGusthavo, lerFlyers, lerStatusGia, registrarPedido, registrarAtendimento } = require('./firebase');
+const { lerCerebroDoGusthavo, lerFlyers, lerStatusGia, registrarPedido, registrarAtendimento, salvarPerguntaSemResposta } = require('./firebase');
 const NUMERO_ADMIN = process.env.NUMERO_GUSTHAVO_PESSOAL;
 
 // ============================================================================
@@ -188,6 +188,21 @@ async function processarBufferDoCliente(telefoneCliente) {
     let precisaAlertar = false;
     let textoLimpo = respostaDaClaude;
     const flyersSolicitados = [];
+
+    // Detectar [NAO_SEI] — GIA não soube responder
+    if (textoLimpo.includes('[NAO_SEI]')) {
+      textoLimpo = textoLimpo.replace(/\[NAO_SEI\]/g, '').trim();
+      // Enviar mensagem padrão ao cliente (já está no textoLimpo)
+      await zapi.enviarTexto(telefoneCliente, textoLimpo);
+      // Alertar admin
+      await zapi.alertarDono(telefoneCliente, `❓ Pergunta sem resposta:\n"${textoFinal}"`);
+      // Pausar GIA para esse cliente por 1h
+      claude.pausarClientePorNaoSaber(telefoneCliente);
+      // Salvar pergunta no Firebase para revisão semanal
+      await salvarPerguntaSemResposta(telefoneCliente, textoFinal);
+      console.log(`❓ [NAO_SEI] — cliente ${telefoneCliente} pausado 1h, pergunta salva`);
+      return;
+    }
 
     // Detectar flyers solicitados pela GIA
     const regexFlyer = /\[ENVIAR_FLYER:(programacao_sexta|programacao_sabado|entrada_sexta|entrada_sabado|camarote_sexta|camarote_sabado|aniversario_sexta|aniversario_sabado)\]/g;

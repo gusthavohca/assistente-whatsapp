@@ -22,6 +22,8 @@ const {
   lerLinksEventos,
   lerDisparos,
   salvarDisparos,
+  lerPerguntasSemResposta,
+  deletarPerguntaSemResposta,
 } = require('./firebase');
 
 cloudinary.config({
@@ -259,6 +261,62 @@ router.post('/disparos', verificarToken, async (req, res) => {
   const { ativo, mencionarTodos, grupos, dias } = req.body;
   const ok = await salvarDisparos({ ativo, mencionarTodos, grupos, dias });
   res.json({ ok });
+});
+
+// ── PERGUNTAS SEM RESPOSTA ─────────────────────────────────────────────────
+
+router.get('/perguntas', verificarToken, async (req, res) => {
+  try {
+    const perguntas = await lerPerguntasSemResposta();
+    res.json({ perguntas });
+  } catch (erro) {
+    res.status(500).json({ erro: erro.message });
+  }
+});
+
+router.delete('/perguntas/:id', verificarToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const ok = await deletarPerguntaSemResposta(id);
+    res.json({ ok });
+  } catch (erro) {
+    res.status(500).json({ erro: erro.message });
+  }
+});
+
+// ── TESTE DE DISPARO MANUAL ────────────────────────────────────────────────
+// Envia uma mensagem de texto simples para todos os grupos configurados.
+// Útil para diagnosticar problemas sem depender de horário fixo.
+
+const zapi = require('./zapi');
+
+router.post('/disparos/testar', verificarToken, async (req, res) => {
+  try {
+    const config = await lerDisparos();
+    if (!config) return res.json({ ok: false, erro: 'Nenhuma configuração de disparo encontrada' });
+
+    const grupos = (config.grupos || []).filter(g => g && g.trim());
+    if (grupos.length === 0) return res.json({ ok: false, erro: 'Nenhum grupo configurado' });
+
+    const { comMencao } = req.body; // true = testa com @todos, false = sem
+    const resultados = [];
+
+    for (const grupoId of grupos) {
+      try {
+        const texto = `🧪 Teste de disparo — GIA funcionando!\n${comMencao ? '(com @todos)' : '(sem @todos)'}`;
+        await zapi.enviarTexto(grupoId, texto, comMencao === true);
+        resultados.push({ grupo: grupoId, ok: true });
+      } catch (e) {
+        resultados.push({ grupo: grupoId, ok: false, erro: e.message });
+      }
+    }
+
+    console.log('🧪 Teste de disparo manual:', resultados);
+    res.json({ ok: true, resultados });
+  } catch (erro) {
+    console.error('Erro no teste de disparo:', erro);
+    res.status(500).json({ ok: false, erro: erro.message });
+  }
 });
 
 module.exports = router;

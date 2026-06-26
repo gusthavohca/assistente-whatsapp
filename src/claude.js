@@ -11,12 +11,18 @@ const claude = new Anthropic({
 // CONTROLE DE PAUSA POR RESPOSTA MANUAL DO ADMIN
 // ============================================================================
 
-const PAUSA_APOS_MANUAL_MS = 30 * 60 * 1000;
+const PAUSA_APOS_MANUAL_MS = 60 * 60 * 1000; // 1 hora
 const ultimaRespostaManual = {};
 
 function registrarRespostaManual(telefone) {
   ultimaRespostaManual[telefone] = Date.now();
-  console.log(`⏸️ Pausa de 30min ativada para ${telefone} após resposta manual`);
+  console.log(`⏸️ Pausa de 1h ativada para ${telefone} após resposta manual`);
+}
+
+// Usado quando GIA não sabe responder — mesmo mecanismo de pausa
+function pausarClientePorNaoSaber(telefone) {
+  ultimaRespostaManual[telefone] = Date.now();
+  console.log(`⏸️ Pausa de 1h ativada para ${telefone} — GIA não soube responder`);
 }
 
 function estaEmPausaManual(telefone) {
@@ -25,7 +31,7 @@ function estaEmPausaManual(telefone) {
   const passado = Date.now() - ultima;
   if (passado < PAUSA_APOS_MANUAL_MS) {
     const restante = Math.ceil((PAUSA_APOS_MANUAL_MS - passado) / 60000);
-    console.log(`⏸️ GIA em pausa manual para ${telefone}. Restam ~${restante} min`);
+    console.log(`⏸️ GIA em pausa para ${telefone}. Restam ~${restante} min`);
     return true;
   }
   delete ultimaRespostaManual[telefone];
@@ -193,4 +199,4 @@ async function perguntarParaClaude(telefone, mensagemDoCliente) {
   return { tipo: 'texto', mensagem: textoResposta };
 }
 
-module.exports = { perguntarParaClaude, registrarRespostaManual, estaEmPausaManual };
+module.exports = { perguntarParaClaude, registrarRespostaManual, pausarClientePorNaoSaber, estaEmPausaManual };
