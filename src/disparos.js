@@ -75,40 +75,32 @@ function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-// Converte ID de grupo do formato Z-API (-group) para @g.us (para mentionEveryOne)
-function grupoParaMencao(grupoId) {
-  if (grupoId.endsWith('-group')) {
-    return grupoId.replace('-group', '@g.us');
-  }
-  return grupoId;
-}
-
 async function enviarMensagem(grupoId, msg, mencionarTodos, cacheFlyers) {
   if (!msg || !msg.tipo) return;
 
-  // Quando mencionarTodos, tenta com @g.us (Z-API pode precisar desse formato para mentionEveryOne)
-  const grupoIdMencao = mencionarTodos ? grupoParaMencao(grupoId) : grupoId;
+  // Nota: mentionEveryOne é enviado mas Z-API pode ignorar em vídeo/imagem.
+  // O formato -group é obrigatório para entrega. @g.us quebra o envio.
 
   if (msg.tipo === 'video' && msg.categoria) {
     const url = cacheFlyers[msg.categoria] || null;
     if (url) {
-      await zapi.enviarVideo(grupoIdMencao, url, msg.texto || '', mencionarTodos);
+      await zapi.enviarVideo(grupoId, url, msg.texto || '', mencionarTodos);
     } else {
       console.log(`⚠️ Vídeo "${msg.categoria}" não encontrado — slot pulado`);
-      if (msg.texto) await zapi.enviarTexto(grupoIdMencao, msg.texto, mencionarTodos);
+      if (msg.texto) await zapi.enviarTexto(grupoId, msg.texto, mencionarTodos);
     }
 
   } else if (msg.tipo === 'flyer' && msg.categoria) {
     const url = cacheFlyers[msg.categoria] || null;
     if (url) {
-      await zapi.enviarImagem(grupoIdMencao, url, msg.texto || '', mencionarTodos);
+      await zapi.enviarImagem(grupoId, url, msg.texto || '', mencionarTodos);
     } else {
       console.log(`⚠️ Flyer "${msg.categoria}" não encontrado — slot pulado`);
-      if (msg.texto) await zapi.enviarTexto(grupoIdMencao, msg.texto, mencionarTodos);
+      if (msg.texto) await zapi.enviarTexto(grupoId, msg.texto, mencionarTodos);
     }
 
   } else if (msg.tipo === 'texto' && msg.conteudo) {
-    await zapi.enviarTexto(grupoIdMencao, msg.conteudo, mencionarTodos);
+    await zapi.enviarTexto(grupoId, msg.conteudo, mencionarTodos);
   }
 }
 
