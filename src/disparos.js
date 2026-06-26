@@ -16,7 +16,7 @@
 // O cache de flyers é carregado uma vez por disparo (menos leituras no Firebase).
 // ============================================================================
 
-const { lerDisparos, lerFlyers } = require('./firebase');
+const { lerDisparos, lerFlyers, verificarEMarcarSlotDisparado, limparLogsDisparos } = require('./firebase');
 const zapi = require('./zapi');
 
 // Dias da semana — índice = getUTCDay()
@@ -48,9 +48,8 @@ const HORARIOS_FIXOS = {
 // ============================================================================
 // ANTI DISPARO DUPLO
 // ============================================================================
-// Armazena chaves dos slots já disparados nesta sessão do servidor.
-// Formato: "diaDaSemana-hora" ex: "5-12" = sexta 12h
-// Limpo automaticamente à meia-noite.
+// Set em memória como primeira barreira (rápido, sem Firebase).
+// Firebase como segunda barreira (persiste entre reinícios e múltiplas instâncias).
 
 const _slotsDisparados = new Set();
 
@@ -76,43 +75,40 @@ function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+// Converte ID de grupo do formato Z-API (-group) para @g.us (para mentionEveryOne)
+function grupoParaMencao(grupoId) {
+  if (grupoId.endsWith('-group')) {
+    return grupoId.replace('-group', '@g.us');
+  }
+  return grupoId;
+}
+
 async function enviarMensagem(grupoId, msg, mencionarTodos, cacheFlyers) {
   if (!msg || !msg.tipo) return;
+
+  // Quando mencionarTodos, tenta com @g.us (Z-API pode precisar desse formato para mentionEveryOne)
+  const grupoIdMencao = mencionarTodos ? grupoParaMencao(grupoId) : grupoId;
 
   if (msg.tipo === 'video' && msg.categoria) {
     const url = cacheFlyers[msg.categoria] || null;
     if (url) {
-      // mentionEveryOne só funciona em send-text — envia texto primeiro, depois vídeo
-      if (mencionarTodos && msg.texto) {
-        await zapi.enviarTexto(grupoId, msg.texto, true);
-        await sleep(1500);
-        await zapi.enviarVideo(grupoId, url, '', false);
-      } else {
-        await zapi.enviarVideo(grupoId, url, msg.texto || '', false);
-      }
+      await zapi.enviarVideo(grupoIdMencao, url, msg.texto || '', mencionarTodos);
     } else {
-      console.log(`⚠️ Vídeo "${msg.categoria}" não encontrado no Cloudinary — slot pulado`);
-      if (msg.texto) await zapi.enviarTexto(grupoId, msg.texto, mencionarTodos);
+      console.log(`⚠️ Vídeo "${msg.categoria}" não encontrado — slot pulado`);
+      if (msg.texto) await zapi.enviarTexto(grupoIdMencao, msg.texto, mencionarTodos);
     }
 
   } else if (msg.tipo === 'flyer' && msg.categoria) {
     const url = cacheFlyers[msg.categoria] || null;
     if (url) {
-      // mentionEveryOne só funciona em send-text — envia texto primeiro, depois imagem
-      if (mencionarTodos && msg.texto) {
-        await zapi.enviarTexto(grupoId, msg.texto, true);
-        await sleep(1500);
-        await zapi.enviarImagem(grupoId, url, '', false);
-      } else {
-        await zapi.enviarImagem(grupoId, url, msg.texto || '', false);
-      }
+      await zapi.enviarImagem(grupoIdMencao, url, msg.texto || '', mencionarTodos);
     } else {
-      console.log(`⚠️ Flyer "${msg.categoria}" não encontrado no Cloudinary — slot pulado`);
-      if (msg.texto) await zapi.enviarTexto(grupoId, msg.texto, mencionarTodos);
+      console.log(`⚠️ Flyer "${msg.categoria}" não encontrado — slot pulado`);
+      if (msg.texto) await zapi.enviarTexto(grupoIdMencao, msg.texto, mencionarTodos);
     }
 
   } else if (msg.tipo === 'texto' && msg.conteudo) {
-    await zapi.enviarTexto(grupoId, msg.conteudo, mencionarTodos);
+    await zapi.enviarTexto(grupoIdMencao, msg.conteudo, mencionarTodos);
   }
 }
 
@@ -128,22 +124,30 @@ async function executarDisparo() {
     const labelDia     = DIAS_LABEL[diaDaSemana];
     const horariosHoje = HORARIOS_FIXOS_COMPLETOS[nomeDia] || [];
 
-    // Limpa slots à meia-noite para permitir disparo no dia seguinte
+    // Limpa Set em memória à meia-noite + limpa logs antigos do Firebase
     if (hora === 0 && minuto <= 1) {
       if (_slotsDisparados.size > 0) {
         _slotsDisparados.clear();
         console.log('🔄 Slots de disparo resetados para o novo dia');
       }
+      limparLogsDisparos().catch(() => {});
     }
 
     // Verifica se o minuto atual está dentro da janela do slot (±1 min do :07)
     const slotAtual = horariosHoje.find(s => s.h === hora && Math.abs(minuto - s.m) <= 1);
     if (!slotAtual) return;
 
-    // Evita disparo duplo no mesmo slot
-    const chaveSlot = `${diaDaSemana}-${hora}`;
-    if (_slotsDisparados.has(chaveSlot)) return;
-    _slotsDisparados.add(chaveSlot);
+    // 1ª barreira: Set em memória (rápido)
+    const chaveLocal = `${diaDaSemana}-${hora}`;
+    if (_slotsDisparados.has(chaveLocal)) return;
+    _slotsDisparados.add(chaveLocal);
+
+    // 2ª barreira: Firebase (persiste entre reinícios e deploys)
+    const podeDisparar = await verificarEMarcarSlotDisparado(hora);
+    if (!podeDisparar) {
+      console.log(`🔒 Slot ${labelDia} ${hora}h já disparado por outra instância — ignorado`);
+      return;
+    }
 
     // Verifica se os disparos estão ativos
     const config = await lerDisparos();

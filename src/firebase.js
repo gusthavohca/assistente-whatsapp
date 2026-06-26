@@ -403,6 +403,49 @@ async function salvarDisparos(dados) {
 }
 
 // ============================================================================
+// DEDUPLICAÇÃO DE DISPAROS (anti double-fire entre reinícios/deploys)
+// ============================================================================
+// Usa uma Firestore transaction para garantir que apenas UMA instância do
+// servidor dispare cada slot por dia, mesmo após reinício ou redeploy.
+
+function _dataSP() {
+  const agora = new Date();
+  const agoraSP = new Date(agora.getTime() - 3 * 60 * 60 * 1000);
+  return `${agoraSP.getUTCFullYear()}-${String(agoraSP.getUTCMonth()+1).padStart(2,'0')}-${String(agoraSP.getUTCDate()).padStart(2,'0')}`;
+}
+
+async function verificarEMarcarSlotDisparado(hora) {
+  const chave = `${_dataSP()}_${hora}h`;
+  try {
+    const ref = db.collection('disparos_log').doc(chave);
+    const podeDisparar = await db.runTransaction(async (tx) => {
+      const doc = await tx.get(ref);
+      if (doc.exists) return false;
+      tx.set(ref, { firedAt: new Date() });
+      return true;
+    });
+    return podeDisparar;
+  } catch (erro) {
+    console.log('⚠️ Erro ao verificar slot de disparo:', erro.message);
+    return true; // em caso de erro, permite disparar (evita perder o slot)
+  }
+}
+
+async function limparLogsDisparos() {
+  try {
+    const limite = new Date(Date.now() - 48 * 60 * 60 * 1000);
+    const snapshot = await db.collection('disparos_log').where('firedAt', '<', limite).get();
+    if (snapshot.empty) return;
+    const batch = db.batch();
+    snapshot.forEach(doc => batch.delete(doc.ref));
+    await batch.commit();
+    console.log(`🧹 ${snapshot.size} log(s) de disparo antigos removidos`);
+  } catch (erro) {
+    console.log('⚠️ Erro ao limpar logs de disparo:', erro.message);
+  }
+}
+
+// ============================================================================
 // PERGUNTAS SEM RESPOSTA
 // ============================================================================
 
@@ -517,6 +560,8 @@ module.exports = {
   salvarCerebroDoGusthavo,
   lerDisparos,
   salvarDisparos,
+  verificarEMarcarSlotDisparado,
+  limparLogsDisparos,
   salvarPerguntaSemResposta,
   lerPerguntasSemResposta,
   deletarPerguntaSemResposta,
