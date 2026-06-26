@@ -24,13 +24,22 @@ const HEADERS = {
 // ============================================================================
 // FUNÇÃO 1: ENVIAR MENSAGEM DE TEXTO
 // ============================================================================
-// mencionarTodos = true → usa mentionEveryOne (quebra silêncio em grupos)
+// mencionarTodos = true → usa mentionAll + adiciona @all ao texto.
+// Z-API exige: parâmetro "mentionAll: true" E "@all" no corpo da mensagem
+// para que a menção apareça em verde no WhatsApp e quebre o silêncio.
 
 async function enviarTexto(telefoneCliente, textoMensagem, mencionarTodos = false) {
   try {
-    const body = { phone: telefoneCliente, message: textoMensagem };
-    if (mencionarTodos) body.mentionEveryOne = true;
+    let mensagem = textoMensagem;
+    const body = { phone: telefoneCliente };
 
+    if (mencionarTodos) {
+      // Adiciona @all ao final do texto (obrigatório para a menção aparecer no WhatsApp)
+      if (!mensagem.includes('@all')) mensagem = mensagem + '\n@all';
+      body.mentionAll = true;
+    }
+
+    body.message = mensagem;
     await axios.post(`${URL_BASE}/send-text`, body, { headers: HEADERS });
     console.log(`✅ Texto enviado para ${telefoneCliente}`);
   } catch (erro) {
@@ -42,12 +51,12 @@ async function enviarTexto(telefoneCliente, textoMensagem, mencionarTodos = fals
 // ============================================================================
 // FUNÇÃO 2: ENVIAR IMAGEM (FLYER)
 // ============================================================================
+// Z-API não suporta mentionAll em send-image. O disparo trata isso
+// enviando o texto com @all primeiro, depois a imagem separada.
 
-async function enviarImagem(telefoneCliente, urlImagem, legenda = '', mencionarTodos = false) {
+async function enviarImagem(telefoneCliente, urlImagem, legenda = '') {
   try {
     const body = { phone: telefoneCliente, image: urlImagem, caption: legenda };
-    if (mencionarTodos) body.mentionEveryOne = true;
-
     await axios.post(`${URL_BASE}/send-image`, body, { headers: HEADERS });
     console.log(`✅ Imagem enviada para ${telefoneCliente}`);
   } catch (erro) {
@@ -59,12 +68,12 @@ async function enviarImagem(telefoneCliente, urlImagem, legenda = '', mencionarT
 // ============================================================================
 // FUNÇÃO 3: ENVIAR VÍDEO
 // ============================================================================
+// Z-API não suporta mentionAll em send-video. O disparo trata isso
+// enviando o texto com @all primeiro, depois o vídeo separado.
 
-async function enviarVideo(telefoneCliente, urlVideo, legenda = '', mencionarTodos = false) {
+async function enviarVideo(telefoneCliente, urlVideo, legenda = '') {
   try {
     const body = { phone: telefoneCliente, video: urlVideo, caption: legenda };
-    if (mencionarTodos) body.mentionEveryOne = true;
-
     await axios.post(`${URL_BASE}/send-video`, body, { headers: HEADERS });
     console.log(`✅ Vídeo enviado para ${telefoneCliente}`);
   } catch (erro) {

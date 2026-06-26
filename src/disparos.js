@@ -78,13 +78,24 @@ function sleep(ms) {
 async function enviarMensagem(grupoId, msg, mencionarTodos, cacheFlyers) {
   if (!msg || !msg.tipo) return;
 
-  // Nota: mentionEveryOne é enviado mas Z-API pode ignorar em vídeo/imagem.
-  // O formato -group é obrigatório para entrega. @g.us quebra o envio.
+  // Z-API só suporta mentionAll (com @all) em send-text.
+  // Para flyer/vídeo com @todos: envia texto com @all primeiro, depois a mídia.
 
   if (msg.tipo === 'video' && msg.categoria) {
     const url = cacheFlyers[msg.categoria] || null;
     if (url) {
-      await zapi.enviarVideo(grupoId, url, msg.texto || '', mencionarTodos);
+      if (mencionarTodos && msg.texto) {
+        await zapi.enviarTexto(grupoId, msg.texto, true);
+        await sleep(1500);
+        await zapi.enviarVideo(grupoId, url, '');
+      } else if (mencionarTodos) {
+        // Sem texto configurado: manda o @all separado antes do vídeo
+        await zapi.enviarTexto(grupoId, 'Novidade pra vocês 👇\n@all', true);
+        await sleep(1500);
+        await zapi.enviarVideo(grupoId, url, '');
+      } else {
+        await zapi.enviarVideo(grupoId, url, msg.texto || '');
+      }
     } else {
       console.log(`⚠️ Vídeo "${msg.categoria}" não encontrado — slot pulado`);
       if (msg.texto) await zapi.enviarTexto(grupoId, msg.texto, mencionarTodos);
@@ -93,7 +104,18 @@ async function enviarMensagem(grupoId, msg, mencionarTodos, cacheFlyers) {
   } else if (msg.tipo === 'flyer' && msg.categoria) {
     const url = cacheFlyers[msg.categoria] || null;
     if (url) {
-      await zapi.enviarImagem(grupoId, url, msg.texto || '', mencionarTodos);
+      if (mencionarTodos && msg.texto) {
+        await zapi.enviarTexto(grupoId, msg.texto, true);
+        await sleep(1500);
+        await zapi.enviarImagem(grupoId, url, '');
+      } else if (mencionarTodos) {
+        // Sem texto configurado: manda o @all separado antes da imagem
+        await zapi.enviarTexto(grupoId, 'Novidade pra vocês 👇\n@all', true);
+        await sleep(1500);
+        await zapi.enviarImagem(grupoId, url, '');
+      } else {
+        await zapi.enviarImagem(grupoId, url, msg.texto || '');
+      }
     } else {
       console.log(`⚠️ Flyer "${msg.categoria}" não encontrado — slot pulado`);
       if (msg.texto) await zapi.enviarTexto(grupoId, msg.texto, mencionarTodos);
