@@ -552,6 +552,45 @@ async function lerLinksEventos() {
 }
 
 // ============================================================================
+// EXEMPLOS DE TOM (respostas manuais do admin — base para o GIA aprender o estilo)
+// ============================================================================
+// Toda vez que Gusthavo responde um cliente manualmente, o texto é salvo aqui.
+// O prompt carrega os últimos 15 exemplos para que o GIA adapte seu tom.
+
+async function salvarExemploTom(mensagem) {
+  try {
+    if (!mensagem || mensagem.trim().length < 5) return false; // ignora textos muito curtos
+    const id = String(Date.now());
+    await db.collection('tom_exemplos').doc(id).set({
+      mensagem: mensagem.trim(),
+      criadoEm: new Date()
+    });
+    console.log(`💬 Exemplo de tom salvo: "${mensagem.substring(0, 60)}"`);
+    return true;
+  } catch (erro) {
+    console.log('⚠️ Erro ao salvar exemplo de tom:', erro.message);
+    return false;
+  }
+}
+
+async function lerExemplosTom() {
+  try {
+    const snapshot = await db.collection('tom_exemplos')
+      .orderBy('criadoEm', 'desc')
+      .limit(15)
+      .get();
+    const exemplos = [];
+    snapshot.forEach(doc => {
+      exemplos.push(doc.data().mensagem);
+    });
+    return exemplos.reverse(); // ordem cronológica (mais antigo primeiro)
+  } catch (erro) {
+    console.log('⚠️ Erro ao ler exemplos de tom:', erro.message);
+    return [];
+  }
+}
+
+// ============================================================================
 // EXPORTAÇÃO
 // ============================================================================
 
@@ -587,4 +626,6 @@ module.exports = {
   salvarLinkEvento,
   deletarLinkEvento,
   lerLinksEventos,
+  salvarExemploTom,
+  lerExemplosTom,
 };

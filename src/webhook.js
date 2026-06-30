@@ -5,7 +5,7 @@
 const claude = require('./claude');
 const zapi = require('./zapi');
 const { processarComandoAdmin } = require('./admin');
-const { lerCerebroDoGusthavo, lerFlyers, lerStatusGia, registrarPedido, registrarAtendimento, salvarPerguntaSemResposta } = require('./firebase');
+const { lerCerebroDoGusthavo, lerFlyers, lerStatusGia, registrarPedido, registrarAtendimento, salvarPerguntaSemResposta, salvarExemploTom } = require('./firebase');
 const NUMERO_ADMIN = process.env.NUMERO_GUSTHAVO_PESSOAL;
 
 // ============================================================================
@@ -78,7 +78,11 @@ async function processarMensagem(dadosDoWebhook) {
     if (enviadaPorNos) {
       if (!ehAdmin) {
         claude.registrarRespostaManual(telefoneCliente);
-        console.log(`✍️ Resposta manual enviada para ${telefoneCliente} — GIA pausada por 30min`);
+        // Salvar resposta como exemplo de tom para o GIA aprender o estilo do Gusthavo
+        if (textoRecebido && textoRecebido.trim()) {
+          salvarExemploTom(textoRecebido.trim()).catch(() => {});
+        }
+        console.log(`✍️ Resposta manual enviada para ${telefoneCliente} — GIA pausada por 1h, tom salvo`);
       }
       return;
     }
@@ -201,6 +205,17 @@ async function processarBufferDoCliente(telefoneCliente) {
       // Salvar pergunta no Firebase para revisão semanal
       await salvarPerguntaSemResposta(telefoneCliente, textoFinal);
       console.log(`❓ [NAO_SEI] — cliente ${telefoneCliente} pausado 1h, pergunta salva`);
+      return;
+    }
+
+    // Detectar [MUITOS_CONVIDADOS] — grupo grande, notificar admin SEM responder o cliente
+    if (textoLimpo.includes('[MUITOS_CONVIDADOS]')) {
+      // NÃO envia nada ao cliente — só alerta o admin e pausa o GIA
+      await zapi.alertarDono(telefoneCliente,
+        `👥 Cliente quer trazer MUITOS convidados:\n"${textoFinal}"\n\nResponda manualmente — GIA aguarda.`
+      );
+      claude.pausarClientePorNaoSaber(telefoneCliente);
+      console.log(`👥 [MUITOS_CONVIDADOS] — admin notificado, GIA pausado para ${telefoneCliente}`);
       return;
     }
 
