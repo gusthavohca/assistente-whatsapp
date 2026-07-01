@@ -50,8 +50,16 @@ const HORARIOS_FIXOS = {
 // ============================================================================
 // Set em memória como primeira barreira (rápido, sem Firebase).
 // Firebase como segunda barreira (persiste entre reinícios e múltiplas instâncias).
+//
+// STARTUP DELAY: aguarda 90s após o boot antes de verificar disparos.
+// Isso evita que o novo container Railway dispare em paralelo com o container
+// anterior durante o período de transição de um deploy. 90s é suficiente para
+// o container antigo terminar, mas curto o suficiente para não perder um slot
+// em caso de reinício próximo ao horário (±1 min de janela ainda cobre).
 
 const _slotsDisparados = new Set();
+const _bootTime = Date.now();
+const STARTUP_DELAY_MS = 90 * 1000; // 90 segundos
 
 // ============================================================================
 // TIMEZONE SP
@@ -132,6 +140,9 @@ async function enviarMensagem(grupoId, msg, mencionarTodos, cacheFlyers) {
 
 async function executarDisparo() {
   try {
+    // Aguarda 90s após o boot antes de disparar
+    if (Date.now() - _bootTime < STARTUP_DELAY_MS) return;
+
     const { hora, minuto, diaDaSemana } = horaAtualSP();
 
     const nomeDia      = DIAS[diaDaSemana];

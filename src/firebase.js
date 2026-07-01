@@ -427,7 +427,7 @@ async function verificarEMarcarSlotDisparado(hora) {
     return podeDisparar;
   } catch (erro) {
     console.log('⚠️ Erro ao verificar slot de disparo:', erro.message);
-    return true; // em caso de erro, permite disparar (evita perder o slot)
+    return false; // em caso de erro, NÃO dispara — melhor perder um slot do que duplicar
   }
 }
 

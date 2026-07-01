@@ -48,11 +48,13 @@ function iniciarAgendamento() {
 
   setInterval(() => {
     const agora = new Date();
-    const diaDaSemana = agora.getDay(); // 0 = domingo
-    const hora = agora.getHours();
-    const minuto = agora.getMinutes();
+    // Converte para horário de SP (UTC-3) — Railway roda em UTC
+    const agoraSP = new Date(agora.getTime() - 3 * 60 * 60 * 1000);
+    const diaDaSemana = agoraSP.getUTCDay(); // 0 = domingo
+    const hora = agoraSP.getUTCHours();
+    const minuto = agoraSP.getUTCMinutes();
 
-    if (diaDaSemana === 0 && hora === 18 && minuto === 0) {
+    if (diaDaSemana === 0 && hora === 18 && minuto <= 1) {
       enviarRelatorioSemanal();
     }
   }, 60000); // verifica a cada 1 minuto
