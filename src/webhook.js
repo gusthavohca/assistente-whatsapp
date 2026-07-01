@@ -77,12 +77,23 @@ async function processarMensagem(dadosDoWebhook) {
     // Se foi enviada por nós mesmos (resposta manual do admin)
     if (enviadaPorNos) {
       if (!ehAdmin) {
+        // Cancela qualquer timer pendente — evita que o GIA responda após a intervenção manual
+        if (timersDeEspera[telefoneCliente]) {
+          clearTimeout(timersDeEspera[telefoneCliente]);
+          delete timersDeEspera[telefoneCliente];
+        }
+        if (timersDeDigitando[telefoneCliente]) {
+          clearInterval(timersDeDigitando[telefoneCliente]);
+          delete timersDeDigitando[telefoneCliente];
+        }
+        delete buffersDeMensagens[telefoneCliente];
+
         claude.registrarRespostaManual(telefoneCliente);
         // Salvar resposta como exemplo de tom para o GIA aprender o estilo do Gusthavo
         if (textoRecebido && textoRecebido.trim()) {
           salvarExemploTom(textoRecebido.trim()).catch(() => {});
         }
-        console.log(`✍️ Resposta manual enviada para ${telefoneCliente} — GIA pausada por 1h, tom salvo`);
+        console.log(`✍️ Resposta manual para ${telefoneCliente} — timer cancelado, GIA pausado 30min`);
       }
       return;
     }

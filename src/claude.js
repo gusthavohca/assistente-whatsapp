@@ -11,7 +11,7 @@ const claude = new Anthropic({
 // CONTROLE DE PAUSA POR RESPOSTA MANUAL DO ADMIN
 // ============================================================================
 
-const PAUSA_APOS_MANUAL_MS = 60 * 60 * 1000; // 1 hora
+const PAUSA_APOS_MANUAL_MS = 30 * 60 * 1000; // 30 minutos
 const ultimaRespostaManual = {};
 
 function registrarRespostaManual(telefone) {
