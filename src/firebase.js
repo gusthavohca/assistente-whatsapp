@@ -405,8 +405,10 @@ async function salvarDisparos(dados) {
 // ============================================================================
 // DEDUPLICAÇÃO DE DISPAROS (anti double-fire entre reinícios/deploys)
 // ============================================================================
-// Usa uma Firestore transaction para garantir que apenas UMA instância do
-// servidor dispare cada slot por dia, mesmo após reinício ou redeploy.
+// Usa ref.create() — operação ATÔMICA do Firestore. Se dois processos tentam
+// criar o mesmo documento ao mesmo tempo, apenas UM consegue. O outro recebe
+// ALREADY_EXISTS e sabe que não deve disparar. Mais confiável que transaction
+// porque elimina qualquer race condition de leitura simultânea.
 
 function _dataSP() {
   const agora = new Date();
@@ -418,16 +420,19 @@ async function verificarEMarcarSlotDisparado(hora) {
   const chave = `${_dataSP()}_${hora}h`;
   try {
     const ref = db.collection('disparos_log').doc(chave);
-    const podeDisparar = await db.runTransaction(async (tx) => {
-      const doc = await tx.get(ref);
-      if (doc.exists) return false;
-      tx.set(ref, { firedAt: new Date() });
-      return true;
-    });
-    return podeDisparar;
+    // create() é atômico: lança erro ALREADY_EXISTS se o doc já existe.
+    // Garante que EXATAMENTE UMA instância dispara, sem race condition.
+    await ref.create({ firedAt: new Date() });
+    return true; // criou com sucesso → esta instância é a responsável
   } catch (erro) {
-    console.log('⚠️ Erro ao verificar slot de disparo:', erro.message);
-    return false; // em caso de erro, NÃO dispara — melhor perder um slot do que duplicar
+    // Código 6 = ALREADY_EXISTS (gRPC) — outro processo já marcou este slot
+    if (erro.code === 6 || (erro.message || '').includes('ALREADY_EXISTS')) {
+      console.log(`🔒 Slot ${chave} já disparado por outra instância — ignorado`);
+      return false;
+    }
+    // Qualquer outro erro: não dispara (mais seguro do que arriscar duplicata)
+    console.log('⚠️ Erro ao verificar slot de disparo:', erro.code, erro.message);
+    return false;
   }
 }
 

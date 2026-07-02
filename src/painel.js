@@ -295,7 +295,8 @@ router.post('/disparos/testar', verificarToken, async (req, res) => {
     const config = await lerDisparos();
     if (!config) return res.json({ ok: false, erro: 'Nenhuma configuração de disparo encontrada' });
 
-    const grupos = (config.grupos || []).filter(g => g && g.trim());
+    // Deduplicação: remove IDs de grupo repetidos
+    const grupos = [...new Set((config.grupos || []).filter(g => g && g.trim()))];
     if (grupos.length === 0) return res.json({ ok: false, erro: 'Nenhum grupo configurado' });
 
     const { comMencao } = req.body; // true = testa com @todos, false = sem

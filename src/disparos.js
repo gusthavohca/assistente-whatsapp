@@ -188,7 +188,8 @@ async function executarDisparo() {
       return;
     }
 
-    const grupos = (config.grupos || []).filter(g => g && g.trim());
+    // Deduplicação: remove IDs de grupo repetidos (evita envio duplo ao mesmo grupo)
+    const grupos = [...new Set((config.grupos || []).filter(g => g && g.trim()))];
     if (grupos.length === 0) {
       console.log(`❌ Disparo ${labelDia} ${hora}h: nenhum grupo configurado`);
       return;
