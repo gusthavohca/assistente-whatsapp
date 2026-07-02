@@ -5,265 +5,291 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>GIA Admin — Le Club</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     :root {
-      --white: #ffffff;
-      --gray-50: #f8fafc;
-      --gray-100: #f1f5f9;
-      --gray-200: #e2e8f0;
-      --gray-300: #cbd5e1;
-      --gray-400: #94a3b8;
-      --gray-500: #64748b;
-      --gray-700: #334155;
-      --gray-900: #0f172a;
-      --gold: #c9a84c;
-      --gold-light: #fdf6e3;
+      --bg:        #080808;
+      --bg-card:   #0f0f0f;
+      --bg-input:  #141414;
+      --border:    rgba(255,255,255,0.08);
+      --border-md: rgba(255,255,255,0.12);
+      --text:      #ffffff;
+      --text-muted: rgba(255,255,255,0.38);
+      --text-dim:  rgba(255,255,255,0.22);
+      --gold:      #c9a84c;
+      --gold-dim:  rgba(201,168,76,0.35);
       --gold-dark: #a07c2c;
-      --green: #10b981;
-      --red: #ef4444;
-      --red-light: #fef2f2;
-      --shadow-sm: 0 1px 3px rgba(0,0,0,0.07), 0 1px 2px rgba(0,0,0,0.05);
-      --shadow: 0 4px 16px rgba(0,0,0,0.08);
-      --shadow-lg: 0 16px 48px rgba(0,0,0,0.14);
-      --radius: 14px;
-      --radius-sm: 8px;
+      --green:     #10b981;
+      --red:       #ef4444;
+      --radius:    10px;
+      --radius-sm: 7px;
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
-      background: var(--gray-50);
-      color: var(--gray-900);
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
       font-size: 14px;
-      line-height: 1.5;
       min-height: 100vh;
     }
 
-    /* ────────────────────────── LOGIN ────────────────────────── */
+    /* ─── LOGIN ─────────────────────────────────────────── */
 
     #tela-login {
       display: flex;
       align-items: center;
       justify-content: center;
       min-height: 100vh;
-      background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
-      position: relative;
-      overflow: hidden;
-    }
-
-    #tela-login::before {
-      content: '';
-      position: absolute;
-      width: 600px;
-      height: 600px;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(201,168,76,0.12) 0%, transparent 70%);
-      top: -150px;
-      right: -150px;
-    }
-
-    #tela-login::after {
-      content: '';
-      position: absolute;
-      width: 400px;
-      height: 400px;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(201,168,76,0.08) 0%, transparent 70%);
-      bottom: -100px;
-      left: -100px;
+      background: var(--bg);
     }
 
     .login-card {
-      background: var(--white);
-      border-radius: 24px;
-      padding: 56px 48px 48px;
+      text-align: center;
       width: 100%;
-      max-width: 440px;
-      box-shadow: var(--shadow-lg);
-      position: relative;
-      z-index: 1;
+      max-width: 360px;
+      padding: 0 24px;
     }
 
-    .login-badge {
-      display: inline-block;
-      background: var(--gold-light);
-      color: var(--gold-dark);
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 1.5px;
+    .login-gia {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 22px;
+      font-weight: 300;
+      letter-spacing: 12px;
+      color: var(--text-muted);
       text-transform: uppercase;
-      padding: 5px 12px;
-      border-radius: 100px;
-      margin-bottom: 20px;
+      padding-left: 12px;
+      margin-bottom: 10px;
     }
 
-    .login-logo {
-      font-size: 40px;
-      font-weight: 800;
-      color: var(--gray-900);
-      letter-spacing: -1px;
+    .login-leclub {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 58px;
+      font-weight: 300;
+      letter-spacing: 6px;
+      color: var(--text);
+      text-transform: uppercase;
+      padding-left: 6px;
       line-height: 1;
-      margin-bottom: 6px;
-    }
-
-    .login-logo span {
-      color: var(--gold);
-    }
-
-    .login-subtitle {
-      font-size: 15px;
-      color: var(--gray-500);
       margin-bottom: 40px;
-      font-weight: 400;
+    }
+
+    .login-divider {
+      width: 24px;
+      height: 0.5px;
+      background: var(--gold-dim);
+      margin: 0 auto 36px;
     }
 
     .login-label {
       display: block;
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--gray-700);
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-muted);
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      text-align: left;
       margin-bottom: 8px;
     }
 
     .login-card input[type="password"] {
       width: 100%;
-      height: 52px;
-      background: var(--gray-50);
-      border: 1.5px solid var(--gray-200);
+      height: 48px;
+      background: var(--bg-input);
+      border: 0.5px solid var(--border-md);
       border-radius: var(--radius-sm);
-      padding: 0 18px;
-      color: var(--gray-900);
+      padding: 0 16px;
+      color: var(--text);
       font-size: 15px;
       font-family: inherit;
-      margin-bottom: 20px;
+      margin-bottom: 14px;
       outline: none;
-      transition: border-color 0.2s, box-shadow 0.2s;
+      transition: border-color 0.2s;
+      letter-spacing: 2px;
     }
 
     .login-card input[type="password"]:focus {
       border-color: var(--gold);
-      box-shadow: 0 0 0 3px rgba(201,168,76,0.12);
     }
 
     .btn-login {
       width: 100%;
-      height: 52px;
-      background: var(--gray-900);
-      color: var(--white);
-      border: none;
+      height: 48px;
+      background: transparent;
+      color: var(--text-muted);
+      border: 0.5px solid var(--border-md);
       border-radius: var(--radius-sm);
-      font-size: 15px;
-      font-weight: 700;
+      font-size: 12px;
+      font-weight: 500;
       font-family: inherit;
       cursor: pointer;
-      transition: background 0.2s, transform 0.1s;
-      letter-spacing: 0.3px;
+      transition: all 0.2s;
+      letter-spacing: 2px;
+      text-transform: uppercase;
     }
 
-    .btn-login:hover { background: #1e293b; }
-    .btn-login:active { transform: scale(0.99); }
+    .btn-login:hover {
+      border-color: var(--gold);
+      color: var(--gold);
+    }
 
     .erro-msg {
       color: var(--red);
-      font-size: 13px;
-      margin-top: 12px;
-      font-weight: 500;
-      text-align: center;
-    }
-
-    .login-footer {
-      margin-top: 28px;
-      text-align: center;
       font-size: 12px;
-      color: var(--gray-400);
+      margin-top: 12px;
+      letter-spacing: 0.5px;
     }
 
-    /* ────────────────────────── PAINEL ────────────────────────── */
+    /* ─── PAINEL ─────────────────────────────────────────── */
 
     #tela-painel { display: none; }
 
-    /* Header */
-    .app-header {
-      background: var(--white);
-      border-bottom: 1px solid var(--gray-200);
-      padding: 0 32px;
-      height: 68px;
+    /* Top bar */
+    .top-bar {
+      background: var(--bg);
+      border-bottom: 0.5px solid var(--border);
+      height: 48px;
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      justify-content: flex-end;
+      padding: 0 28px;
       position: sticky;
       top: 0;
       z-index: 100;
-      box-shadow: var(--shadow-sm);
     }
 
-    .header-left {
+    .btn-logout {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-dim);
+      border: 0.5px solid var(--border);
+      border-radius: 100px;
+      padding: 5px 16px;
+      cursor: pointer;
+      background: transparent;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      transition: all 0.2s;
+    }
+
+    .btn-logout:hover { border-color: var(--red); color: var(--red); }
+
+    /* Nav tabs */
+    .app-nav {
+      background: var(--bg);
+      border-bottom: 0.5px solid var(--border);
+      display: flex;
+      position: sticky;
+      top: 48px;
+      z-index: 99;
+    }
+
+    .tab {
+      flex: 1;
       display: flex;
       align-items: center;
-      gap: 16px;
+      justify-content: center;
+      gap: 5px;
+      padding: 13px 4px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 11.5px;
+      font-weight: 400;
+      color: var(--text-dim);
+      background: transparent;
+      border: none;
+      border-bottom: 1.5px solid transparent;
+      cursor: pointer;
+      white-space: nowrap;
+      letter-spacing: 0.2px;
+      transition: color 0.15s, border-color 0.15s;
     }
 
-    .header-logo {
-      font-size: 22px;
-      font-weight: 800;
-      color: var(--gray-900);
-      letter-spacing: -0.5px;
-    }
+    .tab:hover { color: var(--text-muted); }
 
-    .header-logo span { color: var(--gold); }
-
-    .header-divider {
-      width: 1px;
-      height: 24px;
-      background: var(--gray-200);
-    }
-
-    .header-title {
-      font-size: 13px;
-      color: var(--gray-500);
+    .tab.ativa {
+      color: var(--gold);
+      border-bottom-color: var(--gold);
       font-weight: 500;
     }
 
-    .header-right {
+    .tab-icon { font-size: 13px; }
+
+    /* Hero */
+    .hero {
+      background: var(--bg);
+      padding: 72px 0 80px;
+      text-align: center;
       display: flex;
+      flex-direction: column;
       align-items: center;
-      gap: 12px;
     }
 
-    /* Status toggle no header */
-    .gia-status-wrap {
-      display: flex;
+    .hero-gia {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 26px;
+      font-weight: 300;
+      letter-spacing: 14px;
+      color: var(--text-muted);
+      padding-left: 14px;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+    }
+
+    .hero-leclub {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 74px;
+      font-weight: 300;
+      letter-spacing: 8px;
+      color: var(--text);
+      padding-left: 8px;
+      margin-bottom: 44px;
+      text-transform: uppercase;
+      line-height: 1;
+    }
+
+    .hero-divider {
+      width: 28px;
+      height: 0.5px;
+      background: var(--gold-dim);
+      margin-bottom: 28px;
+    }
+
+    .status-pill {
+      display: inline-flex;
       align-items: center;
       gap: 10px;
-      background: var(--gray-50);
-      border: 1px solid var(--gray-200);
+      background: rgba(255,255,255,0.03);
+      border: 0.5px solid var(--border-md);
       border-radius: 100px;
-      padding: 6px 14px 6px 10px;
+      padding: 9px 22px;
+      cursor: pointer;
     }
 
     .status-dot {
-      width: 8px;
-      height: 8px;
+      width: 7px;
+      height: 7px;
       border-radius: 50%;
-      background: var(--gray-300);
-      transition: background 0.3s;
+      background: #555;
+      transition: background 0.3s, box-shadow 0.3s;
     }
 
-    .status-dot.ativo { background: var(--green); box-shadow: 0 0 0 3px rgba(16,185,129,0.2); }
+    .status-dot.ativo { background: var(--green); box-shadow: 0 0 0 3px rgba(16,185,129,0.15); }
     .status-dot.pausado { background: var(--red); }
 
-    .gia-status-label {
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--gray-700);
+    .status-label {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 11px;
+      color: var(--text-muted);
+      letter-spacing: 2px;
+      text-transform: uppercase;
     }
 
     .toggle {
       position: relative;
-      width: 44px;
-      height: 24px;
+      width: 36px;
+      height: 20px;
       flex-shrink: 0;
     }
 
@@ -272,88 +298,31 @@
     .toggle-slider {
       position: absolute;
       inset: 0;
-      background: var(--gray-300);
-      border-radius: 24px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 20px;
       cursor: pointer;
-      transition: 0.3s;
+      transition: background 0.3s;
     }
 
     .toggle-slider:before {
       content: '';
       position: absolute;
-      width: 18px;
-      height: 18px;
-      background: var(--white);
+      width: 14px;
+      height: 14px;
+      background: var(--text);
       border-radius: 50%;
       left: 3px;
       top: 3px;
-      transition: 0.3s;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+      transition: transform 0.3s;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.4);
     }
 
     .toggle input:checked + .toggle-slider { background: var(--green); }
-    .toggle input:checked + .toggle-slider:before { transform: translateX(20px); }
+    .toggle input:checked + .toggle-slider:before { transform: translateX(16px); }
 
-    .btn-logout {
-      background: transparent;
-      border: 1.5px solid var(--gray-200);
-      color: var(--gray-500);
-      padding: 8px 18px;
-      border-radius: 100px;
-      cursor: pointer;
-      font-size: 13px;
-      font-weight: 600;
-      font-family: inherit;
-      transition: all 0.2s;
-    }
-
-    .btn-logout:hover {
-      border-color: var(--red);
-      color: var(--red);
-      background: var(--red-light);
-    }
-
-    /* Navegação */
-    .app-nav {
-      background: var(--white);
-      border-bottom: 1px solid var(--gray-200);
-      padding: 0 32px;
-      display: flex;
-      gap: 2px;
-      overflow-x: auto;
-    }
-
-    .app-nav::-webkit-scrollbar { display: none; }
-
-    .tab {
-      display: flex;
-      align-items: center;
-      gap: 7px;
-      padding: 16px 18px;
-      font-size: 13.5px;
-      font-weight: 600;
-      cursor: pointer;
-      color: var(--gray-500);
-      background: transparent;
-      border: none;
-      font-family: inherit;
-      border-bottom: 2px solid transparent;
-      transition: all 0.2s;
-      white-space: nowrap;
-    }
-
-    .tab:hover { color: var(--gray-900); }
-
-    .tab.ativa {
-      color: var(--gold-dark);
-      border-bottom-color: var(--gold);
-    }
-
-    .tab-icon { font-size: 15px; }
-
-    /* Conteúdo */
+    /* Content */
     .app-body {
-      padding: 32px;
+      padding: 28px 32px;
       max-width: 1000px;
       margin: 0 auto;
     }
@@ -370,1086 +339,579 @@
     }
 
     .page-title {
-      font-size: 22px;
-      font-weight: 800;
-      color: var(--gray-900);
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text);
       letter-spacing: -0.3px;
     }
 
     .page-desc {
-      font-size: 13px;
-      color: var(--gray-500);
-      margin-top: 3px;
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 4px;
       font-weight: 400;
     }
 
-    /* Cards base */
+    /* Cards */
     .card {
-      background: var(--white);
-      border: 1px solid var(--gray-200);
+      background: var(--bg-card);
+      border: 0.5px solid var(--border);
       border-radius: var(--radius);
-      padding: 24px;
-      box-shadow: var(--shadow-sm);
+      padding: 22px;
     }
 
-    .card + .card { margin-top: 16px; }
+    .card + .card { margin-top: 14px; }
 
     .card-title {
-      font-size: 13px;
-      font-weight: 700;
-      color: var(--gray-700);
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
       text-transform: uppercase;
-      letter-spacing: 0.6px;
-      margin-bottom: 18px;
+      letter-spacing: 1px;
+      margin-bottom: 16px;
     }
 
-    /* ── FLYERS ── */
-    .flyers-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-      gap: 16px;
+    /* Inputs globais */
+    input[type="text"], input[type="password"], textarea, select {
+      background: var(--bg-input);
+      border: 0.5px solid var(--border-md);
+      border-radius: var(--radius-sm);
+      color: var(--text);
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 13px;
+      outline: none;
+      transition: border-color 0.2s;
     }
 
-    .flyer-card {
-      background: var(--white);
-      border: 1.5px solid var(--gray-200);
-      border-radius: var(--radius);
-      overflow: hidden;
-      position: relative;
-      box-shadow: var(--shadow-sm);
-      transition: box-shadow 0.2s, border-color 0.2s;
-    }
-
-    .flyer-card:hover {
-      box-shadow: var(--shadow);
+    input[type="text"]:focus, textarea:focus, select:focus {
       border-color: var(--gold);
     }
 
-    .flyer-card.customizado { border-style: dashed; }
+    input[type="text"] { height: 44px; padding: 0 14px; }
+    select { height: 36px; padding: 0 10px; cursor: pointer; }
+    select option { background: #1a1a1a; }
 
-    .flyer-preview {
-      width: 100%;
-      height: 130px;
-      background: var(--gray-100);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--gray-400);
-      font-size: 13px;
-      overflow: hidden;
+    textarea {
+      padding: 12px 14px;
+      resize: vertical;
+      line-height: 1.6;
     }
 
-    .flyer-preview img, .flyer-preview video {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .flyer-info {
-      padding: 14px 16px 16px;
-    }
-
-    .flyer-info label {
-      display: block;
-      font-size: 12px;
-      font-weight: 700;
-      color: var(--gray-700);
-      margin-bottom: 10px;
-      text-transform: uppercase;
-      letter-spacing: 0.4px;
-    }
-
-    .flyer-upload {
+    /* Botões */
+    .btn-primary {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
+      height: 42px;
+      background: transparent;
+      color: var(--gold);
+      border: 0.5px solid var(--gold-dim);
+      border-radius: var(--radius-sm);
+      padding: 0 22px;
       font-size: 12px;
-      color: var(--gray-500);
-      cursor: pointer;
-      padding: 7px 12px;
-      border: 1.5px dashed var(--gray-300);
-      border-radius: 7px;
-      width: 100%;
-      justify-content: center;
-      transition: all 0.2s;
-      margin-bottom: 8px;
-    }
-
-    .flyer-upload:hover { border-color: var(--gold); color: var(--gold-dark); }
-
-    .btn-enviar-flyer {
-      display: none;
-      width: 100%;
-      background: var(--gold);
-      color: var(--gray-900);
-      border: none;
-      border-radius: 7px;
-      padding: 8px;
-      font-size: 12px;
-      font-weight: 700;
+      font-weight: 600;
       font-family: inherit;
       cursor: pointer;
-      transition: background 0.2s;
+      transition: all 0.2s;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
     }
 
-    .btn-enviar-flyer:hover { background: var(--gold-dark); color: var(--white); }
+    .btn-primary:hover { background: rgba(201,168,76,0.08); border-color: var(--gold); }
 
-    .btn-deletar-flyer {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      background: rgba(255,255,255,0.9);
-      border: 1px solid var(--gray-200);
-      color: var(--gray-500);
+    .btn-ghost {
+      display: inline-flex;
+      align-items: center;
+      height: 36px;
+      background: transparent;
+      color: var(--text-muted);
+      border: 0.5px solid var(--border-md);
+      border-radius: var(--radius-sm);
+      padding: 0 16px;
+      font-size: 12px;
+      font-weight: 500;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-ghost:hover { border-color: var(--text-muted); color: var(--text); }
+
+    .btn-danger {
+      background: transparent;
+      border: 0.5px solid rgba(239,68,68,0.25);
       border-radius: 50%;
       width: 28px;
       height: 28px;
+      color: rgba(239,68,68,0.5);
       font-size: 16px;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
       transition: all 0.2s;
-      line-height: 1;
+      flex-shrink: 0;
     }
 
-    .btn-deletar-flyer:hover { border-color: var(--red); color: var(--red); background: var(--red-light); }
+    .btn-danger:hover { border-color: var(--red); color: var(--red); }
+
+    /* ─── FLYERS ─── */
+    .flyers-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+      gap: 14px;
+    }
+
+    .flyer-card {
+      background: var(--bg-card);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      position: relative;
+      transition: border-color 0.2s;
+    }
+
+    .flyer-card:hover { border-color: var(--gold-dim); }
+    .flyer-card.customizado { border-style: dashed; }
+
+    .flyer-preview {
+      width: 100%;
+      height: 120px;
+      background: rgba(255,255,255,0.03);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-dim);
+      font-size: 22px;
+      overflow: hidden;
+    }
+
+    .flyer-preview img, .flyer-preview video {
+      width: 100%; height: 100%; object-fit: cover;
+    }
+
+    .flyer-info {
+      padding: 12px 14px 14px;
+    }
+
+    .flyer-info label {
+      display: block;
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 10px;
+    }
+
+    .flyer-upload {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      font-size: 11px;
+      color: var(--text-dim);
+      cursor: pointer;
+      padding: 7px;
+      border: 0.5px dashed var(--border-md);
+      border-radius: var(--radius-sm);
+      transition: all 0.2s;
+      margin-bottom: 7px;
+    }
+
+    .flyer-upload:hover { border-color: var(--gold-dim); color: var(--gold); }
+
+    .btn-enviar-flyer {
+      display: none;
+      width: 100%;
+      background: transparent;
+      color: var(--gold);
+      border: 0.5px solid var(--gold-dim);
+      border-radius: var(--radius-sm);
+      padding: 7px;
+      font-size: 11px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-enviar-flyer:hover { background: rgba(201,168,76,0.08); }
+
+    .btn-deletar-flyer {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: rgba(0,0,0,0.6);
+      border: 0.5px solid var(--border-md);
+      color: var(--text-muted);
+      border-radius: 50%;
+      width: 26px;
+      height: 26px;
+      font-size: 15px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+
+    .btn-deletar-flyer:hover { border-color: var(--red); color: var(--red); }
 
     .badge-custom {
       position: absolute;
-      top: 10px;
-      left: 10px;
+      top: 8px;
+      left: 8px;
       background: var(--gold);
-      color: var(--gray-900);
-      font-size: 10px;
-      font-weight: 800;
+      color: #000;
+      font-size: 9px;
+      font-weight: 700;
       padding: 3px 8px;
       border-radius: 100px;
-      letter-spacing: 0.4px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
     }
 
     .divisor-flyers {
       grid-column: 1 / -1;
-      border-top: 1.5px dashed var(--gray-200);
+      border-top: 0.5px solid var(--border);
       padding-top: 16px;
-      margin-top: 8px;
-      font-size: 11px;
-      color: var(--gray-400);
-      font-weight: 700;
+      margin-top: 6px;
+      font-size: 10px;
+      color: var(--text-dim);
+      font-weight: 600;
       text-transform: uppercase;
-      letter-spacing: 1px;
+      letter-spacing: 1.5px;
     }
 
-    /* Modal */
+    /* ─── MODAL ─── */
     .modal-overlay {
       position: fixed;
       inset: 0;
-      background: rgba(15,23,42,0.5);
+      background: rgba(0,0,0,0.7);
       display: none;
       align-items: center;
       justify-content: center;
       z-index: 1000;
-      backdrop-filter: blur(2px);
+      backdrop-filter: blur(4px);
     }
 
     .modal-overlay.aberto { display: flex; }
 
     .modal {
-      background: var(--white);
-      border-radius: 20px;
-      padding: 32px;
+      background: #111;
+      border: 0.5px solid var(--border-md);
+      border-radius: 16px;
+      padding: 28px;
       width: 100%;
-      max-width: 440px;
-      box-shadow: var(--shadow-lg);
+      max-width: 420px;
     }
 
     .modal h3 {
-      font-size: 18px;
-      font-weight: 800;
+      font-size: 16px;
+      font-weight: 600;
       margin-bottom: 20px;
-      color: var(--gray-900);
+      color: var(--text);
     }
 
-    .modal input[type="text"] {
-      width: 100%;
-      height: 48px;
-      background: var(--gray-50);
-      border: 1.5px solid var(--gray-200);
-      border-radius: var(--radius-sm);
-      padding: 0 16px;
-      font-size: 14px;
-      font-family: inherit;
-      color: var(--gray-900);
-      outline: none;
-      margin-bottom: 14px;
-      transition: border-color 0.2s;
-    }
-
-    .modal input:focus { border-color: var(--gold); }
+    .modal input[type="text"] { width: 100%; margin-bottom: 12px; }
 
     .modal-preview {
       width: 100%;
-      height: 160px;
-      background: var(--gray-50);
-      border: 2px dashed var(--gray-200);
+      height: 140px;
+      background: var(--bg-input);
+      border: 0.5px dashed var(--border-md);
       border-radius: var(--radius-sm);
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      font-size: 13px;
-      color: var(--gray-400);
-      margin-bottom: 20px;
+      font-size: 12px;
+      color: var(--text-dim);
+      margin-bottom: 18px;
       overflow: hidden;
       transition: border-color 0.2s;
     }
 
-    .modal-preview:hover { border-color: var(--gold); color: var(--gold-dark); }
+    .modal-preview:hover { border-color: var(--gold-dim); color: var(--gold); }
     .modal-preview img { width: 100%; height: 100%; object-fit: cover; }
 
-    .modal-btns {
-      display: flex;
-      gap: 10px;
-    }
+    .modal-btns { display: flex; gap: 10px; }
 
     .btn-cancelar {
       flex: 1;
-      height: 46px;
-      background: var(--gray-100);
-      border: 1.5px solid var(--gray-200);
+      height: 42px;
+      background: transparent;
+      border: 0.5px solid var(--border-md);
       border-radius: var(--radius-sm);
-      font-size: 14px;
-      font-weight: 600;
+      font-size: 13px;
       font-family: inherit;
       cursor: pointer;
-      color: var(--gray-500);
+      color: var(--text-muted);
       transition: all 0.2s;
     }
 
-    .btn-cancelar:hover { background: var(--gray-200); color: var(--gray-700); }
+    .btn-cancelar:hover { border-color: var(--text-muted); color: var(--text); }
 
     .btn-salvar-modal {
       flex: 1;
-      height: 46px;
-      background: var(--gold);
-      border: none;
+      height: 42px;
+      background: transparent;
+      color: var(--gold);
+      border: 0.5px solid var(--gold-dim);
       border-radius: var(--radius-sm);
-      font-size: 14px;
-      font-weight: 700;
-      font-family: inherit;
-      cursor: pointer;
-      color: var(--gray-900);
-      transition: background 0.2s;
-    }
-
-    .btn-salvar-modal:hover { background: var(--gold-dark); color: var(--white); }
-
-    /* Botão novo flyer */
-    .btn-novo-flyer {
-      background: var(--gold);
-      color: var(--gray-900);
-      border: none;
-      border-radius: 100px;
-      padding: 10px 20px;
       font-size: 13px;
-      font-weight: 700;
+      font-weight: 600;
       font-family: inherit;
       cursor: pointer;
-      transition: background 0.2s;
-      white-space: nowrap;
+      transition: all 0.2s;
     }
 
-    .btn-novo-flyer:hover { background: var(--gold-dark); color: var(--white); }
+    .btn-salvar-modal:hover { background: rgba(201,168,76,0.08); }
 
-    /* ── CÉREBRO ── */
+    /* ─── CÉREBRO ─── */
     .instrucao-box {
-      background: var(--gold-light);
-      border: 1.5px solid rgba(201,168,76,0.3);
+      background: rgba(201,168,76,0.04);
+      border: 0.5px solid var(--gold-dim);
       border-radius: var(--radius);
-      padding: 20px 24px;
-      margin-bottom: 20px;
+      padding: 18px 20px;
+      margin-bottom: 18px;
     }
 
-    .instrucao-box h3 {
-      font-size: 14px;
-      font-weight: 700;
-      color: var(--gold-dark);
-      margin-bottom: 4px;
-    }
+    .instrucao-box h3 { font-size: 13px; font-weight: 600; color: var(--gold); margin-bottom: 3px; }
+    .instrucao-box > p { font-size: 11px; color: var(--text-muted); margin-bottom: 12px; }
 
-    .instrucao-box > p {
-      font-size: 12px;
-      color: var(--gray-500);
-      margin-bottom: 14px;
-    }
-
-    .instrucao-form {
-      display: flex;
-      gap: 10px;
-    }
+    .instrucao-form { display: flex; gap: 10px; }
 
     .instrucao-form textarea {
       flex: 1;
-      min-height: 52px;
-      background: var(--white);
-      border: 1.5px solid var(--gray-200);
-      border-radius: var(--radius-sm);
-      padding: 12px 14px;
-      font-size: 13px;
-      font-family: inherit;
-      color: var(--gray-900);
-      resize: vertical;
-      outline: none;
-      transition: border-color 0.2s;
+      min-height: 48px;
+      width: 100%;
     }
-
-    .instrucao-form textarea:focus { border-color: var(--gold); }
-
-    .btn-adicionar-instrucao {
-      height: 52px;
-      background: var(--gold);
-      color: var(--gray-900);
-      border: none;
-      border-radius: var(--radius-sm);
-      padding: 0 20px;
-      font-size: 13px;
-      font-weight: 700;
-      font-family: inherit;
-      cursor: pointer;
-      white-space: nowrap;
-      align-self: flex-start;
-      transition: background 0.2s;
-    }
-
-    .btn-adicionar-instrucao:hover { background: var(--gold-dark); color: var(--white); }
 
     .cerebro-editor-titulo {
-      font-size: 12px;
-      font-weight: 700;
-      color: var(--gray-500);
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--text-dim);
       text-transform: uppercase;
-      letter-spacing: 0.6px;
+      letter-spacing: 1px;
       margin-bottom: 10px;
     }
 
     #textarea-cerebro {
       width: 100%;
-      min-height: 360px;
-      background: var(--gray-50);
-      border: 1.5px solid var(--gray-200);
-      border-radius: var(--radius-sm);
-      padding: 16px;
-      font-size: 13px;
+      min-height: 340px;
       font-family: 'SFMono-Regular', 'Consolas', monospace;
-      color: var(--gray-900);
-      resize: vertical;
-      outline: none;
-      transition: border-color 0.2s;
-      line-height: 1.6;
+      font-size: 12.5px;
+      line-height: 1.7;
     }
 
-    #textarea-cerebro:focus { border-color: var(--gold); }
-
-    /* ── BOTÃO SALVAR GENÉRICO ── */
-    .btn-salvar {
-      display: inline-flex;
-      align-items: center;
-      height: 46px;
-      background: var(--gray-900);
-      color: var(--white);
-      border: none;
-      border-radius: var(--radius-sm);
-      padding: 0 24px;
-      font-size: 14px;
-      font-weight: 700;
-      font-family: inherit;
-      cursor: pointer;
-      transition: background 0.2s;
-      margin-top: 16px;
-    }
-
-    .btn-salvar:hover { background: #1e293b; }
-
-    /* ── CALENDÁRIO ── */
-    .calendario-form {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 20px;
-      flex-wrap: wrap;
-    }
-
-    .calendario-form input {
-      height: 46px;
-      background: var(--white);
-      border: 1.5px solid var(--gray-200);
-      border-radius: var(--radius-sm);
-      padding: 0 14px;
-      font-size: 14px;
-      font-family: inherit;
-      color: var(--gray-900);
-      outline: none;
-      transition: border-color 0.2s;
-    }
-
-    .calendario-form input:focus { border-color: var(--gold); }
-    .calendario-form input:first-child { width: 90px; }
-    .calendario-form input:nth-child(2) { flex: 1; min-width: 200px; }
-    .calendario-form .btn-salvar { margin-top: 0; }
+    /* ─── CALENDÁRIO ─── */
+    .calendario-form { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+    .calendario-form input:first-child { width: 80px; }
+    .calendario-form input:nth-child(2) { flex: 1; min-width: 180px; }
 
     .mes-bloco {
-      background: var(--white);
-      border: 1px solid var(--gray-200);
+      background: var(--bg-card);
+      border: 0.5px solid var(--border);
       border-radius: var(--radius);
-      margin-bottom: 12px;
+      margin-bottom: 10px;
       overflow: hidden;
-      box-shadow: var(--shadow-sm);
     }
 
     .mes-header {
-      padding: 12px 20px;
-      background: var(--gray-50);
-      border-bottom: 1px solid var(--gray-200);
-      font-size: 11px;
-      font-weight: 800;
-      color: var(--gray-500);
+      padding: 10px 18px;
+      background: rgba(255,255,255,0.03);
+      border-bottom: 0.5px solid var(--border);
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--text-dim);
       text-transform: uppercase;
-      letter-spacing: 1px;
+      letter-spacing: 1.5px;
     }
 
     .evento-item {
       display: flex;
       align-items: center;
-      padding: 14px 20px;
-      border-bottom: 1px solid var(--gray-100);
+      padding: 12px 18px;
+      border-bottom: 0.5px solid rgba(255,255,255,0.04);
       gap: 12px;
     }
 
     .evento-item:last-child { border-bottom: none; }
 
     .evento-dia {
-      font-size: 20px;
-      font-weight: 800;
-      color: var(--gold-dark);
-      min-width: 36px;
+      font-size: 22px;
+      font-weight: 600;
+      color: var(--gold);
+      min-width: 32px;
+      font-family: 'Cormorant Garamond', serif;
     }
 
-    .evento-desc {
-      flex: 1;
-      font-size: 14px;
-      color: var(--gray-700);
-      font-weight: 500;
-    }
+    .evento-desc { flex: 1; font-size: 13px; color: var(--text-muted); }
 
-    .btn-deletar-evento {
-      background: transparent;
-      border: 1px solid var(--gray-200);
-      color: var(--gray-400);
-      border-radius: 50%;
-      width: 28px;
-      height: 28px;
-      font-size: 16px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.2s;
-      flex-shrink: 0;
-    }
-
-    .btn-deletar-evento:hover { border-color: var(--red); color: var(--red); background: var(--red-light); }
-
-    /* ── LINKS ── */
+    /* ─── LINKS ─── */
     .link-evento-form {
-      background: var(--white);
-      border: 1px solid var(--gray-200);
+      background: var(--bg-card);
+      border: 0.5px solid var(--border);
       border-radius: var(--radius);
-      padding: 24px;
-      margin-bottom: 24px;
-      box-shadow: var(--shadow-sm);
+      padding: 20px 22px;
+      margin-bottom: 20px;
     }
 
-    .link-evento-form h3 {
-      font-size: 14px;
-      font-weight: 700;
-      color: var(--gray-900);
-      margin-bottom: 4px;
-    }
+    .link-evento-form h3 { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 3px; }
+    .link-evento-form > p { font-size: 11px; color: var(--text-muted); margin-bottom: 14px; }
 
-    .link-evento-form > p {
-      font-size: 12px;
-      color: var(--gray-500);
-      margin-bottom: 16px;
-    }
-
-    .link-evento-inputs {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      align-items: flex-start;
-    }
-
-    .link-evento-inputs input {
-      height: 46px;
-      background: var(--gray-50);
-      border: 1.5px solid var(--gray-200);
-      border-radius: var(--radius-sm);
-      padding: 0 14px;
-      color: var(--gray-900);
-      font-size: 14px;
-      font-family: inherit;
-      outline: none;
-      transition: border-color 0.2s;
-    }
-
-    .link-evento-inputs input:focus { border-color: var(--gold); }
-    .input-data { width: 90px; }
-    .input-atracao { flex: 1; min-width: 150px; }
-    .input-url { flex: 2; min-width: 220px; }
-    .link-evento-inputs .btn-salvar { margin-top: 0; }
+    .link-evento-inputs { display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-start; }
+    .input-data { width: 80px; }
+    .input-atracao { flex: 1; min-width: 130px; }
+    .input-url { flex: 2; min-width: 200px; }
 
     .link-card {
-      background: var(--white);
-      border: 1px solid var(--gray-200);
+      background: var(--bg-card);
+      border: 0.5px solid var(--border);
       border-radius: var(--radius);
-      padding: 18px 20px;
-      margin-bottom: 10px;
+      padding: 16px 18px;
+      margin-bottom: 8px;
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 12px;
-      box-shadow: var(--shadow-sm);
-      transition: box-shadow 0.2s;
+      transition: border-color 0.2s;
     }
 
-    .link-card:hover { box-shadow: var(--shadow); }
+    .link-card:hover { border-color: var(--border-md); }
     .link-card-info { flex: 1; }
+    .link-card-data { font-size: 10px; font-weight: 600; color: var(--gold); margin-bottom: 2px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .link-card-atracao { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 3px; }
+    .link-card-url { font-size: 11px; color: var(--text-dim); word-break: break-all; }
 
-    .link-card-data {
-      font-size: 12px;
-      font-weight: 700;
-      color: var(--gold-dark);
-      margin-bottom: 2px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    .link-card-atracao {
-      font-size: 15px;
-      font-weight: 700;
-      color: var(--gray-900);
-      margin-bottom: 4px;
-    }
-
-    .link-card-url {
-      font-size: 12px;
-      color: var(--gray-400);
-      word-break: break-all;
-    }
-
-    .btn-deletar-link {
-      background: transparent;
-      border: 1px solid var(--gray-200);
-      color: var(--gray-400);
-      border-radius: 50%;
-      width: 30px;
-      height: 30px;
-      font-size: 16px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.2s;
-      flex-shrink: 0;
-    }
-
-    .btn-deletar-link:hover { border-color: var(--red); color: var(--red); background: var(--red-light); }
-
-    /* ── RELATÓRIO ── */
-    .relatorio-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
-      gap: 16px;
-      margin-bottom: 24px;
-    }
+    /* ─── RELATÓRIO ─── */
+    .relatorio-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 14px; margin-bottom: 20px; }
 
     .stat-card {
-      background: var(--white);
-      border: 1px solid var(--gray-200);
+      background: var(--bg-card);
+      border: 0.5px solid var(--border);
       border-radius: var(--radius);
-      padding: 24px;
-      box-shadow: var(--shadow-sm);
+      padding: 22px;
       text-align: center;
     }
 
-    .stat-card .numero {
-      font-size: 48px;
-      font-weight: 800;
-      color: var(--gray-900);
-      letter-spacing: -2px;
-      line-height: 1;
-      margin-bottom: 8px;
-    }
+    .stat-card .numero { font-size: 52px; font-weight: 600; color: var(--text); letter-spacing: -2px; line-height: 1; margin-bottom: 8px; font-family: 'Cormorant Garamond', serif; }
+    .stat-card .label { font-size: 10px; font-weight: 600; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; }
 
-    .stat-card .label {
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--gray-500);
-      text-transform: uppercase;
-      letter-spacing: 0.6px;
-    }
+    .perguntas-lista { background: var(--bg-card); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 20px 22px; }
+    .perguntas-lista h3 { font-size: 11px; font-weight: 600; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 14px; }
 
-    .perguntas-lista {
-      background: var(--white);
-      border: 1px solid var(--gray-200);
-      border-radius: var(--radius);
-      padding: 24px;
-      box-shadow: var(--shadow-sm);
-    }
-
-    .perguntas-lista h3 {
-      font-size: 14px;
-      font-weight: 700;
-      color: var(--gray-700);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-bottom: 16px;
-    }
-
-    .pergunta-item {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 11px 0;
-      border-bottom: 1px solid var(--gray-100);
-      font-size: 13px;
-      color: var(--gray-700);
-    }
-
+    .pergunta-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 0.5px solid rgba(255,255,255,0.04); font-size: 13px; color: var(--text-muted); }
     .pergunta-item:last-child { border-bottom: none; }
+    .pergunta-item .count { font-size: 11px; font-weight: 600; background: rgba(201,168,76,0.1); color: var(--gold); padding: 3px 9px; border-radius: 100px; }
 
-    .pergunta-item .count {
-      font-size: 12px;
-      font-weight: 700;
-      background: var(--gold-light);
-      color: var(--gold-dark);
-      padding: 3px 9px;
-      border-radius: 100px;
-    }
-
-    /* ── DISPAROS ── */
+    /* ─── DISPAROS ─── */
     .disparo-config-box {
-      background: var(--white);
-      border: 1px solid var(--gray-200);
+      background: var(--bg-card);
+      border: 0.5px solid var(--border);
       border-radius: var(--radius);
-      padding: 24px;
-      margin-bottom: 16px;
-      box-shadow: var(--shadow-sm);
-    }
-
-    .disparo-config-box h3 {
-      font-size: 13px;
-      font-weight: 700;
-      color: var(--gray-700);
-      text-transform: uppercase;
-      letter-spacing: 0.6px;
-      margin-bottom: 18px;
-    }
-
-    .disparo-config-row {
-      display: flex;
-      gap: 16px;
-      align-items: center;
-      margin-bottom: 14px;
-      flex-wrap: wrap;
-    }
-
-    .disparo-config-row label.campo-label {
-      font-size: 13px;
-      color: var(--gray-700);
-      font-weight: 600;
-      min-width: 110px;
-    }
-
-    .disparo-hint {
-      font-size: 12px;
-      color: var(--gray-400);
-      margin-top: 6px;
-      line-height: 1.6;
-    }
-
-    .grupo-row {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 10px;
-    }
-
-    .grupo-row label {
-      font-size: 12px;
-      color: var(--gray-500);
-      font-weight: 600;
-      min-width: 60px;
-    }
-
-    .grupo-row input {
-      flex: 1;
-      height: 42px;
-      background: var(--gray-50);
-      border: 1.5px solid var(--gray-200);
-      border-radius: var(--radius-sm);
-      padding: 0 14px;
-      color: var(--gray-900);
-      font-size: 13px;
-      font-family: inherit;
-      outline: none;
-      transition: border-color 0.2s;
-    }
-
-    .grupo-row input:focus { border-color: var(--gold); }
-
-    .dia-bloco {
-      background: var(--white);
-      border: 1px solid var(--gray-200);
-      border-radius: var(--radius);
+      padding: 20px 22px;
       margin-bottom: 12px;
-      overflow: hidden;
-      box-shadow: var(--shadow-sm);
     }
 
-    .dia-bloco-header {
-      padding: 14px 20px;
-      background: var(--gray-50);
-      border-bottom: 1px solid var(--gray-200);
-      font-size: 12px;
-      font-weight: 800;
-      color: var(--gray-700);
-      text-transform: uppercase;
-      letter-spacing: 0.6px;
-    }
+    .disparo-config-box h3 { font-size: 11px; font-weight: 600; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px; }
 
-    .slot-bloco {
-      border-top: 1px solid var(--gray-100);
-      padding: 16px 20px;
-    }
+    .disparo-config-row { display: flex; align-items: center; gap: 14px; margin-bottom: 12px; flex-wrap: wrap; }
+    .disparo-config-row label.campo-label { font-size: 12px; color: var(--text-muted); font-weight: 500; min-width: 100px; }
 
+    .disparo-hint { font-size: 11px; color: var(--text-dim); margin-top: 6px; line-height: 1.6; }
+
+    .grupo-row { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+    .grupo-row label { font-size: 11px; color: var(--text-dim); font-weight: 600; min-width: 56px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .grupo-row input { flex: 1; }
+
+    .dia-bloco { background: var(--bg-card); border: 0.5px solid var(--border); border-radius: var(--radius); margin-bottom: 10px; overflow: hidden; }
+
+    .dia-bloco-header { padding: 12px 18px; background: rgba(255,255,255,0.03); border-bottom: 0.5px solid var(--border); font-size: 10px; font-weight: 600; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; }
+
+    .slot-bloco { border-top: 0.5px solid rgba(255,255,255,0.04); padding: 14px 18px; }
     .slot-bloco:first-child { border-top: none; }
 
-    .slot-hora {
-      font-size: 11px;
-      font-weight: 800;
-      color: var(--gold-dark);
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-bottom: 12px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
+    .slot-hora { font-size: 10px; font-weight: 600; color: var(--gold); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+    .slot-hora::after { content: ''; flex: 1; height: 0.5px; background: var(--border); }
 
-    .slot-hora::after {
-      content: '';
-      flex: 1;
-      height: 1px;
-      background: var(--gray-100);
-    }
+    .mensagem-card { background: rgba(255,255,255,0.02); border: 0.5px solid var(--border); border-radius: var(--radius-sm); padding: 12px; margin-bottom: 6px; position: relative; }
 
-    .mensagem-card {
-      background: var(--gray-50);
-      border: 1.5px solid var(--gray-200);
-      border-radius: var(--radius-sm);
-      padding: 14px;
-      margin-bottom: 8px;
-      position: relative;
-    }
+    .mensagem-card-topo { display: flex; align-items: center; gap: 7px; margin-bottom: 8px; flex-wrap: wrap; }
 
-    .mensagem-card-topo {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 10px;
-      flex-wrap: wrap;
-    }
+    .msg-num { font-size: 9px; font-weight: 700; color: #000; background: var(--gold); border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 
-    .msg-num {
-      font-size: 10px;
-      font-weight: 800;
-      color: var(--white);
-      background: var(--gold-dark);
-      border-radius: 50%;
-      width: 22px;
-      height: 22px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-    }
+    .mensagem-card select { font-family: inherit; font-size: 11px; }
 
-    .mensagem-card select {
-      background: var(--white);
-      border: 1.5px solid var(--gray-200);
-      border-radius: 7px;
-      padding: 7px 10px;
-      color: var(--gray-900);
-      font-size: 12px;
-      font-family: inherit;
-      outline: none;
-      cursor: pointer;
-      transition: border-color 0.2s;
-    }
+    .mensagem-card textarea { width: 100%; min-height: 60px; font-size: 12px; margin-top: 4px; }
 
-    .mensagem-card select:focus { border-color: var(--gold); }
-    .mensagem-card select option { background: var(--white); }
+    .btn-remover-msg { position: absolute; top: 8px; right: 8px; background: transparent; border: 0.5px solid var(--border); color: var(--text-dim); border-radius: 5px; width: 22px; height: 22px; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+    .btn-remover-msg:hover { border-color: var(--red); color: var(--red); }
 
-    .mensagem-card textarea {
-      width: 100%;
-      min-height: 72px;
-      font-size: 13px;
-      font-family: inherit;
-      resize: vertical;
-      padding: 10px 12px;
-      border-radius: 7px;
-      margin-top: 4px;
-      background: var(--white);
-      border: 1.5px solid var(--gray-200);
-      color: var(--gray-900);
-      outline: none;
-      transition: border-color 0.2s;
-    }
+    .btn-add-msg { background: transparent; border: 0.5px dashed var(--border-md); color: var(--text-dim); border-radius: var(--radius-sm); padding: 7px 12px; font-size: 11px; font-family: inherit; cursor: pointer; transition: all 0.2s; width: 100%; margin-top: 4px; font-weight: 500; }
+    .btn-add-msg:hover { border-color: var(--gold-dim); color: var(--gold); }
 
-    .mensagem-card textarea:focus { border-color: var(--gold); }
+    .slot-vazio { font-size: 11px; color: var(--text-dim); padding: 4px 0 8px; font-style: italic; }
 
-    .btn-remover-msg {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      background: transparent;
-      border: 1px solid var(--gray-200);
-      color: var(--gray-400);
-      border-radius: 5px;
-      width: 24px;
-      height: 24px;
-      font-size: 14px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.2s;
-    }
+    .teste-box { background: rgba(255,255,255,0.02); border: 0.5px solid var(--border); border-radius: var(--radius-sm); padding: 16px 18px; margin-top: 14px; }
+    .teste-box p { font-size: 12px; color: var(--text-muted); margin-bottom: 12px; }
+    .teste-btns { display: flex; gap: 8px; flex-wrap: wrap; }
 
-    .btn-remover-msg:hover { border-color: var(--red); color: var(--red); background: var(--red-light); }
+    #disparo-status-text { font-size: 12px; color: var(--text-muted); font-weight: 500; }
+    #teste-resultado { margin-top: 10px; font-size: 12px; color: var(--text-dim); font-weight: 500; }
 
-    .btn-add-msg {
-      background: transparent;
-      border: 1.5px dashed var(--gray-300);
-      color: var(--gray-500);
-      border-radius: var(--radius-sm);
-      padding: 8px 14px;
-      font-size: 12px;
-      font-family: inherit;
-      cursor: pointer;
-      transition: all 0.2s;
-      width: 100%;
-      margin-top: 4px;
-      font-weight: 600;
-    }
-
-    .btn-add-msg:hover { border-color: var(--gold); color: var(--gold-dark); }
-
-    .slot-vazio {
-      font-size: 12px;
-      color: var(--gray-400);
-      padding: 4px 0 8px;
-      font-style: italic;
-    }
-
-    /* Teste de disparo */
-    .teste-box {
-      background: var(--gray-50);
-      border: 1px solid var(--gray-200);
-      border-radius: var(--radius-sm);
-      padding: 18px 20px;
-      margin-top: 16px;
-    }
-
-    .teste-box p {
-      font-size: 13px;
-      color: var(--gray-700);
-      margin-bottom: 12px;
-    }
-
-    .teste-btns {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .btn-teste {
-      background: var(--white);
-      color: var(--gray-700);
-      border: 1.5px solid var(--gray-200);
-      border-radius: var(--radius-sm);
-      padding: 9px 16px;
-      font-size: 13px;
-      font-weight: 600;
-      font-family: inherit;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .btn-teste:hover { border-color: var(--gold); color: var(--gold-dark); background: var(--gold-light); }
-
-    #teste-resultado {
-      margin-top: 10px;
-      font-size: 12px;
-      color: var(--gray-500);
-      font-weight: 600;
-    }
-
-    /* ── PERGUNTAS SEM RESPOSTA ── */
-    .pergunta-sem-resposta-card {
-      background: var(--white);
-      border: 1px solid var(--gray-200);
-      border-radius: var(--radius);
-      padding: 18px 20px;
-      margin-bottom: 10px;
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 16px;
-      box-shadow: var(--shadow-sm);
-      transition: box-shadow 0.2s;
-    }
-
-    .pergunta-sem-resposta-card:hover { box-shadow: var(--shadow); }
+    /* ─── PERGUNTAS ─── */
+    .pergunta-sem-resposta-card { background: var(--bg-card); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 16px 18px; margin-bottom: 8px; display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; transition: border-color 0.2s; }
+    .pergunta-sem-resposta-card:hover { border-color: var(--border-md); }
     .psr-info { flex: 1; }
+    .psr-pergunta { font-size: 13px; color: var(--text); margin-bottom: 7px; line-height: 1.5; }
+    .psr-meta { font-size: 11px; color: var(--text-dim); display: flex; gap: 12px; flex-wrap: wrap; }
+    .btn-resolver { background: transparent; border: 0.5px solid rgba(16,185,129,0.3); color: rgba(16,185,129,0.7); border-radius: var(--radius-sm); padding: 7px 14px; font-size: 11px; font-weight: 600; font-family: inherit; cursor: pointer; white-space: nowrap; transition: all 0.2s; flex-shrink: 0; }
+    .btn-resolver:hover { background: rgba(16,185,129,0.08); border-color: var(--green); color: var(--green); }
 
-    .psr-pergunta {
-      font-size: 14px;
-      color: var(--gray-900);
-      margin-bottom: 8px;
-      line-height: 1.5;
-      font-weight: 500;
-    }
+    .perguntas-vazio { font-size: 13px; color: var(--text-dim); padding: 48px 0; text-align: center; }
+    .loading { color: var(--text-dim); font-size: 13px; padding: 24px 0; text-align: center; }
 
-    .psr-meta {
-      font-size: 12px;
-      color: var(--gray-400);
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
+    /* Toast */
+    .toast { position: fixed; bottom: 24px; right: 24px; background: #111; border: 0.5px solid var(--border-md); border-radius: var(--radius-sm); padding: 12px 18px; font-size: 13px; font-weight: 500; color: var(--text); display: none; z-index: 9999; box-shadow: 0 8px 32px rgba(0,0,0,0.5); max-width: 300px; }
+    .toast.ok { border-left: 3px solid var(--green); }
+    .toast.erro { border-left: 3px solid var(--red); }
 
-    .btn-resolver {
-      background: transparent;
-      border: 1.5px solid var(--green);
-      color: var(--green);
-      border-radius: var(--radius-sm);
-      padding: 8px 16px;
-      font-size: 12px;
-      font-weight: 700;
-      font-family: inherit;
-      cursor: pointer;
-      white-space: nowrap;
-      transition: all 0.2s;
-      flex-shrink: 0;
-    }
-
-    .btn-resolver:hover { background: var(--green); color: var(--white); }
-
-    .perguntas-vazio {
-      font-size: 14px;
-      color: var(--gray-400);
-      padding: 48px 0;
-      text-align: center;
-      font-weight: 500;
-    }
-
-    /* Loading */
-    .loading {
-      color: var(--gray-400);
-      font-size: 14px;
-      padding: 24px 0;
-      text-align: center;
-    }
-
-    /* disparo status label */
-    #disparo-status-text {
-      font-size: 13px;
-      color: var(--gray-500);
-      font-weight: 600;
-    }
-
-    /* ── TOAST ── */
-    .toast {
-      position: fixed;
-      bottom: 28px;
-      right: 28px;
-      background: var(--white);
-      border: 1px solid var(--gray-200);
-      border-radius: var(--radius-sm);
-      padding: 14px 20px;
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--gray-900);
-      display: none;
-      z-index: 9999;
-      box-shadow: var(--shadow-lg);
-      max-width: 320px;
-    }
-
-    .toast.ok { border-left: 4px solid var(--green); }
-    .toast.erro { border-left: 4px solid var(--red); }
+    /* Novo flyer btn */
+    .btn-novo-flyer { background: transparent; color: var(--gold); border: 0.5px solid var(--gold-dim); border-radius: 100px; padding: 9px 20px; font-size: 12px; font-weight: 600; font-family: inherit; cursor: pointer; transition: all 0.2s; white-space: nowrap; letter-spacing: 0.3px; }
+    .btn-novo-flyer:hover { background: rgba(201,168,76,0.08); }
   </style>
 </head>
 <body>
 
-<!-- ═══════════════════════════════ LOGIN ═══════════════════════════════ -->
+<!-- ═══════ LOGIN ═══════ -->
 <div id="tela-login">
   <div class="login-card">
-    <div class="login-badge">Sistema Administrativo</div>
-    <div class="login-logo">Le <span>Club</span></div>
-    <p class="login-subtitle">Acesse o painel de controle da GIA</p>
-
-    <label class="login-label" for="input-senha">Senha de acesso</label>
-    <input
-      type="password"
-      id="input-senha"
-      placeholder="••••••••••"
-      onkeydown="if(event.key==='Enter') fazerLogin()"
-    />
-    <button class="btn-login" onclick="fazerLogin()">Entrar no painel</button>
+    <div class="login-gia">GIA</div>
+    <div class="login-leclub">Le Club</div>
+    <div class="login-divider"></div>
+    <label class="login-label" for="input-senha">Senha</label>
+    <input type="password" id="input-senha" placeholder="••••••••••" onkeydown="if(event.key==='Enter') fazerLogin()" />
+    <button class="btn-login" onclick="fazerLogin()">Entrar</button>
     <div class="erro-msg" id="erro-login"></div>
-
-    <p class="login-footer">Le Club · GIA v2.0</p>
   </div>
 </div>
 
-<!-- ═══════════════════════════════ PAINEL ═══════════════════════════════ -->
+<!-- ═══════ PAINEL ═══════ -->
 <div id="tela-painel">
 
-  <!-- Header -->
-  <header class="app-header">
-    <div class="header-left">
-      <div class="header-logo">Le <span>Club</span></div>
-      <div class="header-divider"></div>
-      <div class="header-title">GIA Admin</div>
-    </div>
-    <div class="header-right">
-      <div class="gia-status-wrap">
-        <div class="status-dot" id="status-dot"></div>
-        <label class="toggle">
-          <input type="checkbox" id="toggle-gia" onchange="alternarGia()" />
-          <span class="toggle-slider"></span>
-        </label>
-        <span class="gia-status-label" id="status-text">carregando...</span>
-      </div>
-      <button class="btn-logout" onclick="fazerLogout()">Sair</button>
-    </div>
-  </header>
+  <!-- Top bar -->
+  <div class="top-bar">
+    <button class="btn-logout" onclick="fazerLogout()">Sair</button>
+  </div>
 
-  <!-- Navegação -->
+  <!-- Nav tabs -->
   <nav class="app-nav">
-    <button class="tab ativa" onclick="abrirTab('flyers', this)">
+    <button class="tab ativa" onclick="abrirTab('home', this)">
+      <span class="tab-icon">⬡</span> Início
+    </button>
+    <button class="tab" onclick="abrirTab('flyers', this)">
       <span class="tab-icon">🖼️</span> Flyers
     </button>
     <button class="tab" onclick="abrirTab('cerebro', this)">
@@ -1472,15 +934,30 @@
     </button>
   </nav>
 
-  <!-- Conteúdo -->
-  <main class="app-body">
+  <!-- ─── HOME ─── -->
+  <div class="secao ativa" id="secao-home">
+    <div class="hero">
+      <div class="hero-gia">GIA</div>
+      <div class="hero-leclub">Le Club</div>
+      <div class="hero-divider"></div>
+      <div class="status-pill">
+        <div class="status-dot" id="status-dot"></div>
+        <label class="toggle">
+          <input type="checkbox" id="toggle-gia" onchange="alternarGia()" />
+          <span class="toggle-slider"></span>
+        </label>
+        <span class="status-label" id="status-text">carregando</span>
+      </div>
+    </div>
+  </div>
 
-    <!-- FLYERS -->
-    <div class="secao ativa" id="secao-flyers">
+  <!-- ─── FLYERS ─── -->
+  <div class="secao" id="secao-flyers">
+    <div class="app-body">
       <div class="page-header">
         <div>
           <h2 class="page-title">Flyers</h2>
-          <p class="page-desc">Faça upload das imagens para cada categoria. A GIA enviará automaticamente quando solicitado.</p>
+          <p class="page-desc">Faça upload das imagens para cada categoria.</p>
         </div>
         <button class="btn-novo-flyer" onclick="abrirModalNovoFlyer()">+ Novo Flyer</button>
       </div>
@@ -1488,95 +965,97 @@
         <div class="loading">Carregando flyers...</div>
       </div>
     </div>
+  </div>
 
-    <!-- CÉREBRO -->
-    <div class="secao" id="secao-cerebro">
+  <!-- ─── CÉREBRO ─── -->
+  <div class="secao" id="secao-cerebro">
+    <div class="app-body">
       <div class="page-header">
         <div>
           <h2 class="page-title">Cérebro da GIA</h2>
-          <p class="page-desc">Adicione novas instruções rapidamente ou edite o comportamento completo da GIA.</p>
+          <p class="page-desc">Adicione instruções ou edite o comportamento completo.</p>
         </div>
       </div>
-
       <div class="instrucao-box">
-        <h3>+ Adicionar instrução rápida</h3>
-        <p>Digite uma nova regra e ela será adicionada automaticamente ao cérebro.</p>
+        <h3>+ Instrução rápida</h3>
+        <p>Digite uma nova regra e ela será adicionada ao cérebro.</p>
         <div class="instrucao-form">
-          <textarea id="nova-instrucao" placeholder="Ex: Quando o cliente perguntar sobre estacionamento, diga que tem valet por R$30"></textarea>
-          <button class="btn-adicionar-instrucao" onclick="adicionarInstrucao()">Adicionar</button>
+          <textarea id="nova-instrucao" placeholder="Ex: Quando perguntarem sobre estacionamento, diga que tem valet por R$30"></textarea>
+          <button class="btn-primary" onclick="adicionarInstrucao()">Adicionar</button>
         </div>
       </div>
-
-      <p class="cerebro-editor-titulo">Editor completo do cérebro</p>
+      <p class="cerebro-editor-titulo">Editor completo</p>
       <textarea id="textarea-cerebro" rows="20" placeholder="Carregando..."></textarea>
       <br/>
-      <button class="btn-salvar" onclick="salvarCerebro()">💾 Salvar Cérebro</button>
+      <button class="btn-primary" style="margin-top:14px" onclick="salvarCerebro()">💾 Salvar Cérebro</button>
     </div>
+  </div>
 
-    <!-- CALENDÁRIO -->
-    <div class="secao" id="secao-calendario">
+  <!-- ─── CALENDÁRIO ─── -->
+  <div class="secao" id="secao-calendario">
+    <div class="app-body">
       <div class="page-header">
         <div>
           <h2 class="page-title">Calendário de Eventos</h2>
-          <p class="page-desc">Adicione eventos por data. A GIA usará essas informações para responder sobre a programação.</p>
+          <p class="page-desc">Datas e eventos que a GIA usa para responder sobre a programação.</p>
         </div>
       </div>
       <div class="calendario-form">
         <input type="text" id="cal-dia" placeholder="DD/MM" maxlength="5" />
         <input type="text" id="cal-desc" placeholder="Ex: Festa Trap — DJ Luan" />
-        <button class="btn-salvar" style="margin-top:0" onclick="salvarEvento()">Adicionar</button>
+        <button class="btn-primary" onclick="salvarEvento()">Adicionar</button>
       </div>
-      <div id="calendario-lista">
-        <div class="loading">Carregando calendário...</div>
-      </div>
+      <div id="calendario-lista"><div class="loading">Carregando...</div></div>
     </div>
+  </div>
 
-    <!-- LINKS -->
-    <div class="secao" id="secao-links">
+  <!-- ─── LINKS ─── -->
+  <div class="secao" id="secao-links">
+    <div class="app-body">
       <div class="page-header">
         <div>
           <h2 class="page-title">Links de Ingresso</h2>
-          <p class="page-desc">Cadastre os links do Sympla por evento. A GIA enviará todos quando o cliente pedir ingresso antecipado.</p>
+          <p class="page-desc">Links do Sympla por evento. A GIA envia todos quando o cliente pedir antecipado.</p>
         </div>
       </div>
       <div class="link-evento-form">
         <h3>+ Adicionar link</h3>
-        <p>Preencha a data, atração e o link do Sympla para o evento.</p>
+        <p>Data, atração e link do Sympla.</p>
         <div class="link-evento-inputs">
           <input type="text" class="input-data" id="link-data" placeholder="DD/MM" maxlength="5" />
           <input type="text" class="input-atracao" id="link-atracao" placeholder="Ex: DJ Malifoo" />
           <input type="text" class="input-url" id="link-url" placeholder="https://www.sympla.com.br/..." />
-          <button class="btn-salvar" style="margin-top:0" onclick="adicionarLink()">Adicionar</button>
+          <button class="btn-primary" onclick="adicionarLink()">Adicionar</button>
         </div>
       </div>
-      <div id="links-lista">
-        <div class="loading">Carregando links...</div>
-      </div>
+      <div id="links-lista"><div class="loading">Carregando...</div></div>
     </div>
+  </div>
 
-    <!-- RELATÓRIO -->
-    <div class="secao" id="secao-relatorio">
+  <!-- ─── RELATÓRIO ─── -->
+  <div class="secao" id="secao-relatorio">
+    <div class="app-body">
       <div class="page-header">
         <div>
           <h2 class="page-title">Relatório da Semana</h2>
-          <p class="page-desc">Dados dos últimos 7 dias de atendimento da GIA.</p>
+          <p class="page-desc">Atendimentos dos últimos 7 dias.</p>
         </div>
       </div>
-      <div class="relatorio-grid" id="relatorio-grid">
-        <div class="loading">Carregando relatório...</div>
-      </div>
+      <div class="relatorio-grid" id="relatorio-grid"><div class="loading">Carregando...</div></div>
       <div class="perguntas-lista" id="perguntas-lista" style="display:none">
-        <h3>Perguntas mais frequentes</h3>
+        <h3>Perguntas frequentes</h3>
         <div id="perguntas-conteudo"></div>
       </div>
     </div>
+  </div>
 
-    <!-- DISPAROS -->
-    <div class="secao" id="secao-disparos">
+  <!-- ─── DISPAROS ─── -->
+  <div class="secao" id="secao-disparos">
+    <div class="app-body">
       <div class="page-header">
         <div>
           <h2 class="page-title">Disparos Automáticos</h2>
-          <p class="page-desc">Mensagens diárias automáticas para grupos do WhatsApp. Configure o conteúdo de cada slot.</p>
+          <p class="page-desc">Mensagens diárias automáticas para grupos do WhatsApp.</p>
         </div>
       </div>
 
@@ -1584,19 +1063,13 @@
         <h3>Configuração Geral</h3>
         <div class="disparo-config-row">
           <label class="campo-label">Status</label>
-          <label class="toggle">
-            <input type="checkbox" id="disparo-ativo" onchange="atualizarStatusDisparo()" />
-            <span class="toggle-slider"></span>
-          </label>
+          <label class="toggle"><input type="checkbox" id="disparo-ativo" onchange="atualizarStatusDisparo()" /><span class="toggle-slider"></span></label>
           <span id="disparo-status-text">Desativado</span>
         </div>
         <div class="disparo-config-row">
           <label class="campo-label">@todos</label>
-          <label class="toggle">
-            <input type="checkbox" id="disparo-mencionar" />
-            <span class="toggle-slider"></span>
-          </label>
-          <span style="font-size:13px;color:var(--gray-500);">Mencionar todos ao enviar (quebra o silêncio do grupo)</span>
+          <label class="toggle"><input type="checkbox" id="disparo-mencionar" /><span class="toggle-slider"></span></label>
+          <span style="font-size:12px;color:var(--text-muted)">Mencionar todos ao enviar</span>
         </div>
       </div>
 
@@ -1605,37 +1078,39 @@
         <div class="grupo-row"><label>Grupo 1</label><input type="text" id="grupo-0" placeholder="120363xxxxxxxxxx@g.us" /></div>
         <div class="grupo-row"><label>Grupo 2</label><input type="text" id="grupo-1" placeholder="120363xxxxxxxxxx@g.us" /></div>
         <div class="grupo-row"><label>Grupo 3</label><input type="text" id="grupo-2" placeholder="120363xxxxxxxxxx@g.us" /></div>
-        <p class="disparo-hint">Para descobrir o ID: envie qualquer mensagem para o número da GIA pelo grupo. O ID aparecerá nos logs do Railway no formato <code style="color:var(--gold-dark);background:var(--gold-light);padding:2px 6px;border-radius:4px;">120363xxxxxxxxxx@g.us</code></p>
+        <p class="disparo-hint">Para descobrir o ID: envie mensagem para a GIA pelo grupo. O ID aparece nos logs do Railway no formato <code style="color:var(--gold);background:rgba(201,168,76,0.08);padding:2px 6px;border-radius:4px">120363xxxxxxxxxx@g.us</code></p>
       </div>
 
-      <h3 style="font-size:15px;font-weight:800;color:var(--gray-900);margin-bottom:6px;">Mensagens por Dia</h3>
-      <p style="font-size:12px;color:var(--gray-500);margin-bottom:16px;">Horários fixos — Segunda 14h/16h/18h · Terça–Quarta 11h/18h · Quinta 11h/19h · Sexta 12h/17h/21h · Sábado 12h/18h/21h</p>
+      <h3 style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:6px">Mensagens por Dia</h3>
+      <p style="font-size:11px;color:var(--text-muted);margin-bottom:14px">Seg 14h/16h/18h · Ter–Qua 11h/18h · Qui 11h/19h · Sex 12h/17h/21h · Sáb 12h/18h/21h</p>
       <div id="disparos-dias-container"></div>
 
-      <button class="btn-salvar" onclick="salvarDisparos()">💾 Salvar Disparos</button>
+      <button class="btn-primary" style="margin-top:4px" onclick="salvarDisparos()">💾 Salvar Disparos</button>
 
       <div class="teste-box">
-        <p>🧪 <strong>Teste manual</strong> — envia uma mensagem de texto para todos os grupos agora, sem depender de horário.</p>
+        <p>🧪 <strong>Teste manual</strong> — envia para todos os grupos agora.</p>
         <div class="teste-btns">
-          <button class="btn-teste" onclick="testarDisparo(false)">📤 Testar SEM @todos</button>
-          <button class="btn-teste" onclick="testarDisparo(true)">📤 Testar COM @todos</button>
+          <button class="btn-ghost" onclick="testarDisparo(false)">📤 Testar SEM @todos</button>
+          <button class="btn-ghost" onclick="testarDisparo(true)">📤 Testar COM @todos</button>
         </div>
         <div id="teste-resultado"></div>
       </div>
     </div>
+  </div>
 
-    <!-- PERGUNTAS SEM RESPOSTA -->
-    <div class="secao" id="secao-perguntas">
+  <!-- ─── PERGUNTAS ─── -->
+  <div class="secao" id="secao-perguntas">
+    <div class="app-body">
       <div class="page-header">
         <div>
           <h2 class="page-title">Perguntas sem resposta</h2>
-          <p class="page-desc">Perguntas que a GIA não soube responder. Revise toda semana e atualize o cérebro.</p>
+          <p class="page-desc">Perguntas que a GIA não soube responder. Revise toda semana.</p>
         </div>
       </div>
       <div id="perguntas-sem-resposta-lista"><div class="loading">Carregando...</div></div>
     </div>
+  </div>
 
-  </main>
 </div>
 
 <!-- MODAL NOVO FLYER -->
@@ -1644,7 +1119,7 @@
     <h3>+ Novo Flyer Personalizado</h3>
     <input type="text" id="modal-nome" placeholder="Nome do comando (ex: quinta_especial)" />
     <div class="modal-preview" id="modal-preview" onclick="document.getElementById('modal-file').click()">
-      📎 Clique para escolher a imagem ou vídeo
+      📎 Clique para escolher imagem ou vídeo
     </div>
     <input type="file" id="modal-file" accept="image/*,video/*" style="display:none" />
     <div class="modal-btns">
@@ -1663,46 +1138,40 @@
   const FLYERS_FIXOS = ['programacao_sexta','programacao_sabado','entrada_sexta','entrada_sabado','camarote_sexta','camarote_sabado','aniversario_sexta','aniversario_sabado'];
   const FLYERS_LABELS = { programacao_sexta:'Programação Sexta', programacao_sabado:'Programação Sábado', entrada_sexta:'Entrada Sexta', entrada_sabado:'Entrada Sábado', camarote_sexta:'Camarote Sexta', camarote_sabado:'Camarote Sábado', aniversario_sexta:'Aniversário Sexta', aniversario_sabado:'Aniversário Sábado' };
 
-  function mostrarToast(msg, tipo = 'ok') {
+  function mostrarToast(msg, tipo='ok') {
     const t = document.getElementById('toast');
-    t.textContent = msg;
-    t.className = 'toast ' + tipo;
-    t.style.display = 'block';
+    t.textContent = msg; t.className = 'toast '+tipo; t.style.display = 'block';
     setTimeout(() => t.style.display = 'none', 3000);
   }
 
   async function fazerLogin() {
     const senha = document.getElementById('input-senha').value;
     try {
-      const res = await fetch('/painel/api/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ senha }) });
+      const res = await fetch('/painel/api/login', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ senha }) });
       const data = await res.json();
       if (!res.ok) throw new Error(data.erro);
-      TOKEN = data.token;
-      localStorage.setItem('gia_token', TOKEN);
+      TOKEN = data.token; localStorage.setItem('gia_token', TOKEN);
       abrirPainel();
-    } catch (e) {
-      document.getElementById('erro-login').textContent = 'Senha incorreta.';
-    }
+    } catch(e) { document.getElementById('erro-login').textContent = 'Senha incorreta.'; }
   }
 
   function abrirPainel() {
     document.getElementById('tela-login').style.display = 'none';
     document.getElementById('tela-painel').style.display = 'block';
-    carregarTudo();
+    carregarStatus();
   }
 
   async function fazerLogout() {
-    await fetch('/painel/api/logout', { method: 'POST', headers: { 'Authorization': TOKEN } });
-    TOKEN = '';
-    localStorage.removeItem('gia_token');
-    location.reload();
+    await fetch('/painel/api/logout', { method:'POST', headers:{'Authorization':TOKEN} });
+    TOKEN = ''; localStorage.removeItem('gia_token'); location.reload();
   }
 
   function abrirTab(nome, btn) {
     document.querySelectorAll('.secao').forEach(s => s.classList.remove('ativa'));
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('ativa'));
-    document.getElementById('secao-' + nome).classList.add('ativa');
+    document.getElementById('secao-'+nome).classList.add('ativa');
     btn.classList.add('ativa');
+    if (nome === 'flyers') carregarFlyers();
     if (nome === 'relatorio') carregarRelatorio();
     if (nome === 'calendario') carregarCalendario();
     if (nome === 'cerebro') carregarCerebro();
@@ -1711,128 +1180,102 @@
     if (nome === 'perguntas') carregarPerguntasSemResposta();
   }
 
-  function carregarTudo() { carregarStatus(); carregarFlyers(); }
-
   async function carregarStatus() {
-    const res = await fetch('/painel/api/status', { headers: { 'Authorization': TOKEN } });
+    const res = await fetch('/painel/api/status', { headers:{'Authorization':TOKEN} });
     const data = await res.json();
     const toggle = document.getElementById('toggle-gia');
     const texto = document.getElementById('status-text');
     const dot = document.getElementById('status-dot');
     toggle.checked = data.ativo;
-    texto.textContent = data.ativo ? 'GIA Ativa' : 'GIA Pausada';
-    dot.className = 'status-dot ' + (data.ativo ? 'ativo' : 'pausado');
+    texto.textContent = data.ativo ? 'Ativa' : 'Pausada';
+    dot.className = 'status-dot '+(data.ativo ? 'ativo' : 'pausado');
   }
 
   async function alternarGia() {
     const ativo = document.getElementById('toggle-gia').checked;
     const texto = document.getElementById('status-text');
     const dot = document.getElementById('status-dot');
-    await fetch('/painel/api/status', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': TOKEN }, body: JSON.stringify({ ativo }) });
-    texto.textContent = ativo ? 'GIA Ativa' : 'GIA Pausada';
-    dot.className = 'status-dot ' + (ativo ? 'ativo' : 'pausado');
+    await fetch('/painel/api/status', { method:'POST', headers:{'Content-Type':'application/json','Authorization':TOKEN}, body:JSON.stringify({ ativo }) });
+    texto.textContent = ativo ? 'Ativa' : 'Pausada';
+    dot.className = 'status-dot '+(ativo ? 'ativo' : 'pausado');
     mostrarToast(ativo ? '✅ GIA ativada' : '⏸️ GIA pausada');
   }
 
   async function carregarFlyers() {
-    const res = await fetch('/painel/api/flyers', { headers: { 'Authorization': TOKEN } });
+    const res = await fetch('/painel/api/flyers', { headers:{'Authorization':TOKEN} });
     const flyers = await res.json();
     const grid = document.getElementById('flyers-grid');
     grid.innerHTML = '';
-    FLYERS_FIXOS.forEach(tipo => {
-      const url = flyers[tipo] || '';
-      grid.appendChild(criarCardFlyer(tipo, FLYERS_LABELS[tipo] || tipo, url, false));
-    });
+    FLYERS_FIXOS.forEach(tipo => grid.appendChild(criarCardFlyer(tipo, FLYERS_LABELS[tipo]||tipo, flyers[tipo]||'', false)));
     const customizados = Object.keys(flyers).filter(k => !FLYERS_FIXOS.includes(k));
     if (customizados.length > 0) {
-      const div = document.createElement('div');
-      div.className = 'divisor-flyers';
-      div.textContent = 'Flyers Personalizados';
-      grid.appendChild(div);
-      customizados.forEach(tipo => { grid.appendChild(criarCardFlyer(tipo, tipo.replace(/_/g, ' '), flyers[tipo], true)); });
+      const div = document.createElement('div'); div.className = 'divisor-flyers'; div.textContent = 'Flyers Personalizados'; grid.appendChild(div);
+      customizados.forEach(tipo => grid.appendChild(criarCardFlyer(tipo, tipo.replace(/_/g,' '), flyers[tipo], true)));
     }
   }
 
   function criarCardFlyer(tipo, label, url, customizado) {
     const card = document.createElement('div');
-    card.className = 'flyer-card' + (customizado ? ' customizado' : '');
-    card.id = 'card-' + tipo;
+    card.className = 'flyer-card'+(customizado?' customizado':'');
+    card.id = 'card-'+tipo;
     card.innerHTML = `
       ${customizado ? '<span class="badge-custom">Custom</span>' : ''}
-      ${customizado ? `<button class="btn-deletar-flyer" onclick="deletarFlyer('${tipo}')" title="Remover flyer">×</button>` : ''}
-      <div class="flyer-preview" id="preview-${tipo}">${url ? `<img src="${url}" alt="${label}" />` : '📷'}</div>
+      ${customizado ? `<button class="btn-deletar-flyer" onclick="deletarFlyer('${tipo}')">×</button>` : ''}
+      <div class="flyer-preview" id="preview-${tipo}">${url ? `<img src="${url}" alt="${label}"/>` : '📷'}</div>
       <div class="flyer-info">
         <label>${label}</label>
         <div class="flyer-upload" id="upload-label-${tipo}">📎 Escolher imagem</div>
-        <input type="file" id="file-${tipo}" accept="image/*" style="display:none" />
+        <input type="file" id="file-${tipo}" accept="image/*" style="display:none"/>
         <button class="btn-enviar-flyer" id="btn-${tipo}" onclick="enviarFlyer('${tipo}')">⬆️ Enviar</button>
       </div>`;
     setTimeout(() => {
-      const uploadLabel = document.getElementById('upload-label-' + tipo);
-      const fileInput = document.getElementById('file-' + tipo);
-      if (uploadLabel && fileInput) {
-        uploadLabel.addEventListener('click', () => fileInput.click());
-        fileInput.addEventListener('change', () => selecionouImagem(tipo));
-      }
+      const ul = document.getElementById('upload-label-'+tipo);
+      const fi = document.getElementById('file-'+tipo);
+      if (ul && fi) { ul.addEventListener('click', () => fi.click()); fi.addEventListener('change', () => selecionouImagem(tipo)); }
     }, 0);
     return card;
   }
 
   function selecionouImagem(tipo) {
-    const file = document.getElementById('file-' + tipo).files[0];
-    if (!file) return;
-    const btn = document.getElementById('btn-' + tipo);
-    btn.style.display = 'block';
-    btn.textContent = `⬆️ Enviar: ${file.name}`;
+    const file = document.getElementById('file-'+tipo).files[0]; if (!file) return;
+    const btn = document.getElementById('btn-'+tipo);
+    btn.style.display = 'block'; btn.textContent = `⬆️ Enviar: ${file.name}`;
     const reader = new FileReader();
-    reader.onload = e => { document.getElementById('preview-' + tipo).innerHTML = `<img src="${e.target.result}" />`; };
+    reader.onload = e => { document.getElementById('preview-'+tipo).innerHTML = `<img src="${e.target.result}"/>`; };
     reader.readAsDataURL(file);
   }
 
   async function enviarFlyer(tipo) {
-    const fileInput = document.getElementById('file-' + tipo);
-    const btn = document.getElementById('btn-' + tipo);
-    const file = fileInput.files[0];
-    if (!file) return;
-    btn.textContent = '⏳ Enviando...';
-    btn.disabled = true;
-    const formData = new FormData();
-    formData.append('imagem', file);
+    const fileInput = document.getElementById('file-'+tipo); const btn = document.getElementById('btn-'+tipo);
+    const file = fileInput.files[0]; if (!file) return;
+    btn.textContent = '⏳ Enviando...'; btn.disabled = true;
+    const formData = new FormData(); formData.append('imagem', file);
     try {
-      const res = await fetch(`/painel/api/flyer/${tipo}`, { method: 'POST', headers: { 'Authorization': TOKEN }, body: formData });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.erro);
+      const res = await fetch(`/painel/api/flyer/${tipo}`, { method:'POST', headers:{'Authorization':TOKEN}, body:formData });
+      const data = await res.json(); if (!res.ok) throw new Error(data.erro);
       mostrarToast(`✅ Flyer "${tipo.replace(/_/g,' ')}" atualizado!`);
-      btn.style.display = 'none';
-      btn.disabled = false;
-    } catch (e) {
-      mostrarToast('❌ Erro ao enviar flyer', 'erro');
-      btn.textContent = '⬆️ Tentar novamente';
-      btn.disabled = false;
-    }
+      btn.style.display = 'none'; btn.disabled = false;
+    } catch(e) { mostrarToast('❌ Erro ao enviar flyer','erro'); btn.textContent = '⬆️ Tentar novamente'; btn.disabled = false; }
   }
 
   async function deletarFlyer(tipo) {
     if (!confirm(`Remover o flyer "${tipo.replace(/_/g,' ')}"?`)) return;
     try {
-      const res = await fetch(`/painel/api/flyer/${tipo}`, { method: 'DELETE', headers: { 'Authorization': TOKEN } });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.erro);
-      mostrarToast('✅ Flyer removido!');
-      carregarFlyers();
-    } catch (e) { mostrarToast('❌ Erro ao remover flyer', 'erro'); }
+      const res = await fetch(`/painel/api/flyer/${tipo}`, { method:'DELETE', headers:{'Authorization':TOKEN} });
+      const data = await res.json(); if (!res.ok) throw new Error(data.erro);
+      mostrarToast('✅ Flyer removido!'); carregarFlyers();
+    } catch(e) { mostrarToast('❌ Erro ao remover flyer','erro'); }
   }
 
   function abrirModalNovoFlyer() {
     document.getElementById('modal-nome').value = '';
-    document.getElementById('modal-preview').innerHTML = '📎 Clique para escolher a imagem';
+    document.getElementById('modal-preview').innerHTML = '📎 Clique para escolher imagem ou vídeo';
     document.getElementById('modal-file').value = '';
     document.getElementById('modal-novo-flyer').classList.add('aberto');
     document.getElementById('modal-file').onchange = function() {
-      const file = this.files[0];
-      if (!file) return;
+      const file = this.files[0]; if (!file) return;
       const reader = new FileReader();
-      reader.onload = e => { document.getElementById('modal-preview').innerHTML = `<img src="${e.target.result}" />`; };
+      reader.onload = e => { document.getElementById('modal-preview').innerHTML = `<img src="${e.target.result}"/>`; };
       reader.readAsDataURL(file);
     };
   }
@@ -1840,84 +1283,63 @@
   function fecharModalNovoFlyer() { document.getElementById('modal-novo-flyer').classList.remove('aberto'); }
 
   async function salvarNovoFlyer() {
-    const nome = document.getElementById('modal-nome').value.trim().toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
+    const nome = document.getElementById('modal-nome').value.trim().toLowerCase().replace(/\s+/g,'_').replace(/[^a-z0-9_]/g,'');
     const file = document.getElementById('modal-file').files[0];
-    if (!nome) return mostrarToast('Digite um nome para o flyer.', 'erro');
-    if (!file) return mostrarToast('Escolha uma imagem.', 'erro');
+    if (!nome) return mostrarToast('Digite um nome para o flyer.','erro');
+    if (!file) return mostrarToast('Escolha uma imagem.','erro');
     const btn = document.getElementById('btn-salvar-modal');
-    btn.textContent = '⏳ Enviando...';
-    btn.disabled = true;
-    const formData = new FormData();
-    formData.append('imagem', file);
+    btn.textContent = '⏳ Enviando...'; btn.disabled = true;
+    const formData = new FormData(); formData.append('imagem', file);
     try {
-      const res = await fetch(`/painel/api/flyer/${nome}`, { method: 'POST', headers: { 'Authorization': TOKEN }, body: formData });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.erro);
+      const res = await fetch(`/painel/api/flyer/${nome}`, { method:'POST', headers:{'Authorization':TOKEN}, body:formData });
+      const data = await res.json(); if (!res.ok) throw new Error(data.erro);
       mostrarToast(`✅ Flyer "${nome.replace(/_/g,' ')}" criado!`);
-      fecharModalNovoFlyer();
-      carregarFlyers();
-    } catch (e) { mostrarToast('❌ Erro ao criar flyer', 'erro'); }
+      fecharModalNovoFlyer(); carregarFlyers();
+    } catch(e) { mostrarToast('❌ Erro ao criar flyer','erro'); }
     finally { btn.textContent = 'Salvar'; btn.disabled = false; }
   }
 
   async function carregarCerebro() {
     const textarea = document.getElementById('textarea-cerebro');
     textarea.value = 'Carregando...';
-    const res = await fetch('/painel/api/cerebro', { headers: { 'Authorization': TOKEN } });
-    const data = await res.json();
-    textarea.value = data.cerebro || '';
+    const res = await fetch('/painel/api/cerebro', { headers:{'Authorization':TOKEN} });
+    const data = await res.json(); textarea.value = data.cerebro || '';
   }
 
   async function salvarCerebro() {
     const cerebro = document.getElementById('textarea-cerebro').value;
-    const res = await fetch('/painel/api/cerebro', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': TOKEN }, body: JSON.stringify({ cerebro }) });
+    const res = await fetch('/painel/api/cerebro', { method:'POST', headers:{'Content-Type':'application/json','Authorization':TOKEN}, body:JSON.stringify({ cerebro }) });
     const data = await res.json();
-    if (data.ok) mostrarToast('✅ Cérebro salvo com sucesso!');
-    else mostrarToast('❌ Erro ao salvar', 'erro');
+    if (data.ok) mostrarToast('✅ Cérebro salvo!'); else mostrarToast('❌ Erro ao salvar','erro');
   }
 
   async function adicionarInstrucao() {
     const instrucao = document.getElementById('nova-instrucao').value.trim();
-    if (!instrucao) return mostrarToast('Digite uma instrução antes de adicionar.', 'erro');
-    const res = await fetch('/painel/api/cerebro', { headers: { 'Authorization': TOKEN } });
+    if (!instrucao) return mostrarToast('Digite uma instrução.','erro');
+    const res = await fetch('/painel/api/cerebro', { headers:{'Authorization':TOKEN} });
     const data = await res.json();
-    const cerebroAtual = data.cerebro || '';
-    const novoCerebro = cerebroAtual + `\n\n[INSTRUÇÃO ADICIONADA]: ${instrucao}`;
-    const resSalvar = await fetch('/painel/api/cerebro', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': TOKEN }, body: JSON.stringify({ cerebro: novoCerebro }) });
+    const novoCerebro = (data.cerebro||'')+`\n\n[INSTRUÇÃO ADICIONADA]: ${instrucao}`;
+    const resSalvar = await fetch('/painel/api/cerebro', { method:'POST', headers:{'Content-Type':'application/json','Authorization':TOKEN}, body:JSON.stringify({ cerebro:novoCerebro }) });
     const dataSalvar = await resSalvar.json();
-    if (dataSalvar.ok) {
-      mostrarToast('✅ Instrução adicionada ao cérebro!');
-      document.getElementById('nova-instrucao').value = '';
-      document.getElementById('textarea-cerebro').value = novoCerebro;
-    } else { mostrarToast('❌ Erro ao adicionar instrução', 'erro'); }
+    if (dataSalvar.ok) { mostrarToast('✅ Instrução adicionada!'); document.getElementById('nova-instrucao').value = ''; document.getElementById('textarea-cerebro').value = novoCerebro; }
+    else mostrarToast('❌ Erro ao adicionar','erro');
   }
 
   async function carregarCalendario() {
     const container = document.getElementById('calendario-lista');
-    container.innerHTML = '<div class="loading">Carregando calendário...</div>';
-    const res = await fetch('/painel/api/calendario', { headers: { 'Authorization': TOKEN } });
-    const data = await res.json();
-    const eventos = data.eventos || [];
+    container.innerHTML = '<div class="loading">Carregando...</div>';
+    const res = await fetch('/painel/api/calendario', { headers:{'Authorization':TOKEN} });
+    const data = await res.json(); const eventos = data.eventos || [];
     if (eventos.length === 0) { container.innerHTML = '<div class="loading">Nenhum evento cadastrado.</div>'; return; }
     const porMes = {};
-    eventos.forEach(ev => {
-      const partes = ev.dia.split('/');
-      const mes = parseInt(partes[1]) - 1;
-      if (!porMes[mes]) porMes[mes] = [];
-      porMes[mes].push(ev);
-    });
+    eventos.forEach(ev => { const partes = ev.dia.split('/'); const mes = parseInt(partes[1])-1; if (!porMes[mes]) porMes[mes] = []; porMes[mes].push(ev); });
     container.innerHTML = '';
-    Object.keys(porMes).sort((a, b) => a - b).forEach(mes => {
-      const bloco = document.createElement('div');
-      bloco.className = 'mes-bloco';
-      const header = document.createElement('div');
-      header.className = 'mes-header';
-      header.textContent = MESES[mes];
-      bloco.appendChild(header);
+    Object.keys(porMes).sort((a,b)=>a-b).forEach(mes => {
+      const bloco = document.createElement('div'); bloco.className = 'mes-bloco';
+      bloco.innerHTML = `<div class="mes-header">${MESES[mes]}</div>`;
       porMes[mes].forEach(ev => {
-        const item = document.createElement('div');
-        item.className = 'evento-item';
-        item.innerHTML = `<span class="evento-dia">${ev.dia.split('/')[0]}</span><span class="evento-desc">${ev.descricao}</span><button class="btn-deletar-evento" onclick="deletarEvento('${ev.dia}')" title="Remover evento">×</button>`;
+        const item = document.createElement('div'); item.className = 'evento-item';
+        item.innerHTML = `<span class="evento-dia">${ev.dia.split('/')[0]}</span><span class="evento-desc">${ev.descricao}</span><button class="btn-danger" onclick="deletarEvento('${ev.dia}')">×</button>`;
         bloco.appendChild(item);
       });
       container.appendChild(bloco);
@@ -1925,327 +1347,225 @@
   }
 
   async function salvarEvento() {
-    const dia = document.getElementById('cal-dia').value.trim();
-    const descricao = document.getElementById('cal-desc').value.trim();
-    if (!dia || !descricao) return mostrarToast('Preencha o dia e a descrição.', 'erro');
-    const res = await fetch('/painel/api/calendario', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': TOKEN }, body: JSON.stringify({ dia, descricao }) });
+    const dia = document.getElementById('cal-dia').value.trim(); const descricao = document.getElementById('cal-desc').value.trim();
+    if (!dia || !descricao) return mostrarToast('Preencha o dia e a descrição.','erro');
+    const res = await fetch('/painel/api/calendario', { method:'POST', headers:{'Content-Type':'application/json','Authorization':TOKEN}, body:JSON.stringify({ dia, descricao }) });
     const data = await res.json();
-    if (data.ok) {
-      mostrarToast('✅ Evento adicionado!');
-      document.getElementById('cal-dia').value = '';
-      document.getElementById('cal-desc').value = '';
-      carregarCalendario();
-    } else { mostrarToast('❌ Erro ao salvar evento', 'erro'); }
+    if (data.ok) { mostrarToast('✅ Evento adicionado!'); document.getElementById('cal-dia').value=''; document.getElementById('cal-desc').value=''; carregarCalendario(); }
+    else mostrarToast('❌ Erro ao salvar','erro');
   }
 
   async function deletarEvento(dia) {
     if (!confirm(`Remover o evento do dia ${dia}?`)) return;
     try {
-      const res = await fetch(`/painel/api/calendario/${encodeURIComponent(dia)}`, { method: 'DELETE', headers: { 'Authorization': TOKEN } });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.erro);
-      mostrarToast('✅ Evento removido!');
-      carregarCalendario();
-    } catch (e) { mostrarToast('❌ Erro ao remover evento', 'erro'); }
+      const res = await fetch(`/painel/api/calendario/${encodeURIComponent(dia)}`, { method:'DELETE', headers:{'Authorization':TOKEN} });
+      const data = await res.json(); if (!res.ok) throw new Error(data.erro);
+      mostrarToast('✅ Evento removido!'); carregarCalendario();
+    } catch(e) { mostrarToast('❌ Erro ao remover','erro'); }
   }
 
   async function carregarLinks() {
     const container = document.getElementById('links-lista');
-    container.innerHTML = '<div class="loading">Carregando links...</div>';
-    const res = await fetch('/painel/api/links', { headers: { 'Authorization': TOKEN } });
-    const data = await res.json();
-    const eventos = data.eventos || [];
+    container.innerHTML = '<div class="loading">Carregando...</div>';
+    const res = await fetch('/painel/api/links', { headers:{'Authorization':TOKEN} });
+    const data = await res.json(); const eventos = data.eventos || [];
     if (eventos.length === 0) { container.innerHTML = '<div class="loading">Nenhum link cadastrado.</div>'; return; }
     container.innerHTML = '';
     eventos.forEach(ev => {
-      const card = document.createElement('div');
-      card.className = 'link-card';
-      card.innerHTML = `
-        <div class="link-card-info">
-          <div class="link-card-data">${ev.data}</div>
-          <div class="link-card-atracao">${ev.atracao}</div>
-          <div class="link-card-url">${ev.url}</div>
-        </div>
-        <button class="btn-deletar-link" onclick="deletarLink('${ev.id}')" title="Remover link">×</button>`;
+      const card = document.createElement('div'); card.className = 'link-card';
+      card.innerHTML = `<div class="link-card-info"><div class="link-card-data">${ev.data}</div><div class="link-card-atracao">${ev.atracao}</div><div class="link-card-url">${ev.url}</div></div><button class="btn-danger" onclick="deletarLink('${ev.id}')">×</button>`;
       container.appendChild(card);
     });
   }
 
   async function adicionarLink() {
-    const data = document.getElementById('link-data').value.trim();
-    const atracao = document.getElementById('link-atracao').value.trim();
-    const url = document.getElementById('link-url').value.trim();
-    if (!data || !atracao || !url) return mostrarToast('Preencha todos os campos.', 'erro');
-    const res = await fetch('/painel/api/links', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': TOKEN }, body: JSON.stringify({ data, atracao, url }) });
+    const data = document.getElementById('link-data').value.trim(); const atracao = document.getElementById('link-atracao').value.trim(); const url = document.getElementById('link-url').value.trim();
+    if (!data || !atracao || !url) return mostrarToast('Preencha todos os campos.','erro');
+    const res = await fetch('/painel/api/links', { method:'POST', headers:{'Content-Type':'application/json','Authorization':TOKEN}, body:JSON.stringify({ data, atracao, url }) });
     const resData = await res.json();
-    if (resData.ok) {
-      mostrarToast('✅ Link adicionado!');
-      document.getElementById('link-data').value = '';
-      document.getElementById('link-atracao').value = '';
-      document.getElementById('link-url').value = '';
-      carregarLinks();
-    } else { mostrarToast('❌ Erro ao salvar link', 'erro'); }
+    if (resData.ok) { mostrarToast('✅ Link adicionado!'); document.getElementById('link-data').value=''; document.getElementById('link-atracao').value=''; document.getElementById('link-url').value=''; carregarLinks(); }
+    else mostrarToast('❌ Erro ao salvar','erro');
   }
 
   async function deletarLink(id) {
     if (!confirm('Remover este link?')) return;
     try {
-      const res = await fetch(`/painel/api/links/${encodeURIComponent(id)}`, { method: 'DELETE', headers: { 'Authorization': TOKEN } });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.erro);
-      mostrarToast('✅ Link removido!');
-      carregarLinks();
-    } catch (e) { mostrarToast('❌ Erro ao remover link', 'erro'); }
+      const res = await fetch(`/painel/api/links/${encodeURIComponent(id)}`, { method:'DELETE', headers:{'Authorization':TOKEN} });
+      const data = await res.json(); if (!res.ok) throw new Error(data.erro);
+      mostrarToast('✅ Link removido!'); carregarLinks();
+    } catch(e) { mostrarToast('❌ Erro ao remover','erro'); }
   }
 
   async function carregarRelatorio() {
     const grid = document.getElementById('relatorio-grid');
     grid.innerHTML = '<div class="loading">Carregando...</div>';
-    const res = await fetch('/painel/api/relatorio', { headers: { 'Authorization': TOKEN } });
-    const data = await res.json();
-    if (!data) { grid.innerHTML = '<div class="loading">Sem dados disponíveis.</div>'; return; }
+    const res = await fetch('/painel/api/relatorio', { headers:{'Authorization':TOKEN} });
+    const data = await res.json(); if (!data) { grid.innerHTML = '<div class="loading">Sem dados.</div>'; return; }
     grid.innerHTML = `
-      <div class="stat-card"><div class="numero">${data.atendimentos || 0}</div><div class="label">Atendimentos</div></div>
-      <div class="stat-card"><div class="numero">${data.lista || 0}</div><div class="label">Pedidos de Lista</div></div>
-      <div class="stat-card"><div class="numero">${data.camarote || 0}</div><div class="label">Camarote</div></div>
-      <div class="stat-card"><div class="numero">${data.aniversario || 0}</div><div class="label">Aniversário</div></div>`;
+      <div class="stat-card"><div class="numero">${data.atendimentos||0}</div><div class="label">Atendimentos</div></div>
+      <div class="stat-card"><div class="numero">${data.lista||0}</div><div class="label">Pedidos de Lista</div></div>
+      <div class="stat-card"><div class="numero">${data.camarote||0}</div><div class="label">Camarote</div></div>
+      <div class="stat-card"><div class="numero">${data.aniversario||0}</div><div class="label">Aniversário</div></div>`;
     const perguntas = data.perguntas || {};
-    const entries = Object.entries(perguntas).sort((a, b) => b[1] - a[1]).slice(0, 10);
+    const entries = Object.entries(perguntas).sort((a,b)=>b[1]-a[1]).slice(0,10);
     if (entries.length > 0) {
-      const lista = document.getElementById('perguntas-lista');
-      const conteudo = document.getElementById('perguntas-conteudo');
+      const lista = document.getElementById('perguntas-lista'); const conteudo = document.getElementById('perguntas-conteudo');
       lista.style.display = 'block';
-      conteudo.innerHTML = entries.map(([p, n]) => `<div class="pergunta-item"><span>${p}</span><span class="count">${n}x</span></div>`).join('');
+      conteudo.innerHTML = entries.map(([p,n]) => `<div class="pergunta-item"><span>${p}</span><span class="count">${n}x</span></div>`).join('');
     }
   }
 
-  // ── DISPAROS ──────────────────────────────────────────────────────────────
+  // ── DISPAROS ────────────────────────────────────────────────────────────────
 
   const DIAS_CHAVE_D   = ['segunda','terca','quarta','quinta','sexta','sabado','domingo'];
   const DIAS_LABEL_D   = ['Segunda-Feira','Terça-Feira','Quarta-Feira','Quinta-Feira','Sexta-Feira','Sábado','Domingo'];
-  const HORARIOS_POR_DIA = {
-    segunda: [14, 16, 18],
-    terca:   [11, 18],
-    quarta:  [11, 18],
-    quinta:  [11, 19],
-    sexta:   [12, 17, 21],
-    sabado:  [12, 18, 21],
-    domingo: [],
-  };
+  const HORARIOS_POR_DIA = { segunda:[14,16,18], terca:[11,18], quarta:[11,18], quinta:[11,19], sexta:[12,17,21], sabado:[12,18,21], domingo:[] };
   const FLYERS_OPCOES = [
-    { v: 'programacao_sexta',  l: 'Programação Sexta' },
-    { v: 'programacao_sabado', l: 'Programação Sábado' },
-    { v: 'entrada_sexta',      l: 'Entrada Sexta' },
-    { v: 'entrada_sabado',     l: 'Entrada Sábado' },
-    { v: 'camarote_sexta',     l: 'Camarote Sexta' },
-    { v: 'camarote_sabado',    l: 'Camarote Sábado' },
-    { v: 'aniversario_sexta',  l: 'Aniversário Sexta' },
-    { v: 'aniversario_sabado', l: 'Aniversário Sábado' },
-    { v: 'video_sexta',        l: '🎬 Vídeo Sexta' },
-    { v: 'video_sabado',       l: '🎬 Vídeo Sábado' },
-    { v: 'disparo_lista',      l: '📋 Disparo Lista' },
+    {v:'programacao_sexta',l:'Programação Sexta'},{v:'programacao_sabado',l:'Programação Sábado'},
+    {v:'entrada_sexta',l:'Entrada Sexta'},{v:'entrada_sabado',l:'Entrada Sábado'},
+    {v:'camarote_sexta',l:'Camarote Sexta'},{v:'camarote_sabado',l:'Camarote Sábado'},
+    {v:'aniversario_sexta',l:'Aniversário Sexta'},{v:'aniversario_sabado',l:'Aniversário Sábado'},
+    {v:'video_sexta',l:'🎬 Vídeo Sexta'},{v:'video_sabado',l:'🎬 Vídeo Sábado'},{v:'disparo_lista',l:'📋 Disparo Lista'},
   ];
 
   let diasState = {};
 
-  function flyerOpts(selected) {
-    return FLYERS_OPCOES.map(f =>
-      `<option value="${f.v}"${f.v === selected ? ' selected' : ''}>${f.l}</option>`
-    ).join('');
-  }
+  function flyerOpts(selected) { return FLYERS_OPCOES.map(f=>`<option value="${f.v}"${f.v===selected?' selected':''}>${f.l}</option>`).join(''); }
 
   function capturarEstado() {
     DIAS_CHAVE_D.forEach(dia => {
-      (HORARIOS_POR_DIA[dia] || []).forEach(h => {
-        ((diasState[dia] || {})[String(h)] || []).forEach((msg, i) => {
-          const tipoEl = document.getElementById(`tipo-${dia}-${h}-${i}`);
-          const catEl  = document.getElementById(`cat-${dia}-${h}-${i}`);
-          const txtEl  = document.getElementById(`txt-${dia}-${h}-${i}`);
-          if (tipoEl) msg.tipo = tipoEl.value;
-          if (catEl)  msg.categoria = catEl.value;
-          if (txtEl)  { if (msg.tipo === 'texto') msg.conteudo = txtEl.value; else msg.texto = txtEl.value; }
+      (HORARIOS_POR_DIA[dia]||[]).forEach(h => {
+        ((diasState[dia]||{})[String(h)]||[]).forEach((msg,i) => {
+          const tipoEl=document.getElementById(`tipo-${dia}-${h}-${i}`);
+          const catEl=document.getElementById(`cat-${dia}-${h}-${i}`);
+          const txtEl=document.getElementById(`txt-${dia}-${h}-${i}`);
+          if(tipoEl) msg.tipo=tipoEl.value;
+          if(catEl) msg.categoria=catEl.value;
+          if(txtEl) { if(msg.tipo==='texto') msg.conteudo=txtEl.value; else msg.texto=txtEl.value; }
         });
       });
     });
   }
 
   function renderDisparosDias() {
-    const container = document.getElementById('disparos-dias-container');
-    container.innerHTML = '';
-    DIAS_CHAVE_D.forEach((dia, di) => {
-      const horas = HORARIOS_POR_DIA[dia] || [];
-      if (horas.length === 0) return;
-      const bloco = document.createElement('div');
-      bloco.className = 'dia-bloco';
-      bloco.innerHTML = `<div class="dia-bloco-header">${DIAS_LABEL_D[di]}</div>` +
+    const container = document.getElementById('disparos-dias-container'); container.innerHTML = '';
+    DIAS_CHAVE_D.forEach((dia,di) => {
+      const horas = HORARIOS_POR_DIA[dia]||[]; if (horas.length===0) return;
+      const bloco = document.createElement('div'); bloco.className = 'dia-bloco';
+      bloco.innerHTML = `<div class="dia-bloco-header">${DIAS_LABEL_D[di]}</div>`+
         horas.map(h => {
-          const msgs = ((diasState[dia] || {})[String(h)] || []);
-          const msgsHtml = msgs.length === 0
-            ? '<p class="slot-vazio">Nenhuma mensagem configurada.</p>'
-            : msgs.map((m, i) => {
-                const temCat = m.tipo === 'flyer' || m.tipo === 'video';
-                const catHtml = temCat ? `<select id="cat-${dia}-${h}-${i}">${flyerOpts(m.categoria)}</select>` : '';
-                const txtVal  = m.tipo === 'texto' ? (m.conteudo || '') : (m.texto || '');
-                return `<div class="mensagem-card">
-                  <div class="mensagem-card-topo">
-                    <span class="msg-num">${i+1}</span>
-                    <select id="tipo-${dia}-${h}-${i}" onchange="mudarTipoMsg('${dia}',${h},${i},this.value)">
-                      <option value="flyer"${m.tipo==='flyer'?' selected':''}>🖼️ Flyer</option>
-                      <option value="video"${m.tipo==='video'?' selected':''}>🎬 Vídeo</option>
-                      <option value="texto"${m.tipo==='texto'?' selected':''}>💬 Texto</option>
-                    </select>${catHtml}
-                  </div>
-                  <textarea id="txt-${dia}-${h}-${i}" placeholder="Texto / legenda (inclua o link aqui)">${txtVal}</textarea>
-                  <button class="btn-remover-msg" onclick="removerMsg('${dia}',${h},${i})">×</button>
-                </div>`;
-              }).join('');
+          const msgs = ((diasState[dia]||{})[String(h)]||[]);
+          const msgsHtml = msgs.length===0 ? '<p class="slot-vazio">Nenhuma mensagem configurada.</p>' :
+            msgs.map((m,i) => {
+              const temCat = m.tipo==='flyer'||m.tipo==='video';
+              const catHtml = temCat ? `<select id="cat-${dia}-${h}-${i}">${flyerOpts(m.categoria)}</select>` : '';
+              const txtVal = m.tipo==='texto'?(m.conteudo||''):(m.texto||'');
+              return `<div class="mensagem-card">
+                <div class="mensagem-card-topo">
+                  <span class="msg-num">${i+1}</span>
+                  <select id="tipo-${dia}-${h}-${i}" onchange="mudarTipoMsg('${dia}',${h},${i},this.value)">
+                    <option value="flyer"${m.tipo==='flyer'?' selected':''}>🖼️ Flyer</option>
+                    <option value="video"${m.tipo==='video'?' selected':''}>🎬 Vídeo</option>
+                    <option value="texto"${m.tipo==='texto'?' selected':''}>💬 Texto</option>
+                  </select>${catHtml}
+                </div>
+                <textarea id="txt-${dia}-${h}-${i}" placeholder="Texto / legenda">${txtVal}</textarea>
+                <button class="btn-remover-msg" onclick="removerMsg('${dia}',${h},${i})">×</button>
+              </div>`;
+            }).join('');
           return `<div class="slot-bloco"><div class="slot-hora">${String(h).padStart(2,'0')}h00</div><div id="slot-${dia}-${h}">${msgsHtml}</div><button class="btn-add-msg" onclick="adicionarMsg('${dia}',${h})">+ Adicionar mensagem</button></div>`;
         }).join('');
       container.appendChild(bloco);
     });
   }
 
-  function adicionarMsg(dia, h) {
-    capturarEstado();
-    if (!diasState[dia]) diasState[dia] = {};
-    if (!diasState[dia][String(h)]) diasState[dia][String(h)] = [];
-    diasState[dia][String(h)].push({ tipo: 'flyer', categoria: 'programacao_sexta', texto: '' });
-    renderDisparosDias();
-  }
-
-  function removerMsg(dia, h, i) {
-    capturarEstado();
-    if (diasState[dia] && diasState[dia][String(h)]) diasState[dia][String(h)].splice(i, 1);
-    renderDisparosDias();
-  }
-
-  function mudarTipoMsg(dia, h, i, valor) {
-    capturarEstado();
-    if (diasState[dia] && diasState[dia][String(h)] && diasState[dia][String(h)][i]) {
-      diasState[dia][String(h)][i].tipo = valor;
-      if (valor !== 'flyer' && valor !== 'video') diasState[dia][String(h)][i].categoria = '';
-    }
-    renderDisparosDias();
-  }
+  function adicionarMsg(dia,h) { capturarEstado(); if(!diasState[dia])diasState[dia]={}; if(!diasState[dia][String(h)])diasState[dia][String(h)]=[]; diasState[dia][String(h)].push({tipo:'flyer',categoria:'programacao_sexta',texto:''}); renderDisparosDias(); }
+  function removerMsg(dia,h,i) { capturarEstado(); if(diasState[dia]&&diasState[dia][String(h)])diasState[dia][String(h)].splice(i,1); renderDisparosDias(); }
+  function mudarTipoMsg(dia,h,i,valor) { capturarEstado(); if(diasState[dia]&&diasState[dia][String(h)]&&diasState[dia][String(h)][i]){diasState[dia][String(h)][i].tipo=valor; if(valor!=='flyer'&&valor!=='video')diasState[dia][String(h)][i].categoria='';} renderDisparosDias(); }
 
   function atualizarStatusDisparo() {
-    const ativo = document.getElementById('disparo-ativo').checked;
-    const txt   = document.getElementById('disparo-status-text');
-    txt.textContent = ativo ? 'Ativado' : 'Desativado';
-    txt.style.color = ativo ? 'var(--green)' : 'var(--gray-400)';
+    const ativo=document.getElementById('disparo-ativo').checked;
+    const txt=document.getElementById('disparo-status-text');
+    txt.textContent=ativo?'Ativado':'Desativado';
+    txt.style.color=ativo?'var(--green)':'var(--text-dim)';
   }
 
   async function carregarDisparos() {
-    const res    = await fetch('/painel/api/disparos', { headers: { 'Authorization': TOKEN } });
-    const config = await res.json();
-    document.getElementById('disparo-ativo').checked     = config.ativo || false;
-    document.getElementById('disparo-mencionar').checked = config.mencionarTodos || false;
+    const res=await fetch('/painel/api/disparos',{headers:{'Authorization':TOKEN}});
+    const config=await res.json();
+    document.getElementById('disparo-ativo').checked=config.ativo||false;
+    document.getElementById('disparo-mencionar').checked=config.mencionarTodos||false;
     atualizarStatusDisparo();
-    const grupos = config.grupos || [];
-    for (let i = 0; i < 3; i++) { const el = document.getElementById(`grupo-${i}`); if (el) el.value = grupos[i] || ''; }
-    diasState = {};
-    DIAS_CHAVE_D.forEach(dia => {
-      diasState[dia] = (config.dias || {})[dia] || {};
-      (HORARIOS_POR_DIA[dia] || []).forEach(h => { if (!diasState[dia][String(h)]) diasState[dia][String(h)] = []; });
+    const grupos=config.grupos||[];
+    for(let i=0;i<3;i++){const el=document.getElementById(`grupo-${i}`);if(el)el.value=grupos[i]||'';}
+    diasState={};
+    DIAS_CHAVE_D.forEach(dia=>{
+      diasState[dia]=(config.dias||{})[dia]||{};
+      (HORARIOS_POR_DIA[dia]||[]).forEach(h=>{if(!diasState[dia][String(h)])diasState[dia][String(h)]=[];});
     });
     renderDisparosDias();
   }
 
   async function testarDisparo(comMencao) {
-    const resultado = document.getElementById('teste-resultado');
-    resultado.textContent = 'Enviando...';
-    resultado.style.color = 'var(--gray-400)';
+    const resultado=document.getElementById('teste-resultado');
+    resultado.textContent='Enviando...'; resultado.style.color='var(--text-dim)';
     try {
-      const res = await fetch('/painel/api/disparos/testar', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': TOKEN },
-        body: JSON.stringify({ comMencao })
-      });
-      const data = await res.json();
-      if (data.ok) {
-        const sucessos = data.resultados.filter(r => r.ok).length;
-        resultado.innerHTML = `✅ Enviado para ${sucessos}/${data.resultados.length} grupos`;
-        resultado.style.color = 'var(--green)';
-      } else {
-        resultado.textContent = '❌ ' + (data.erro || 'Erro desconhecido');
-        resultado.style.color = 'var(--red)';
-      }
-    } catch (e) {
-      resultado.textContent = '❌ Erro: ' + e.message;
-      resultado.style.color = 'var(--red)';
-    }
+      const res=await fetch('/painel/api/disparos/testar',{method:'POST',headers:{'Content-Type':'application/json','Authorization':TOKEN},body:JSON.stringify({comMencao})});
+      const data=await res.json();
+      if(data.ok){const s=data.resultados.filter(r=>r.ok).length;resultado.innerHTML=`✅ Enviado para ${s}/${data.resultados.length} grupos`;resultado.style.color='var(--green)';}
+      else{resultado.textContent='❌ '+(data.erro||'Erro');resultado.style.color='var(--red)';}
+    }catch(e){resultado.textContent='❌ '+e.message;resultado.style.color='var(--red)';}
   }
 
   async function salvarDisparos() {
     capturarEstado();
-    const ativo        = document.getElementById('disparo-ativo').checked;
-    const mencionarTodos = document.getElementById('disparo-mencionar').checked;
-    const grupos       = [0,1,2].map(i => document.getElementById(`grupo-${i}`).value.trim()).filter(g => g);
-    const res = await fetch('/painel/api/disparos', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': TOKEN },
-      body: JSON.stringify({ ativo, mencionarTodos, grupos, dias: diasState })
-    });
-    const data = await res.json();
-    if (data.ok) mostrarToast('✅ Disparos salvos!');
-    else mostrarToast('❌ Erro ao salvar', 'erro');
+    const ativo=document.getElementById('disparo-ativo').checked;
+    const mencionarTodos=document.getElementById('disparo-mencionar').checked;
+    const grupos=[0,1,2].map(i=>document.getElementById(`grupo-${i}`).value.trim()).filter(g=>g);
+    const res=await fetch('/painel/api/disparos',{method:'POST',headers:{'Content-Type':'application/json','Authorization':TOKEN},body:JSON.stringify({ativo,mencionarTodos,grupos,dias:diasState})});
+    const data=await res.json();
+    if(data.ok) mostrarToast('✅ Disparos salvos!'); else mostrarToast('❌ Erro ao salvar','erro');
   }
 
-  // ── PERGUNTAS SEM RESPOSTA ───────────────────────────────────────────────────
+  // ── PERGUNTAS ─────────────────────────────────────────────────────────────
 
   async function carregarPerguntasSemResposta() {
-    const cont = document.getElementById('perguntas-sem-resposta-lista');
-    cont.innerHTML = '<div class="loading">Carregando perguntas...</div>';
+    const cont=document.getElementById('perguntas-sem-resposta-lista');
+    cont.innerHTML='<div class="loading">Carregando...</div>';
     try {
-      const res = await fetch('/painel/api/perguntas', { headers: { 'Authorization': TOKEN } });
-      const data = await res.json();
-      const perguntas = data.perguntas || [];
-      if (perguntas.length === 0) {
-        cont.innerHTML = '<div class="perguntas-vazio">Nenhuma pergunta sem resposta. Ótimo! 🎉</div>';
-        return;
-      }
-      cont.innerHTML = perguntas.map(p => {
-        const dataStr = p.criadoEm ? new Date(p.criadoEm).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '';
-        const tel = p.telefone ? p.telefone.replace(/(\d{2})(\d{2})(\d{5})(\d{4})/, '+$1 ($2) $3-$4') : '';
+      const res=await fetch('/painel/api/perguntas',{headers:{'Authorization':TOKEN}});
+      const data=await res.json(); const perguntas=data.perguntas||[];
+      if(perguntas.length===0){cont.innerHTML='<div class="perguntas-vazio">Nenhuma pergunta sem resposta. Ótimo! 🎉</div>';return;}
+      cont.innerHTML=perguntas.map(p=>{
+        const dataStr=p.criadoEm?new Date(p.criadoEm).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo',day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'';
+        const tel=p.telefone?p.telefone.replace(/(\d{2})(\d{2})(\d{5})(\d{4})/,'+$1 ($2) $3-$4'):'';
         return `<div class="pergunta-sem-resposta-card" id="psr-${p.id}">
-          <div class="psr-info">
-            <div class="psr-pergunta">"${p.pergunta}"</div>
-            <div class="psr-meta">
-              <span>📱 ${tel}</span>
-              <span>🕐 ${dataStr}</span>
-            </div>
-          </div>
+          <div class="psr-info"><div class="psr-pergunta">"${p.pergunta}"</div><div class="psr-meta"><span>📱 ${tel}</span><span>🕐 ${dataStr}</span></div></div>
           <button class="btn-resolver" onclick="resolverPergunta('${p.id}')">✓ Resolvida</button>
         </div>`;
       }).join('');
-    } catch (e) {
-      cont.innerHTML = '<div class="perguntas-vazio">Erro ao carregar perguntas.</div>';
-    }
+    }catch(e){cont.innerHTML='<div class="perguntas-vazio">Erro ao carregar.</div>';}
   }
 
   async function resolverPergunta(id) {
     try {
-      const res = await fetch(`/painel/api/perguntas/${id}`, { method: 'DELETE', headers: { 'Authorization': TOKEN } });
-      const data = await res.json();
-      if (data.ok) {
+      const res=await fetch(`/painel/api/perguntas/${id}`,{method:'DELETE',headers:{'Authorization':TOKEN}});
+      const data=await res.json();
+      if(data.ok){
         document.getElementById(`psr-${id}`)?.remove();
-        const cont = document.getElementById('perguntas-sem-resposta-lista');
-        if (!cont.querySelector('.pergunta-sem-resposta-card')) {
-          cont.innerHTML = '<div class="perguntas-vazio">Nenhuma pergunta sem resposta. Ótimo! 🎉</div>';
-        }
-        mostrarToast('✅ Pergunta marcada como resolvida');
+        const cont=document.getElementById('perguntas-sem-resposta-lista');
+        if(!cont.querySelector('.pergunta-sem-resposta-card'))cont.innerHTML='<div class="perguntas-vazio">Nenhuma pergunta sem resposta. Ótimo! 🎉</div>';
+        mostrarToast('✅ Pergunta resolvida');
       }
-    } catch (e) {
-      mostrarToast('❌ Erro ao resolver pergunta', 'erro');
-    }
+    }catch(e){mostrarToast('❌ Erro','erro');}
   }
 
-  // ── BOOT ────────────────────────────────────────────────────────────────────
+  // ── BOOT ──────────────────────────────────────────────────────────────────
 
   if (TOKEN) {
-    fetch('/painel/api/status', { headers: { 'Authorization': TOKEN } })
-      .then(r => { if (r.ok) abrirPainel(); })
-      .catch(() => {});
+    fetch('/painel/api/status',{headers:{'Authorization':TOKEN}})
+      .then(r=>{if(r.ok)abrirPainel();})
+      .catch(()=>{});
   }
 </script>
 </body>
