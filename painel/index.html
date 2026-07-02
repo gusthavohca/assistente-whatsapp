@@ -4,213 +4,1486 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>GIA Admin — Le Club</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
+    :root {
+      --white: #ffffff;
+      --gray-50: #f8fafc;
+      --gray-100: #f1f5f9;
+      --gray-200: #e2e8f0;
+      --gray-300: #cbd5e1;
+      --gray-400: #94a3b8;
+      --gray-500: #64748b;
+      --gray-700: #334155;
+      --gray-900: #0f172a;
+      --gold: #c9a84c;
+      --gold-light: #fdf6e3;
+      --gold-dark: #a07c2c;
+      --green: #10b981;
+      --red: #ef4444;
+      --red-light: #fef2f2;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.07), 0 1px 2px rgba(0,0,0,0.05);
+      --shadow: 0 4px 16px rgba(0,0,0,0.08);
+      --shadow-lg: 0 16px 48px rgba(0,0,0,0.14);
+      --radius: 14px;
+      --radius-sm: 8px;
+    }
+
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { background: #0a0a0a; color: #f0f0f0; font-family: 'Segoe UI', sans-serif; min-height: 100vh; }
-    #tela-login { display: flex; align-items: center; justify-content: center; min-height: 100vh; }
-    .login-box { background: #141414; border: 1px solid #2a2a2a; border-radius: 16px; padding: 48px 40px; width: 100%; max-width: 380px; text-align: center; }
-    .login-box h1 { font-size: 28px; font-weight: 700; color: #fff; margin-bottom: 4px; }
-    .login-box p { color: #666; font-size: 14px; margin-bottom: 32px; }
-    .login-box input { width: 100%; background: #1e1e1e; border: 1px solid #2a2a2a; border-radius: 8px; padding: 12px 16px; color: #fff; font-size: 15px; margin-bottom: 12px; outline: none; }
-    .login-box input:focus { border-color: #c9a84c; }
-    .btn-primary { width: 100%; background: #c9a84c; color: #000; border: none; border-radius: 8px; padding: 13px; font-size: 15px; font-weight: 700; cursor: pointer; transition: background 0.2s; }
-    .btn-primary:hover { background: #e0bc5a; }
-    .erro-msg { color: #e05a5a; font-size: 13px; margin-top: 10px; }
+
+    body {
+      background: var(--gray-50);
+      color: var(--gray-900);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+      min-height: 100vh;
+    }
+
+    /* ────────────────────────── LOGIN ────────────────────────── */
+
+    #tela-login {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+      position: relative;
+      overflow: hidden;
+    }
+
+    #tela-login::before {
+      content: '';
+      position: absolute;
+      width: 600px;
+      height: 600px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(201,168,76,0.12) 0%, transparent 70%);
+      top: -150px;
+      right: -150px;
+    }
+
+    #tela-login::after {
+      content: '';
+      position: absolute;
+      width: 400px;
+      height: 400px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(201,168,76,0.08) 0%, transparent 70%);
+      bottom: -100px;
+      left: -100px;
+    }
+
+    .login-card {
+      background: var(--white);
+      border-radius: 24px;
+      padding: 56px 48px 48px;
+      width: 100%;
+      max-width: 440px;
+      box-shadow: var(--shadow-lg);
+      position: relative;
+      z-index: 1;
+    }
+
+    .login-badge {
+      display: inline-block;
+      background: var(--gold-light);
+      color: var(--gold-dark);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      padding: 5px 12px;
+      border-radius: 100px;
+      margin-bottom: 20px;
+    }
+
+    .login-logo {
+      font-size: 40px;
+      font-weight: 800;
+      color: var(--gray-900);
+      letter-spacing: -1px;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+
+    .login-logo span {
+      color: var(--gold);
+    }
+
+    .login-subtitle {
+      font-size: 15px;
+      color: var(--gray-500);
+      margin-bottom: 40px;
+      font-weight: 400;
+    }
+
+    .login-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--gray-700);
+      margin-bottom: 8px;
+    }
+
+    .login-card input[type="password"] {
+      width: 100%;
+      height: 52px;
+      background: var(--gray-50);
+      border: 1.5px solid var(--gray-200);
+      border-radius: var(--radius-sm);
+      padding: 0 18px;
+      color: var(--gray-900);
+      font-size: 15px;
+      font-family: inherit;
+      margin-bottom: 20px;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .login-card input[type="password"]:focus {
+      border-color: var(--gold);
+      box-shadow: 0 0 0 3px rgba(201,168,76,0.12);
+    }
+
+    .btn-login {
+      width: 100%;
+      height: 52px;
+      background: var(--gray-900);
+      color: var(--white);
+      border: none;
+      border-radius: var(--radius-sm);
+      font-size: 15px;
+      font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      letter-spacing: 0.3px;
+    }
+
+    .btn-login:hover { background: #1e293b; }
+    .btn-login:active { transform: scale(0.99); }
+
+    .erro-msg {
+      color: var(--red);
+      font-size: 13px;
+      margin-top: 12px;
+      font-weight: 500;
+      text-align: center;
+    }
+
+    .login-footer {
+      margin-top: 28px;
+      text-align: center;
+      font-size: 12px;
+      color: var(--gray-400);
+    }
+
+    /* ────────────────────────── PAINEL ────────────────────────── */
+
     #tela-painel { display: none; }
-    header { background: #141414; border-bottom: 1px solid #2a2a2a; padding: 16px 32px; display: flex; align-items: center; justify-content: space-between; }
-    header h1 { font-size: 20px; font-weight: 700; color: #c9a84c; }
-    .btn-logout { background: transparent; border: 1px solid #333; color: #999; padding: 7px 16px; border-radius: 7px; cursor: pointer; font-size: 13px; transition: all 0.2s; }
-    .btn-logout:hover { border-color: #e05a5a; color: #e05a5a; }
-    .status-bar { background: #141414; border-bottom: 1px solid #2a2a2a; padding: 12px 32px; display: flex; align-items: center; gap: 16px; }
-    .status-label { font-size: 14px; color: #999; }
-    .toggle { position: relative; width: 48px; height: 26px; }
+
+    /* Header */
+    .app-header {
+      background: var(--white);
+      border-bottom: 1px solid var(--gray-200);
+      padding: 0 32px;
+      height: 68px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .header-logo {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--gray-900);
+      letter-spacing: -0.5px;
+    }
+
+    .header-logo span { color: var(--gold); }
+
+    .header-divider {
+      width: 1px;
+      height: 24px;
+      background: var(--gray-200);
+    }
+
+    .header-title {
+      font-size: 13px;
+      color: var(--gray-500);
+      font-weight: 500;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    /* Status toggle no header */
+    .gia-status-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--gray-50);
+      border: 1px solid var(--gray-200);
+      border-radius: 100px;
+      padding: 6px 14px 6px 10px;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--gray-300);
+      transition: background 0.3s;
+    }
+
+    .status-dot.ativo { background: var(--green); box-shadow: 0 0 0 3px rgba(16,185,129,0.2); }
+    .status-dot.pausado { background: var(--red); }
+
+    .gia-status-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--gray-700);
+    }
+
+    .toggle {
+      position: relative;
+      width: 44px;
+      height: 24px;
+      flex-shrink: 0;
+    }
+
     .toggle input { display: none; }
-    .toggle-slider { position: absolute; inset: 0; background: #333; border-radius: 26px; cursor: pointer; transition: 0.3s; }
-    .toggle-slider:before { content: ''; position: absolute; width: 20px; height: 20px; background: #fff; border-radius: 50%; left: 3px; top: 3px; transition: 0.3s; }
-    .toggle input:checked + .toggle-slider { background: #4caf50; }
-    .toggle input:checked + .toggle-slider:before { transform: translateX(22px); }
-    .status-text { font-size: 14px; font-weight: 600; }
-    .status-text.ativo { color: #4caf50; }
-    .status-text.pausado { color: #e05a5a; }
-    .tabs { display: flex; gap: 4px; padding: 20px 32px 0; border-bottom: 1px solid #2a2a2a; }
-    .tab { padding: 10px 20px; border-radius: 8px 8px 0 0; font-size: 14px; font-weight: 600; cursor: pointer; color: #666; background: transparent; border: none; transition: all 0.2s; }
-    .tab:hover { color: #c9a84c; }
-    .tab.ativa { color: #c9a84c; border-bottom: 2px solid #c9a84c; }
-    .conteudo { padding: 32px; max-width: 960px; }
+
+    .toggle-slider {
+      position: absolute;
+      inset: 0;
+      background: var(--gray-300);
+      border-radius: 24px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .toggle-slider:before {
+      content: '';
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      background: var(--white);
+      border-radius: 50%;
+      left: 3px;
+      top: 3px;
+      transition: 0.3s;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    }
+
+    .toggle input:checked + .toggle-slider { background: var(--green); }
+    .toggle input:checked + .toggle-slider:before { transform: translateX(20px); }
+
+    .btn-logout {
+      background: transparent;
+      border: 1.5px solid var(--gray-200);
+      color: var(--gray-500);
+      padding: 8px 18px;
+      border-radius: 100px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      font-family: inherit;
+      transition: all 0.2s;
+    }
+
+    .btn-logout:hover {
+      border-color: var(--red);
+      color: var(--red);
+      background: var(--red-light);
+    }
+
+    /* Navegação */
+    .app-nav {
+      background: var(--white);
+      border-bottom: 1px solid var(--gray-200);
+      padding: 0 32px;
+      display: flex;
+      gap: 2px;
+      overflow-x: auto;
+    }
+
+    .app-nav::-webkit-scrollbar { display: none; }
+
+    .tab {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 16px 18px;
+      font-size: 13.5px;
+      font-weight: 600;
+      cursor: pointer;
+      color: var(--gray-500);
+      background: transparent;
+      border: none;
+      font-family: inherit;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+
+    .tab:hover { color: var(--gray-900); }
+
+    .tab.ativa {
+      color: var(--gold-dark);
+      border-bottom-color: var(--gold);
+    }
+
+    .tab-icon { font-size: 15px; }
+
+    /* Conteúdo */
+    .app-body {
+      padding: 32px;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
     .secao { display: none; }
     .secao.ativa { display: block; }
-    .secao-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
-    .secao h2 { font-size: 18px; font-weight: 700; color: #fff; }
-    .secao p.desc { font-size: 13px; color: #666; margin-bottom: 24px; }
-    .btn-novo-flyer { background: #c9a84c; color: #000; border: none; border-radius: 8px; padding: 9px 18px; font-size: 13px; font-weight: 700; cursor: pointer; transition: background 0.2s; white-space: nowrap; }
-    .btn-novo-flyer:hover { background: #e0bc5a; }
-    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center; z-index: 1000; }
+
+    .page-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 24px;
+      gap: 16px;
+    }
+
+    .page-title {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--gray-900);
+      letter-spacing: -0.3px;
+    }
+
+    .page-desc {
+      font-size: 13px;
+      color: var(--gray-500);
+      margin-top: 3px;
+      font-weight: 400;
+    }
+
+    /* Cards base */
+    .card {
+      background: var(--white);
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius);
+      padding: 24px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .card + .card { margin-top: 16px; }
+
+    .card-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--gray-700);
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      margin-bottom: 18px;
+    }
+
+    /* ── FLYERS ── */
+    .flyers-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 16px;
+    }
+
+    .flyer-card {
+      background: var(--white);
+      border: 1.5px solid var(--gray-200);
+      border-radius: var(--radius);
+      overflow: hidden;
+      position: relative;
+      box-shadow: var(--shadow-sm);
+      transition: box-shadow 0.2s, border-color 0.2s;
+    }
+
+    .flyer-card:hover {
+      box-shadow: var(--shadow);
+      border-color: var(--gold);
+    }
+
+    .flyer-card.customizado { border-style: dashed; }
+
+    .flyer-preview {
+      width: 100%;
+      height: 130px;
+      background: var(--gray-100);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--gray-400);
+      font-size: 13px;
+      overflow: hidden;
+    }
+
+    .flyer-preview img, .flyer-preview video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .flyer-info {
+      padding: 14px 16px 16px;
+    }
+
+    .flyer-info label {
+      display: block;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--gray-700);
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+
+    .flyer-upload {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--gray-500);
+      cursor: pointer;
+      padding: 7px 12px;
+      border: 1.5px dashed var(--gray-300);
+      border-radius: 7px;
+      width: 100%;
+      justify-content: center;
+      transition: all 0.2s;
+      margin-bottom: 8px;
+    }
+
+    .flyer-upload:hover { border-color: var(--gold); color: var(--gold-dark); }
+
+    .btn-enviar-flyer {
+      display: none;
+      width: 100%;
+      background: var(--gold);
+      color: var(--gray-900);
+      border: none;
+      border-radius: 7px;
+      padding: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn-enviar-flyer:hover { background: var(--gold-dark); color: var(--white); }
+
+    .btn-deletar-flyer {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: rgba(255,255,255,0.9);
+      border: 1px solid var(--gray-200);
+      color: var(--gray-500);
+      border-radius: 50%;
+      width: 28px;
+      height: 28px;
+      font-size: 16px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      line-height: 1;
+    }
+
+    .btn-deletar-flyer:hover { border-color: var(--red); color: var(--red); background: var(--red-light); }
+
+    .badge-custom {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: var(--gold);
+      color: var(--gray-900);
+      font-size: 10px;
+      font-weight: 800;
+      padding: 3px 8px;
+      border-radius: 100px;
+      letter-spacing: 0.4px;
+    }
+
+    .divisor-flyers {
+      grid-column: 1 / -1;
+      border-top: 1.5px dashed var(--gray-200);
+      padding-top: 16px;
+      margin-top: 8px;
+      font-size: 11px;
+      color: var(--gray-400);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15,23,42,0.5);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      backdrop-filter: blur(2px);
+    }
+
     .modal-overlay.aberto { display: flex; }
-    .modal { background: #141414; border: 1px solid #2a2a2a; border-radius: 16px; padding: 32px; width: 100%; max-width: 420px; }
-    .modal h3 { font-size: 18px; font-weight: 700; margin-bottom: 20px; color: #fff; }
-    .modal input[type="text"] { width: 100%; background: #1e1e1e; border: 1px solid #2a2a2a; border-radius: 8px; padding: 11px 14px; color: #fff; font-size: 14px; outline: none; margin-bottom: 12px; }
-    .modal input[type="text"]:focus { border-color: #c9a84c; }
-    .modal-preview { width: 100%; height: 140px; background: #1e1e1e; border: 1px dashed #333; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #555; font-size: 13px; margin-bottom: 12px; overflow: hidden; cursor: pointer; }
-    .modal-preview img { width: 100%; height: 140px; object-fit: cover; }
-    .modal-btns { display: flex; gap: 10px; margin-top: 4px; }
-    .btn-cancelar { flex: 1; background: transparent; border: 1px solid #333; color: #999; border-radius: 8px; padding: 11px; font-size: 14px; cursor: pointer; transition: all 0.2s; }
-    .btn-cancelar:hover { border-color: #e05a5a; color: #e05a5a; }
-    .btn-salvar-modal { flex: 1; background: #c9a84c; color: #000; border: none; border-radius: 8px; padding: 11px; font-size: 14px; font-weight: 700; cursor: pointer; transition: background 0.2s; }
-    .btn-salvar-modal:hover { background: #e0bc5a; }
-    .flyers-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; }
-    .flyer-card { background: #141414; border: 1px solid #2a2a2a; border-radius: 12px; overflow: hidden; position: relative; }
-    .flyer-card.customizado { border-color: #c9a84c44; }
-    .flyer-preview { width: 100%; height: 140px; background: #1e1e1e; display: flex; align-items: center; justify-content: center; color: #444; font-size: 12px; }
-    .flyer-preview img { width: 100%; height: 140px; object-fit: cover; }
-    .flyer-info { padding: 12px; }
-    .flyer-info label { display: block; font-size: 12px; font-weight: 600; color: #c9a84c; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
-    .flyer-upload { width: 100%; background: #1e1e1e; border: 1px dashed #333; border-radius: 6px; padding: 7px; color: #999; font-size: 12px; cursor: pointer; text-align: center; transition: all 0.2s; }
-    .flyer-upload:hover { border-color: #c9a84c; color: #c9a84c; }
-    .btn-enviar-flyer { width: 100%; margin-top: 8px; background: #c9a84c; color: #000; border: none; border-radius: 6px; padding: 8px; font-size: 12px; font-weight: 700; cursor: pointer; display: none; transition: background 0.2s; }
-    .btn-enviar-flyer:hover { background: #e0bc5a; }
-    .btn-deletar-flyer { position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.7); border: 1px solid #e05a5a; color: #e05a5a; border-radius: 6px; width: 28px; height: 28px; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; line-height: 1; }
-    .btn-deletar-flyer:hover { background: #e05a5a; color: #fff; }
-    .badge-custom { position: absolute; top: 8px; left: 8px; background: #c9a84c; color: #000; font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 4px; text-transform: uppercase; }
-    textarea { width: 100%; background: #141414; border: 1px solid #2a2a2a; border-radius: 10px; padding: 16px; color: #f0f0f0; font-size: 14px; line-height: 1.6; resize: vertical; outline: none; font-family: 'Segoe UI', sans-serif; }
-    textarea:focus { border-color: #c9a84c; }
-    .btn-salvar { margin-top: 12px; background: #c9a84c; color: #000; border: none; border-radius: 8px; padding: 12px 28px; font-size: 14px; font-weight: 700; cursor: pointer; transition: background 0.2s; }
-    .btn-salvar:hover { background: #e0bc5a; }
-    .instrucao-box { background: #141414; border: 1px solid #2a2a2a; border-radius: 12px; padding: 20px; margin-bottom: 24px; }
-    .instrucao-box h3 { font-size: 14px; font-weight: 700; color: #c9a84c; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
-    .instrucao-box p { font-size: 12px; color: #555; margin-bottom: 14px; }
-    .instrucao-form { display: flex; gap: 10px; align-items: flex-start; }
-    .instrucao-form textarea { flex: 1; min-height: 70px; font-size: 13px; padding: 10px 14px; resize: none; border-radius: 8px; }
-    .btn-adicionar-instrucao { background: #c9a84c; color: #000; border: none; border-radius: 8px; padding: 10px 18px; font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap; transition: background 0.2s; height: 70px; }
-    .btn-adicionar-instrucao:hover { background: #e0bc5a; }
-    .cerebro-editor-titulo { font-size: 13px; color: #555; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
-    .relatorio-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 16px; margin-bottom: 28px; }
-    .stat-card { background: #141414; border: 1px solid #2a2a2a; border-radius: 12px; padding: 20px; text-align: center; }
-    .stat-card .numero { font-size: 36px; font-weight: 700; color: #c9a84c; }
-    .stat-card .label { font-size: 12px; color: #666; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
-    .perguntas-lista { background: #141414; border: 1px solid #2a2a2a; border-radius: 12px; padding: 20px; }
-    .perguntas-lista h3 { font-size: 14px; font-weight: 600; color: #999; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.5px; }
-    .pergunta-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #1e1e1e; font-size: 13px; }
-    .pergunta-item:last-child { border-bottom: none; }
-    .pergunta-item .count { color: #c9a84c; font-weight: 700; }
-    .calendario-form { display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; }
-    .calendario-form input { background: #141414; border: 1px solid #2a2a2a; border-radius: 8px; padding: 10px 14px; color: #fff; font-size: 14px; outline: none; }
-    .calendario-form input:focus { border-color: #c9a84c; }
-    .calendario-form input:first-child { width: 120px; }
-    .calendario-form input:nth-child(2) { flex: 1; min-width: 180px; }
-    .mes-bloco { background: #141414; border: 1px solid #2a2a2a; border-radius: 12px; margin-bottom: 16px; overflow: hidden; }
-    .mes-header { padding: 12px 20px; background: #1a1a1a; border-bottom: 1px solid #2a2a2a; font-size: 13px; font-weight: 700; color: #c9a84c; text-transform: uppercase; letter-spacing: 1px; }
-    .evento-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 20px; border-bottom: 1px solid #1e1e1e; font-size: 14px; color: #ccc; }
+
+    .modal {
+      background: var(--white);
+      border-radius: 20px;
+      padding: 32px;
+      width: 100%;
+      max-width: 440px;
+      box-shadow: var(--shadow-lg);
+    }
+
+    .modal h3 {
+      font-size: 18px;
+      font-weight: 800;
+      margin-bottom: 20px;
+      color: var(--gray-900);
+    }
+
+    .modal input[type="text"] {
+      width: 100%;
+      height: 48px;
+      background: var(--gray-50);
+      border: 1.5px solid var(--gray-200);
+      border-radius: var(--radius-sm);
+      padding: 0 16px;
+      font-size: 14px;
+      font-family: inherit;
+      color: var(--gray-900);
+      outline: none;
+      margin-bottom: 14px;
+      transition: border-color 0.2s;
+    }
+
+    .modal input:focus { border-color: var(--gold); }
+
+    .modal-preview {
+      width: 100%;
+      height: 160px;
+      background: var(--gray-50);
+      border: 2px dashed var(--gray-200);
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 13px;
+      color: var(--gray-400);
+      margin-bottom: 20px;
+      overflow: hidden;
+      transition: border-color 0.2s;
+    }
+
+    .modal-preview:hover { border-color: var(--gold); color: var(--gold-dark); }
+    .modal-preview img { width: 100%; height: 100%; object-fit: cover; }
+
+    .modal-btns {
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn-cancelar {
+      flex: 1;
+      height: 46px;
+      background: var(--gray-100);
+      border: 1.5px solid var(--gray-200);
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      color: var(--gray-500);
+      transition: all 0.2s;
+    }
+
+    .btn-cancelar:hover { background: var(--gray-200); color: var(--gray-700); }
+
+    .btn-salvar-modal {
+      flex: 1;
+      height: 46px;
+      background: var(--gold);
+      border: none;
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
+      color: var(--gray-900);
+      transition: background 0.2s;
+    }
+
+    .btn-salvar-modal:hover { background: var(--gold-dark); color: var(--white); }
+
+    /* Botão novo flyer */
+    .btn-novo-flyer {
+      background: var(--gold);
+      color: var(--gray-900);
+      border: none;
+      border-radius: 100px;
+      padding: 10px 20px;
+      font-size: 13px;
+      font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
+      transition: background 0.2s;
+      white-space: nowrap;
+    }
+
+    .btn-novo-flyer:hover { background: var(--gold-dark); color: var(--white); }
+
+    /* ── CÉREBRO ── */
+    .instrucao-box {
+      background: var(--gold-light);
+      border: 1.5px solid rgba(201,168,76,0.3);
+      border-radius: var(--radius);
+      padding: 20px 24px;
+      margin-bottom: 20px;
+    }
+
+    .instrucao-box h3 {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--gold-dark);
+      margin-bottom: 4px;
+    }
+
+    .instrucao-box > p {
+      font-size: 12px;
+      color: var(--gray-500);
+      margin-bottom: 14px;
+    }
+
+    .instrucao-form {
+      display: flex;
+      gap: 10px;
+    }
+
+    .instrucao-form textarea {
+      flex: 1;
+      min-height: 52px;
+      background: var(--white);
+      border: 1.5px solid var(--gray-200);
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      font-size: 13px;
+      font-family: inherit;
+      color: var(--gray-900);
+      resize: vertical;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .instrucao-form textarea:focus { border-color: var(--gold); }
+
+    .btn-adicionar-instrucao {
+      height: 52px;
+      background: var(--gold);
+      color: var(--gray-900);
+      border: none;
+      border-radius: var(--radius-sm);
+      padding: 0 20px;
+      font-size: 13px;
+      font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
+      white-space: nowrap;
+      align-self: flex-start;
+      transition: background 0.2s;
+    }
+
+    .btn-adicionar-instrucao:hover { background: var(--gold-dark); color: var(--white); }
+
+    .cerebro-editor-titulo {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--gray-500);
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      margin-bottom: 10px;
+    }
+
+    #textarea-cerebro {
+      width: 100%;
+      min-height: 360px;
+      background: var(--gray-50);
+      border: 1.5px solid var(--gray-200);
+      border-radius: var(--radius-sm);
+      padding: 16px;
+      font-size: 13px;
+      font-family: 'SFMono-Regular', 'Consolas', monospace;
+      color: var(--gray-900);
+      resize: vertical;
+      outline: none;
+      transition: border-color 0.2s;
+      line-height: 1.6;
+    }
+
+    #textarea-cerebro:focus { border-color: var(--gold); }
+
+    /* ── BOTÃO SALVAR GENÉRICO ── */
+    .btn-salvar {
+      display: inline-flex;
+      align-items: center;
+      height: 46px;
+      background: var(--gray-900);
+      color: var(--white);
+      border: none;
+      border-radius: var(--radius-sm);
+      padding: 0 24px;
+      font-size: 14px;
+      font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
+      transition: background 0.2s;
+      margin-top: 16px;
+    }
+
+    .btn-salvar:hover { background: #1e293b; }
+
+    /* ── CALENDÁRIO ── */
+    .calendario-form {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .calendario-form input {
+      height: 46px;
+      background: var(--white);
+      border: 1.5px solid var(--gray-200);
+      border-radius: var(--radius-sm);
+      padding: 0 14px;
+      font-size: 14px;
+      font-family: inherit;
+      color: var(--gray-900);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .calendario-form input:focus { border-color: var(--gold); }
+    .calendario-form input:first-child { width: 90px; }
+    .calendario-form input:nth-child(2) { flex: 1; min-width: 200px; }
+    .calendario-form .btn-salvar { margin-top: 0; }
+
+    .mes-bloco {
+      background: var(--white);
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius);
+      margin-bottom: 12px;
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .mes-header {
+      padding: 12px 20px;
+      background: var(--gray-50);
+      border-bottom: 1px solid var(--gray-200);
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--gray-500);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .evento-item {
+      display: flex;
+      align-items: center;
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--gray-100);
+      gap: 12px;
+    }
+
     .evento-item:last-child { border-bottom: none; }
-    .evento-dia { color: #c9a84c; font-weight: 700; margin-right: 12px; min-width: 40px; }
-    .evento-desc { flex: 1; }
-    .btn-deletar-evento { background: transparent; border: 1px solid #333; color: #666; border-radius: 6px; width: 26px; height: 26px; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0; margin-left: 12px; }
-    .btn-deletar-evento:hover { border-color: #e05a5a; color: #e05a5a; background: rgba(224,90,90,0.1); }
-    .link-evento-form { background: #141414; border: 1px solid #2a2a2a; border-radius: 12px; padding: 20px; margin-bottom: 24px; }
-    .link-evento-form h3 { font-size: 14px; font-weight: 700; color: #c9a84c; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
-    .link-evento-form p { font-size: 12px; color: #555; margin-bottom: 14px; }
-    .link-evento-inputs { display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-start; }
-    .link-evento-inputs input { background: #1e1e1e; border: 1px solid #2a2a2a; border-radius: 8px; padding: 11px 14px; color: #fff; font-size: 14px; outline: none; }
-    .link-evento-inputs input:focus { border-color: #c9a84c; }
-    .input-data { width: 100px; }
-    .input-atracao { flex: 1; min-width: 160px; }
+
+    .evento-dia {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--gold-dark);
+      min-width: 36px;
+    }
+
+    .evento-desc {
+      flex: 1;
+      font-size: 14px;
+      color: var(--gray-700);
+      font-weight: 500;
+    }
+
+    .btn-deletar-evento {
+      background: transparent;
+      border: 1px solid var(--gray-200);
+      color: var(--gray-400);
+      border-radius: 50%;
+      width: 28px;
+      height: 28px;
+      font-size: 16px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+
+    .btn-deletar-evento:hover { border-color: var(--red); color: var(--red); background: var(--red-light); }
+
+    /* ── LINKS ── */
+    .link-evento-form {
+      background: var(--white);
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius);
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .link-evento-form h3 {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--gray-900);
+      margin-bottom: 4px;
+    }
+
+    .link-evento-form > p {
+      font-size: 12px;
+      color: var(--gray-500);
+      margin-bottom: 16px;
+    }
+
+    .link-evento-inputs {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: flex-start;
+    }
+
+    .link-evento-inputs input {
+      height: 46px;
+      background: var(--gray-50);
+      border: 1.5px solid var(--gray-200);
+      border-radius: var(--radius-sm);
+      padding: 0 14px;
+      color: var(--gray-900);
+      font-size: 14px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .link-evento-inputs input:focus { border-color: var(--gold); }
+    .input-data { width: 90px; }
+    .input-atracao { flex: 1; min-width: 150px; }
     .input-url { flex: 2; min-width: 220px; }
-    .link-card { background: #141414; border: 1px solid #2a2a2a; border-radius: 10px; padding: 16px 20px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .link-evento-inputs .btn-salvar { margin-top: 0; }
+
+    .link-card {
+      background: var(--white);
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      box-shadow: var(--shadow-sm);
+      transition: box-shadow 0.2s;
+    }
+
+    .link-card:hover { box-shadow: var(--shadow); }
     .link-card-info { flex: 1; }
-    .link-card-data { font-size: 13px; font-weight: 700; color: #c9a84c; margin-bottom: 2px; }
-    .link-card-atracao { font-size: 14px; color: #fff; margin-bottom: 4px; }
-    .link-card-url { font-size: 12px; color: #555; word-break: break-all; }
-    .btn-deletar-link { background: transparent; border: 1px solid #333; color: #666; border-radius: 6px; width: 26px; height: 26px; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0; }
-    .btn-deletar-link:hover { border-color: #e05a5a; color: #e05a5a; background: rgba(224,90,90,0.1); }
-    .toast { position: fixed; bottom: 24px; right: 24px; background: #1e1e1e; border: 1px solid #2a2a2a; border-radius: 10px; padding: 14px 20px; font-size: 14px; color: #fff; display: none; z-index: 9999; box-shadow: 0 8px 32px rgba(0,0,0,0.5); }
-    .toast.ok { border-left: 3px solid #4caf50; }
-    .toast.erro { border-left: 3px solid #e05a5a; }
-    .loading { color: #666; font-size: 14px; padding: 20px 0; }
-    .divisor-flyers { grid-column: 1 / -1; border-top: 1px solid #2a2a2a; padding-top: 16px; margin-top: 8px; font-size: 12px; color: #555; text-transform: uppercase; letter-spacing: 1px; }
-    .disparo-config-box { background: #141414; border: 1px solid #2a2a2a; border-radius: 12px; padding: 20px; margin-bottom: 16px; }
-    .disparo-config-box h3 { font-size: 13px; font-weight: 700; color: #c9a84c; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.5px; }
-    .disparo-config-row { display: flex; gap: 16px; align-items: center; margin-bottom: 14px; flex-wrap: wrap; }
-    .disparo-config-row label.campo-label { font-size: 13px; color: #999; min-width: 110px; }
-    .disparo-hint { font-size: 12px; color: #444; margin-top: 6px; line-height: 1.5; }
-    .grupo-row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
-    .grupo-row label { font-size: 12px; color: #666; min-width: 60px; }
-    .grupo-row input { flex: 1; background: #1e1e1e; border: 1px solid #2a2a2a; border-radius: 8px; padding: 9px 14px; color: #fff; font-size: 13px; outline: none; }
-    .grupo-row input:focus { border-color: #c9a84c; }
-    .dia-bloco { background: #141414; border: 1px solid #2a2a2a; border-radius: 12px; margin-bottom: 12px; overflow: hidden; }
-    .dia-bloco-header { padding: 13px 20px; background: #1a1a1a; border-bottom: 1px solid #2a2a2a; font-size: 12px; font-weight: 700; color: #c9a84c; text-transform: uppercase; letter-spacing: 0.5px; }
-    .slot-bloco { border-top: 1px solid #1e1e1e; padding: 14px 20px; }
+
+    .link-card-data {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--gold-dark);
+      margin-bottom: 2px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .link-card-atracao {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--gray-900);
+      margin-bottom: 4px;
+    }
+
+    .link-card-url {
+      font-size: 12px;
+      color: var(--gray-400);
+      word-break: break-all;
+    }
+
+    .btn-deletar-link {
+      background: transparent;
+      border: 1px solid var(--gray-200);
+      color: var(--gray-400);
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      font-size: 16px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+
+    .btn-deletar-link:hover { border-color: var(--red); color: var(--red); background: var(--red-light); }
+
+    /* ── RELATÓRIO ── */
+    .relatorio-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .stat-card {
+      background: var(--white);
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius);
+      padding: 24px;
+      box-shadow: var(--shadow-sm);
+      text-align: center;
+    }
+
+    .stat-card .numero {
+      font-size: 48px;
+      font-weight: 800;
+      color: var(--gray-900);
+      letter-spacing: -2px;
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+
+    .stat-card .label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--gray-500);
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+    }
+
+    .perguntas-lista {
+      background: var(--white);
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius);
+      padding: 24px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .perguntas-lista h3 {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--gray-700);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 16px;
+    }
+
+    .pergunta-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 11px 0;
+      border-bottom: 1px solid var(--gray-100);
+      font-size: 13px;
+      color: var(--gray-700);
+    }
+
+    .pergunta-item:last-child { border-bottom: none; }
+
+    .pergunta-item .count {
+      font-size: 12px;
+      font-weight: 700;
+      background: var(--gold-light);
+      color: var(--gold-dark);
+      padding: 3px 9px;
+      border-radius: 100px;
+    }
+
+    /* ── DISPAROS ── */
+    .disparo-config-box {
+      background: var(--white);
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius);
+      padding: 24px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .disparo-config-box h3 {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--gray-700);
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      margin-bottom: 18px;
+    }
+
+    .disparo-config-row {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+
+    .disparo-config-row label.campo-label {
+      font-size: 13px;
+      color: var(--gray-700);
+      font-weight: 600;
+      min-width: 110px;
+    }
+
+    .disparo-hint {
+      font-size: 12px;
+      color: var(--gray-400);
+      margin-top: 6px;
+      line-height: 1.6;
+    }
+
+    .grupo-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+
+    .grupo-row label {
+      font-size: 12px;
+      color: var(--gray-500);
+      font-weight: 600;
+      min-width: 60px;
+    }
+
+    .grupo-row input {
+      flex: 1;
+      height: 42px;
+      background: var(--gray-50);
+      border: 1.5px solid var(--gray-200);
+      border-radius: var(--radius-sm);
+      padding: 0 14px;
+      color: var(--gray-900);
+      font-size: 13px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .grupo-row input:focus { border-color: var(--gold); }
+
+    .dia-bloco {
+      background: var(--white);
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius);
+      margin-bottom: 12px;
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .dia-bloco-header {
+      padding: 14px 20px;
+      background: var(--gray-50);
+      border-bottom: 1px solid var(--gray-200);
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--gray-700);
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+    }
+
+    .slot-bloco {
+      border-top: 1px solid var(--gray-100);
+      padding: 16px 20px;
+    }
+
     .slot-bloco:first-child { border-top: none; }
-    .slot-hora { font-size: 11px; font-weight: 700; color: #555; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
-    .mensagem-card { background: #1e1e1e; border: 1px solid #2a2a2a; border-radius: 8px; padding: 12px; margin-bottom: 8px; position: relative; }
-    .mensagem-card-topo { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
-    .msg-num { font-size: 10px; font-weight: 700; color: #c9a84c; background: #141414; border: 1px solid #2a2a2a; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-    .mensagem-card select { background: #141414; border: 1px solid #2a2a2a; border-radius: 6px; padding: 7px 10px; color: #fff; font-size: 12px; outline: none; cursor: pointer; }
-    .mensagem-card select:focus { border-color: #c9a84c; }
-    .mensagem-card select option { background: #141414; }
-    .mensagem-card textarea { width: 100%; min-height: 72px; font-size: 12px; resize: vertical; padding: 9px 11px; border-radius: 6px; margin-top: 4px; }
-    .btn-remover-msg { position: absolute; top: 9px; right: 9px; background: transparent; border: 1px solid #2a2a2a; color: #444; border-radius: 5px; width: 22px; height: 22px; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
-    .btn-remover-msg:hover { border-color: #e05a5a; color: #e05a5a; }
-    .btn-add-msg { background: transparent; border: 1px dashed #2a2a2a; color: #555; border-radius: 7px; padding: 7px 14px; font-size: 12px; cursor: pointer; transition: all 0.2s; width: 100%; margin-top: 4px; }
-    .btn-add-msg:hover { border-color: #c9a84c; color: #c9a84c; }
-    .slot-vazio { font-size: 12px; color: #333; padding: 4px 0 8px; }
-    .pergunta-sem-resposta-card { background: #141414; border: 1px solid #2a2a2a; border-radius: 12px; padding: 16px 20px; margin-bottom: 12px; display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
-    .pergunta-sem-resposta-card:hover { border-color: #3a3a3a; }
+
+    .slot-hora {
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--gold-dark);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .slot-hora::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--gray-100);
+    }
+
+    .mensagem-card {
+      background: var(--gray-50);
+      border: 1.5px solid var(--gray-200);
+      border-radius: var(--radius-sm);
+      padding: 14px;
+      margin-bottom: 8px;
+      position: relative;
+    }
+
+    .mensagem-card-topo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+
+    .msg-num {
+      font-size: 10px;
+      font-weight: 800;
+      color: var(--white);
+      background: var(--gold-dark);
+      border-radius: 50%;
+      width: 22px;
+      height: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .mensagem-card select {
+      background: var(--white);
+      border: 1.5px solid var(--gray-200);
+      border-radius: 7px;
+      padding: 7px 10px;
+      color: var(--gray-900);
+      font-size: 12px;
+      font-family: inherit;
+      outline: none;
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+
+    .mensagem-card select:focus { border-color: var(--gold); }
+    .mensagem-card select option { background: var(--white); }
+
+    .mensagem-card textarea {
+      width: 100%;
+      min-height: 72px;
+      font-size: 13px;
+      font-family: inherit;
+      resize: vertical;
+      padding: 10px 12px;
+      border-radius: 7px;
+      margin-top: 4px;
+      background: var(--white);
+      border: 1.5px solid var(--gray-200);
+      color: var(--gray-900);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .mensagem-card textarea:focus { border-color: var(--gold); }
+
+    .btn-remover-msg {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: transparent;
+      border: 1px solid var(--gray-200);
+      color: var(--gray-400);
+      border-radius: 5px;
+      width: 24px;
+      height: 24px;
+      font-size: 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+
+    .btn-remover-msg:hover { border-color: var(--red); color: var(--red); background: var(--red-light); }
+
+    .btn-add-msg {
+      background: transparent;
+      border: 1.5px dashed var(--gray-300);
+      color: var(--gray-500);
+      border-radius: var(--radius-sm);
+      padding: 8px 14px;
+      font-size: 12px;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.2s;
+      width: 100%;
+      margin-top: 4px;
+      font-weight: 600;
+    }
+
+    .btn-add-msg:hover { border-color: var(--gold); color: var(--gold-dark); }
+
+    .slot-vazio {
+      font-size: 12px;
+      color: var(--gray-400);
+      padding: 4px 0 8px;
+      font-style: italic;
+    }
+
+    /* Teste de disparo */
+    .teste-box {
+      background: var(--gray-50);
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius-sm);
+      padding: 18px 20px;
+      margin-top: 16px;
+    }
+
+    .teste-box p {
+      font-size: 13px;
+      color: var(--gray-700);
+      margin-bottom: 12px;
+    }
+
+    .teste-btns {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .btn-teste {
+      background: var(--white);
+      color: var(--gray-700);
+      border: 1.5px solid var(--gray-200);
+      border-radius: var(--radius-sm);
+      padding: 9px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-teste:hover { border-color: var(--gold); color: var(--gold-dark); background: var(--gold-light); }
+
+    #teste-resultado {
+      margin-top: 10px;
+      font-size: 12px;
+      color: var(--gray-500);
+      font-weight: 600;
+    }
+
+    /* ── PERGUNTAS SEM RESPOSTA ── */
+    .pergunta-sem-resposta-card {
+      background: var(--white);
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      box-shadow: var(--shadow-sm);
+      transition: box-shadow 0.2s;
+    }
+
+    .pergunta-sem-resposta-card:hover { box-shadow: var(--shadow); }
     .psr-info { flex: 1; }
-    .psr-pergunta { font-size: 14px; color: #f0f0f0; margin-bottom: 6px; line-height: 1.5; }
-    .psr-meta { font-size: 12px; color: #555; }
-    .psr-meta span { margin-right: 12px; }
-    .btn-resolver { background: transparent; border: 1px solid #4caf50; color: #4caf50; border-radius: 7px; padding: 7px 14px; font-size: 12px; font-weight: 700; cursor: pointer; white-space: nowrap; transition: all 0.2s; flex-shrink: 0; }
-    .btn-resolver:hover { background: #4caf50; color: #000; }
-    .perguntas-vazio { font-size: 14px; color: #555; padding: 32px 0; text-align: center; }
+
+    .psr-pergunta {
+      font-size: 14px;
+      color: var(--gray-900);
+      margin-bottom: 8px;
+      line-height: 1.5;
+      font-weight: 500;
+    }
+
+    .psr-meta {
+      font-size: 12px;
+      color: var(--gray-400);
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .btn-resolver {
+      background: transparent;
+      border: 1.5px solid var(--green);
+      color: var(--green);
+      border-radius: var(--radius-sm);
+      padding: 8px 16px;
+      font-size: 12px;
+      font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+
+    .btn-resolver:hover { background: var(--green); color: var(--white); }
+
+    .perguntas-vazio {
+      font-size: 14px;
+      color: var(--gray-400);
+      padding: 48px 0;
+      text-align: center;
+      font-weight: 500;
+    }
+
+    /* Loading */
+    .loading {
+      color: var(--gray-400);
+      font-size: 14px;
+      padding: 24px 0;
+      text-align: center;
+    }
+
+    /* disparo status label */
+    #disparo-status-text {
+      font-size: 13px;
+      color: var(--gray-500);
+      font-weight: 600;
+    }
+
+    /* ── TOAST ── */
+    .toast {
+      position: fixed;
+      bottom: 28px;
+      right: 28px;
+      background: var(--white);
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius-sm);
+      padding: 14px 20px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--gray-900);
+      display: none;
+      z-index: 9999;
+      box-shadow: var(--shadow-lg);
+      max-width: 320px;
+    }
+
+    .toast.ok { border-left: 4px solid var(--green); }
+    .toast.erro { border-left: 4px solid var(--red); }
   </style>
 </head>
 <body>
 
-<!-- LOGIN -->
+<!-- ═══════════════════════════════ LOGIN ═══════════════════════════════ -->
 <div id="tela-login">
-  <div class="login-box">
-    <h1>Le Club</h1>
-    <p>Painel Administrativo — GIA</p>
-    <input type="password" id="input-senha" placeholder="Senha" onkeydown="if(event.key==='Enter') fazerLogin()" />
-    <button class="btn-primary" onclick="fazerLogin()">Entrar</button>
+  <div class="login-card">
+    <div class="login-badge">Sistema Administrativo</div>
+    <div class="login-logo">Le <span>Club</span></div>
+    <p class="login-subtitle">Acesse o painel de controle da GIA</p>
+
+    <label class="login-label" for="input-senha">Senha de acesso</label>
+    <input
+      type="password"
+      id="input-senha"
+      placeholder="••••••••••"
+      onkeydown="if(event.key==='Enter') fazerLogin()"
+    />
+    <button class="btn-login" onclick="fazerLogin()">Entrar no painel</button>
     <div class="erro-msg" id="erro-login"></div>
+
+    <p class="login-footer">Le Club · GIA v2.0</p>
   </div>
 </div>
 
-<!-- PAINEL -->
+<!-- ═══════════════════════════════ PAINEL ═══════════════════════════════ -->
 <div id="tela-painel">
-  <header>
-    <h1>GIA Admin — Le Club</h1>
-    <button class="btn-logout" onclick="fazerLogout()">Sair</button>
+
+  <!-- Header -->
+  <header class="app-header">
+    <div class="header-left">
+      <div class="header-logo">Le <span>Club</span></div>
+      <div class="header-divider"></div>
+      <div class="header-title">GIA Admin</div>
+    </div>
+    <div class="header-right">
+      <div class="gia-status-wrap">
+        <div class="status-dot" id="status-dot"></div>
+        <label class="toggle">
+          <input type="checkbox" id="toggle-gia" onchange="alternarGia()" />
+          <span class="toggle-slider"></span>
+        </label>
+        <span class="gia-status-label" id="status-text">carregando...</span>
+      </div>
+      <button class="btn-logout" onclick="fazerLogout()">Sair</button>
+    </div>
   </header>
 
-  <div class="status-bar">
-    <span class="status-label">GIA:</span>
-    <label class="toggle">
-      <input type="checkbox" id="toggle-gia" onchange="alternarGia()" />
-      <span class="toggle-slider"></span>
-    </label>
-    <span class="status-text" id="status-text">carregando...</span>
-  </div>
+  <!-- Navegação -->
+  <nav class="app-nav">
+    <button class="tab ativa" onclick="abrirTab('flyers', this)">
+      <span class="tab-icon">🖼️</span> Flyers
+    </button>
+    <button class="tab" onclick="abrirTab('cerebro', this)">
+      <span class="tab-icon">🧠</span> Cérebro
+    </button>
+    <button class="tab" onclick="abrirTab('calendario', this)">
+      <span class="tab-icon">📅</span> Calendário
+    </button>
+    <button class="tab" onclick="abrirTab('links', this)">
+      <span class="tab-icon">🔗</span> Links
+    </button>
+    <button class="tab" onclick="abrirTab('relatorio', this)">
+      <span class="tab-icon">📊</span> Relatório
+    </button>
+    <button class="tab" onclick="abrirTab('disparos', this)">
+      <span class="tab-icon">📤</span> Disparos
+    </button>
+    <button class="tab" id="tab-perguntas" onclick="abrirTab('perguntas', this)">
+      <span class="tab-icon">❓</span> Perguntas
+    </button>
+  </nav>
 
-  <div class="tabs">
-    <button class="tab ativa" onclick="abrirTab('flyers', this)">🖼️ Flyers</button>
-    <button class="tab" onclick="abrirTab('cerebro', this)">🧠 Cérebro</button>
-    <button class="tab" onclick="abrirTab('calendario', this)">📅 Calendário</button>
-    <button class="tab" onclick="abrirTab('links', this)">🔗 Links</button>
-    <button class="tab" onclick="abrirTab('relatorio', this)">📊 Relatório</button>
-    <button class="tab" onclick="abrirTab('disparos', this)">📤 Disparos</button>
-    <button class="tab" id="tab-perguntas" onclick="abrirTab('perguntas', this)">❓ Perguntas</button>
-  </div>
-
-  <div class="conteudo">
+  <!-- Conteúdo -->
+  <main class="app-body">
 
     <!-- FLYERS -->
     <div class="secao ativa" id="secao-flyers">
-      <div class="secao-header">
-        <h2>Flyers</h2>
+      <div class="page-header">
+        <div>
+          <h2 class="page-title">Flyers</h2>
+          <p class="page-desc">Faça upload das imagens para cada categoria. A GIA enviará automaticamente quando solicitado.</p>
+        </div>
         <button class="btn-novo-flyer" onclick="abrirModalNovoFlyer()">+ Novo Flyer</button>
       </div>
-      <p class="desc">Faça upload das imagens para cada categoria. A GIA enviará automaticamente quando solicitado.</p>
       <div class="flyers-grid" id="flyers-grid">
         <div class="loading">Carregando flyers...</div>
       </div>
@@ -218,30 +1491,40 @@
 
     <!-- CÉREBRO -->
     <div class="secao" id="secao-cerebro">
-      <h2>Cérebro da GIA</h2>
-      <p class="desc">Adicione novas instruções rapidamente ou edite o comportamento completo da GIA.</p>
+      <div class="page-header">
+        <div>
+          <h2 class="page-title">Cérebro da GIA</h2>
+          <p class="page-desc">Adicione novas instruções rapidamente ou edite o comportamento completo da GIA.</p>
+        </div>
+      </div>
+
       <div class="instrucao-box">
-        <h3>+ Adicionar Instrução</h3>
-        <p>Digite uma nova regra ou comportamento. Ela será adicionada automaticamente ao cérebro.</p>
+        <h3>+ Adicionar instrução rápida</h3>
+        <p>Digite uma nova regra e ela será adicionada automaticamente ao cérebro.</p>
         <div class="instrucao-form">
           <textarea id="nova-instrucao" placeholder="Ex: Quando o cliente perguntar sobre estacionamento, diga que tem valet por R$30"></textarea>
           <button class="btn-adicionar-instrucao" onclick="adicionarInstrucao()">Adicionar</button>
         </div>
       </div>
-      <p class="cerebro-editor-titulo">Editor completo</p>
+
+      <p class="cerebro-editor-titulo">Editor completo do cérebro</p>
       <textarea id="textarea-cerebro" rows="20" placeholder="Carregando..."></textarea>
       <br/>
-      <button class="btn-salvar" onclick="salvarCerebro()">Salvar Cérebro</button>
+      <button class="btn-salvar" onclick="salvarCerebro()">💾 Salvar Cérebro</button>
     </div>
 
     <!-- CALENDÁRIO -->
     <div class="secao" id="secao-calendario">
-      <div class="secao-header"><h2>Calendário</h2></div>
-      <p class="desc">Adicione eventos por data. A GIA usará essas informações para responder sobre a programação.</p>
+      <div class="page-header">
+        <div>
+          <h2 class="page-title">Calendário de Eventos</h2>
+          <p class="page-desc">Adicione eventos por data. A GIA usará essas informações para responder sobre a programação.</p>
+        </div>
+      </div>
       <div class="calendario-form">
         <input type="text" id="cal-dia" placeholder="DD/MM" maxlength="5" />
         <input type="text" id="cal-desc" placeholder="Ex: Festa Trap — DJ Luan" />
-        <button class="btn-salvar" onclick="salvarEvento()">Adicionar</button>
+        <button class="btn-salvar" style="margin-top:0" onclick="salvarEvento()">Adicionar</button>
       </div>
       <div id="calendario-lista">
         <div class="loading">Carregando calendário...</div>
@@ -250,16 +1533,20 @@
 
     <!-- LINKS -->
     <div class="secao" id="secao-links">
-      <h2>Links de Ingresso</h2>
-      <p class="desc">Cadastre os links do Sympla por evento. A GIA enviará todos quando o cliente pedir ingresso antecipado.</p>
+      <div class="page-header">
+        <div>
+          <h2 class="page-title">Links de Ingresso</h2>
+          <p class="page-desc">Cadastre os links do Sympla por evento. A GIA enviará todos quando o cliente pedir ingresso antecipado.</p>
+        </div>
+      </div>
       <div class="link-evento-form">
-        <h3>+ Adicionar Link</h3>
-        <p>Preencha a data, a atração e o link do Sympla para o evento.</p>
+        <h3>+ Adicionar link</h3>
+        <p>Preencha a data, atração e o link do Sympla para o evento.</p>
         <div class="link-evento-inputs">
           <input type="text" class="input-data" id="link-data" placeholder="DD/MM" maxlength="5" />
           <input type="text" class="input-atracao" id="link-atracao" placeholder="Ex: DJ Malifoo" />
           <input type="text" class="input-url" id="link-url" placeholder="https://www.sympla.com.br/..." />
-          <button class="btn-salvar" style="margin-top:0;" onclick="adicionarLink()">Adicionar</button>
+          <button class="btn-salvar" style="margin-top:0" onclick="adicionarLink()">Adicionar</button>
         </div>
       </div>
       <div id="links-lista">
@@ -267,53 +1554,14 @@
       </div>
     </div>
 
-    <!-- DISPAROS -->
-    <div class="secao" id="secao-disparos">
-      <h2>Disparos Automáticos</h2>
-      <p class="desc">Mensagens diárias automáticas para grupos do WhatsApp. Os horários são fixos por dia. Configure o conteúdo de cada slot.</p>
-
-      <div class="disparo-config-box">
-        <h3>Configuração Geral</h3>
-        <div class="disparo-config-row">
-          <label class="campo-label">Status</label>
-          <label class="toggle"><input type="checkbox" id="disparo-ativo" onchange="atualizarStatusDisparo()" /><span class="toggle-slider"></span></label>
-          <span id="disparo-status-text" style="font-size:14px;color:#999;">Desativado</span>
-        </div>
-        <div class="disparo-config-row">
-          <label class="campo-label">@todos</label>
-          <label class="toggle"><input type="checkbox" id="disparo-mencionar" /><span class="toggle-slider"></span></label>
-          <span style="font-size:13px;color:#666;">Mencionar todos ao enviar (quebra o silêncio do grupo)</span>
-        </div>
-      </div>
-
-      <div class="disparo-config-box">
-        <h3>Grupos</h3>
-        <div class="grupo-row"><label>Grupo 1</label><input type="text" id="grupo-0" placeholder="120363xxxxxxxxxx@g.us" /></div>
-        <div class="grupo-row"><label>Grupo 2</label><input type="text" id="grupo-1" placeholder="120363xxxxxxxxxx@g.us" /></div>
-        <div class="grupo-row"><label>Grupo 3</label><input type="text" id="grupo-2" placeholder="120363xxxxxxxxxx@g.us" /></div>
-        <p class="disparo-hint">Para descobrir o ID: envie qualquer mensagem para o número da GIA pelo grupo. O ID aparecerá nos logs do Railway no formato <code style="color:#c9a84c;">120363xxxxxxxxxx@g.us</code></p>
-      </div>
-
-      <h3 style="font-size:14px;font-weight:700;color:#fff;margin-bottom:14px;">Mensagens por Dia</h3>
-      <p style="font-size:12px;color:#555;margin-bottom:16px;">Horários fixos — Segunda 14h/16h/18h · Terça–Quarta 11h/18h · Quinta 11h/19h · Sexta 12h/17h/21h · Sábado 12h/18h/21h</p>
-      <div id="disparos-dias-container"></div>
-
-      <button class="btn-salvar" onclick="salvarDisparos()">Salvar Disparos</button>
-
-      <div style="margin-top:16px;padding:16px;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:10px;">
-        <p style="font-size:13px;color:#999;margin-bottom:12px;">🧪 <strong style="color:#fff;">Teste manual</strong> — envia uma mensagem de texto para todos os grupos agora, sem depender de horário.</p>
-        <div style="display:flex;gap:10px;flex-wrap:wrap;">
-          <button onclick="testarDisparo(false)" style="background:#2a2a2a;color:#fff;border:1px solid #444;border-radius:8px;padding:9px 16px;font-size:13px;cursor:pointer;">📤 Testar SEM @todos</button>
-          <button onclick="testarDisparo(true)" style="background:#2a2a2a;color:#fff;border:1px solid #444;border-radius:8px;padding:9px 16px;font-size:13px;cursor:pointer;">📤 Testar COM @todos</button>
-        </div>
-        <div id="teste-resultado" style="margin-top:10px;font-size:12px;color:#888;"></div>
-      </div>
-    </div>
-
     <!-- RELATÓRIO -->
     <div class="secao" id="secao-relatorio">
-      <h2>Relatório da Semana</h2>
-      <p class="desc">Dados dos últimos 7 dias de atendimento da GIA.</p>
+      <div class="page-header">
+        <div>
+          <h2 class="page-title">Relatório da Semana</h2>
+          <p class="page-desc">Dados dos últimos 7 dias de atendimento da GIA.</p>
+        </div>
+      </div>
       <div class="relatorio-grid" id="relatorio-grid">
         <div class="loading">Carregando relatório...</div>
       </div>
@@ -323,20 +1571,77 @@
       </div>
     </div>
 
+    <!-- DISPAROS -->
+    <div class="secao" id="secao-disparos">
+      <div class="page-header">
+        <div>
+          <h2 class="page-title">Disparos Automáticos</h2>
+          <p class="page-desc">Mensagens diárias automáticas para grupos do WhatsApp. Configure o conteúdo de cada slot.</p>
+        </div>
+      </div>
+
+      <div class="disparo-config-box">
+        <h3>Configuração Geral</h3>
+        <div class="disparo-config-row">
+          <label class="campo-label">Status</label>
+          <label class="toggle">
+            <input type="checkbox" id="disparo-ativo" onchange="atualizarStatusDisparo()" />
+            <span class="toggle-slider"></span>
+          </label>
+          <span id="disparo-status-text">Desativado</span>
+        </div>
+        <div class="disparo-config-row">
+          <label class="campo-label">@todos</label>
+          <label class="toggle">
+            <input type="checkbox" id="disparo-mencionar" />
+            <span class="toggle-slider"></span>
+          </label>
+          <span style="font-size:13px;color:var(--gray-500);">Mencionar todos ao enviar (quebra o silêncio do grupo)</span>
+        </div>
+      </div>
+
+      <div class="disparo-config-box">
+        <h3>Grupos do WhatsApp</h3>
+        <div class="grupo-row"><label>Grupo 1</label><input type="text" id="grupo-0" placeholder="120363xxxxxxxxxx@g.us" /></div>
+        <div class="grupo-row"><label>Grupo 2</label><input type="text" id="grupo-1" placeholder="120363xxxxxxxxxx@g.us" /></div>
+        <div class="grupo-row"><label>Grupo 3</label><input type="text" id="grupo-2" placeholder="120363xxxxxxxxxx@g.us" /></div>
+        <p class="disparo-hint">Para descobrir o ID: envie qualquer mensagem para o número da GIA pelo grupo. O ID aparecerá nos logs do Railway no formato <code style="color:var(--gold-dark);background:var(--gold-light);padding:2px 6px;border-radius:4px;">120363xxxxxxxxxx@g.us</code></p>
+      </div>
+
+      <h3 style="font-size:15px;font-weight:800;color:var(--gray-900);margin-bottom:6px;">Mensagens por Dia</h3>
+      <p style="font-size:12px;color:var(--gray-500);margin-bottom:16px;">Horários fixos — Segunda 14h/16h/18h · Terça–Quarta 11h/18h · Quinta 11h/19h · Sexta 12h/17h/21h · Sábado 12h/18h/21h</p>
+      <div id="disparos-dias-container"></div>
+
+      <button class="btn-salvar" onclick="salvarDisparos()">💾 Salvar Disparos</button>
+
+      <div class="teste-box">
+        <p>🧪 <strong>Teste manual</strong> — envia uma mensagem de texto para todos os grupos agora, sem depender de horário.</p>
+        <div class="teste-btns">
+          <button class="btn-teste" onclick="testarDisparo(false)">📤 Testar SEM @todos</button>
+          <button class="btn-teste" onclick="testarDisparo(true)">📤 Testar COM @todos</button>
+        </div>
+        <div id="teste-resultado"></div>
+      </div>
+    </div>
+
     <!-- PERGUNTAS SEM RESPOSTA -->
     <div class="secao" id="secao-perguntas">
-      <h2>Perguntas sem resposta</h2>
-      <p class="desc">Perguntas que a GIA não soube responder. Clientes ficam pausados por 1h — você foi alertado no WhatsApp. Revise toda semana e atualize o cérebro.</p>
+      <div class="page-header">
+        <div>
+          <h2 class="page-title">Perguntas sem resposta</h2>
+          <p class="page-desc">Perguntas que a GIA não soube responder. Revise toda semana e atualize o cérebro.</p>
+        </div>
+      </div>
       <div id="perguntas-sem-resposta-lista"><div class="loading">Carregando...</div></div>
     </div>
 
-  </div>
+  </main>
 </div>
 
 <!-- MODAL NOVO FLYER -->
 <div class="modal-overlay" id="modal-novo-flyer">
   <div class="modal">
-    <h3>+ Novo Flyer</h3>
+    <h3>+ Novo Flyer Personalizado</h3>
     <input type="text" id="modal-nome" placeholder="Nome do comando (ex: quinta_especial)" />
     <div class="modal-preview" id="modal-preview" onclick="document.getElementById('modal-file').click()">
       📎 Clique para escolher a imagem ou vídeo
@@ -413,17 +1718,19 @@
     const data = await res.json();
     const toggle = document.getElementById('toggle-gia');
     const texto = document.getElementById('status-text');
+    const dot = document.getElementById('status-dot');
     toggle.checked = data.ativo;
-    texto.textContent = data.ativo ? 'Ativa' : 'Pausada';
-    texto.className = 'status-text ' + (data.ativo ? 'ativo' : 'pausado');
+    texto.textContent = data.ativo ? 'GIA Ativa' : 'GIA Pausada';
+    dot.className = 'status-dot ' + (data.ativo ? 'ativo' : 'pausado');
   }
 
   async function alternarGia() {
     const ativo = document.getElementById('toggle-gia').checked;
     const texto = document.getElementById('status-text');
+    const dot = document.getElementById('status-dot');
     await fetch('/painel/api/status', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': TOKEN }, body: JSON.stringify({ ativo }) });
-    texto.textContent = ativo ? 'Ativa' : 'Pausada';
-    texto.className = 'status-text ' + (ativo ? 'ativo' : 'pausado');
+    texto.textContent = ativo ? 'GIA Ativa' : 'GIA Pausada';
+    dot.className = 'status-dot ' + (ativo ? 'ativo' : 'pausado');
     mostrarToast(ativo ? '✅ GIA ativada' : '⏸️ GIA pausada');
   }
 
@@ -453,7 +1760,7 @@
     card.innerHTML = `
       ${customizado ? '<span class="badge-custom">Custom</span>' : ''}
       ${customizado ? `<button class="btn-deletar-flyer" onclick="deletarFlyer('${tipo}')" title="Remover flyer">×</button>` : ''}
-      <div class="flyer-preview" id="preview-${tipo}">${url ? `<img src="${url}" alt="${label}" />` : 'Sem imagem'}</div>
+      <div class="flyer-preview" id="preview-${tipo}">${url ? `<img src="${url}" alt="${label}" />` : '📷'}</div>
       <div class="flyer-info">
         <label>${label}</label>
         <div class="flyer-upload" id="upload-label-${tipo}">📎 Escolher imagem</div>
@@ -712,7 +2019,7 @@
     }
   }
 
-  // ── DISPAROS ────────────────────────────────────────────────────────────────
+  // ── DISPAROS ──────────────────────────────────────────────────────────────
 
   const DIAS_CHAVE_D   = ['segunda','terca','quarta','quinta','sexta','sabado','domingo'];
   const DIAS_LABEL_D   = ['Segunda-Feira','Terça-Feira','Quarta-Feira','Quinta-Feira','Sexta-Feira','Sábado','Domingo'];
@@ -774,7 +2081,7 @@
         horas.map(h => {
           const msgs = ((diasState[dia] || {})[String(h)] || []);
           const msgsHtml = msgs.length === 0
-            ? '<p class="slot-vazio">Nenhuma mensagem.</p>'
+            ? '<p class="slot-vazio">Nenhuma mensagem configurada.</p>'
             : msgs.map((m, i) => {
                 const temCat = m.tipo === 'flyer' || m.tipo === 'video';
                 const catHtml = temCat ? `<select id="cat-${dia}-${h}-${i}">${flyerOpts(m.categoria)}</select>` : '';
@@ -792,7 +2099,7 @@
                   <button class="btn-remover-msg" onclick="removerMsg('${dia}',${h},${i})">×</button>
                 </div>`;
               }).join('');
-          return `<div class="slot-bloco"><div class="slot-hora">${String(h).padStart(2,'0')}:00</div><div id="slot-${dia}-${h}">${msgsHtml}</div><button class="btn-add-msg" onclick="adicionarMsg('${dia}',${h})">+ Adicionar mensagem</button></div>`;
+          return `<div class="slot-bloco"><div class="slot-hora">${String(h).padStart(2,'0')}h00</div><div id="slot-${dia}-${h}">${msgsHtml}</div><button class="btn-add-msg" onclick="adicionarMsg('${dia}',${h})">+ Adicionar mensagem</button></div>`;
         }).join('');
       container.appendChild(bloco);
     });
@@ -825,7 +2132,7 @@
     const ativo = document.getElementById('disparo-ativo').checked;
     const txt   = document.getElementById('disparo-status-text');
     txt.textContent = ativo ? 'Ativado' : 'Desativado';
-    txt.style.color = ativo ? '#4caf50' : '#999';
+    txt.style.color = ativo ? 'var(--green)' : 'var(--gray-400)';
   }
 
   async function carregarDisparos() {
@@ -847,6 +2154,7 @@
   async function testarDisparo(comMencao) {
     const resultado = document.getElementById('teste-resultado');
     resultado.textContent = 'Enviando...';
+    resultado.style.color = 'var(--gray-400)';
     try {
       const res = await fetch('/painel/api/disparos/testar', {
         method: 'POST',
@@ -857,14 +2165,14 @@
       if (data.ok) {
         const sucessos = data.resultados.filter(r => r.ok).length;
         resultado.innerHTML = `✅ Enviado para ${sucessos}/${data.resultados.length} grupos`;
-        resultado.style.color = '#4caf50';
+        resultado.style.color = 'var(--green)';
       } else {
         resultado.textContent = '❌ ' + (data.erro || 'Erro desconhecido');
-        resultado.style.color = '#e05a5a';
+        resultado.style.color = 'var(--red)';
       }
     } catch (e) {
       resultado.textContent = '❌ Erro: ' + e.message;
-      resultado.style.color = '#e05a5a';
+      resultado.style.color = 'var(--red)';
     }
   }
 
@@ -893,18 +2201,18 @@
       const data = await res.json();
       const perguntas = data.perguntas || [];
       if (perguntas.length === 0) {
-        cont.innerHTML = '<div class="perguntas-vazio">Nenhuma pergunta sem resposta. Ótimo!</div>';
+        cont.innerHTML = '<div class="perguntas-vazio">Nenhuma pergunta sem resposta. Ótimo! 🎉</div>';
         return;
       }
       cont.innerHTML = perguntas.map(p => {
-        const data = p.criadoEm ? new Date(p.criadoEm).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '';
+        const dataStr = p.criadoEm ? new Date(p.criadoEm).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '';
         const tel = p.telefone ? p.telefone.replace(/(\d{2})(\d{2})(\d{5})(\d{4})/, '+$1 ($2) $3-$4') : '';
         return `<div class="pergunta-sem-resposta-card" id="psr-${p.id}">
           <div class="psr-info">
             <div class="psr-pergunta">"${p.pergunta}"</div>
             <div class="psr-meta">
               <span>📱 ${tel}</span>
-              <span>🕐 ${data}</span>
+              <span>🕐 ${dataStr}</span>
             </div>
           </div>
           <button class="btn-resolver" onclick="resolverPergunta('${p.id}')">✓ Resolvida</button>
@@ -923,7 +2231,7 @@
         document.getElementById(`psr-${id}`)?.remove();
         const cont = document.getElementById('perguntas-sem-resposta-lista');
         if (!cont.querySelector('.pergunta-sem-resposta-card')) {
-          cont.innerHTML = '<div class="perguntas-vazio">Nenhuma pergunta sem resposta. Ótimo!</div>';
+          cont.innerHTML = '<div class="perguntas-vazio">Nenhuma pergunta sem resposta. Ótimo! 🎉</div>';
         }
         mostrarToast('✅ Pergunta marcada como resolvida');
       }
