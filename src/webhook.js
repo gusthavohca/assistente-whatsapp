@@ -74,10 +74,19 @@ async function processarMensagem(dadosDoWebhook) {
     const telefoneClienteLimpo = telefoneCliente.replace(/\D/g, '');
     const ehAdmin = telefoneAdminLimpo && telefoneClienteLimpo.includes(telefoneAdminLimpo.slice(-8));
 
-    // Se foi enviada por nós mesmos (resposta manual do admin)
+    // Se foi enviada por nós mesmos (fromMe)
     if (enviadaPorNos) {
+      // 1) Se foi o PRÓPRIO BOT que enviou, ignora — não é intervenção manual.
+      //    (Necessário porque, com "Notificar as enviadas por mim" ligado na Z-API,
+      //     os envios automáticos do GIA também voltam como fromMe.)
+      const idMensagem = dadosDoWebhook.messageId || dadosDoWebhook.id;
+      if (zapi.foiEnviadoPeloBot(idMensagem)) {
+        return;
+      }
+
+      // 2) Caso contrário, é uma RESPOSTA MANUAL do Gusthavo pelo WhatsApp da casa.
       if (!ehAdmin) {
-        // Cancela qualquer timer pendente — evita que o GIA responda após a intervenção manual
+        // Cancela qualquer timer pendente — evita que o GIA responda por cima da intervenção manual
         if (timersDeEspera[telefoneCliente]) {
           clearTimeout(timersDeEspera[telefoneCliente]);
           delete timersDeEspera[telefoneCliente];
@@ -88,12 +97,16 @@ async function processarMensagem(dadosDoWebhook) {
         }
         delete buffersDeMensagens[telefoneCliente];
 
+        // Pausa o GIA por 30min — e reinicia a contagem a cada nova mensagem manual
         claude.registrarRespostaManual(telefoneCliente);
-        // Salvar resposta como exemplo de tom para o GIA aprender o estilo do Gusthavo
+
         if (textoRecebido && textoRecebido.trim()) {
+          // Aprender o tom do Gusthavo
           salvarExemploTom(textoRecebido.trim()).catch(() => {});
+          // Salvar a fala manual no histórico → GIA volta no contexto certo depois dos 30min
+          claude.registrarMensagemManualNoHistorico(telefoneCliente, textoRecebido.trim()).catch(() => {});
         }
-        console.log(`✍️ Resposta manual para ${telefoneCliente} — timer cancelado, GIA pausado 30min`);
+        console.log(`✍️ Resposta manual para ${telefoneCliente} — GIA pausado 30min, contexto salvo`);
       }
       return;
     }

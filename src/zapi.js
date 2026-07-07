@@ -22,6 +22,37 @@ const HEADERS = {
 };
 
 // ============================================================================
+// RASTREIO DE MENSAGENS ENVIADAS PELO PRÓPRIO BOT
+// ============================================================================
+// Com o webhook "Notificar as enviadas por mim também" LIGADO na Z-API, o GIA
+// é avisado de TODA mensagem que sai do número — inclusive as que ele mesmo
+// enviou. Guardamos aqui os IDs das mensagens enviadas pelo bot para poder
+// distinguir "envio do bot" de "resposta manual do Gusthavo".
+
+const idsEnviadosPeloBot = new Set();
+const MAX_IDS_GUARDADOS = 1500;
+
+function registrarIdEnviado(id) {
+  if (!id) return;
+  idsEnviadosPeloBot.add(String(id));
+  if (idsEnviadosPeloBot.size > MAX_IDS_GUARDADOS) {
+    const arr = Array.from(idsEnviadosPeloBot).slice(-MAX_IDS_GUARDADOS);
+    idsEnviadosPeloBot.clear();
+    arr.forEach((x) => idsEnviadosPeloBot.add(x));
+  }
+}
+
+function foiEnviadoPeloBot(id) {
+  return !!id && idsEnviadosPeloBot.has(String(id));
+}
+
+// Extrai o ID da mensagem da resposta da Z-API (o nome do campo pode variar)
+function extrairIdDaResposta(data) {
+  if (!data) return null;
+  return data.messageId || data.id || data.zaapId || null;
+}
+
+// ============================================================================
 // FUNÇÃO 1: ENVIAR MENSAGEM DE TEXTO
 // ============================================================================
 // mencionarTodos = true → usa mentionAll + adiciona @all ao texto.
@@ -40,7 +71,8 @@ async function enviarTexto(telefoneCliente, textoMensagem, mencionarTodos = fals
     }
 
     body.message = mensagem;
-    await axios.post(`${URL_BASE}/send-text`, body, { headers: HEADERS });
+    const resp = await axios.post(`${URL_BASE}/send-text`, body, { headers: HEADERS });
+    registrarIdEnviado(extrairIdDaResposta(resp.data));
     console.log(`✅ Texto enviado para ${telefoneCliente}`);
   } catch (erro) {
     console.log(`❌ Erro ao enviar texto para ${telefoneCliente}:`);
@@ -57,7 +89,8 @@ async function enviarTexto(telefoneCliente, textoMensagem, mencionarTodos = fals
 async function enviarImagem(telefoneCliente, urlImagem, legenda = '') {
   try {
     const body = { phone: telefoneCliente, image: urlImagem, caption: legenda };
-    await axios.post(`${URL_BASE}/send-image`, body, { headers: HEADERS });
+    const resp = await axios.post(`${URL_BASE}/send-image`, body, { headers: HEADERS });
+    registrarIdEnviado(extrairIdDaResposta(resp.data));
     console.log(`✅ Imagem enviada para ${telefoneCliente}`);
   } catch (erro) {
     console.log(`❌ Erro ao enviar imagem para ${telefoneCliente}:`);
@@ -74,7 +107,8 @@ async function enviarImagem(telefoneCliente, urlImagem, legenda = '') {
 async function enviarVideo(telefoneCliente, urlVideo, legenda = '') {
   try {
     const body = { phone: telefoneCliente, video: urlVideo, caption: legenda };
-    await axios.post(`${URL_BASE}/send-video`, body, { headers: HEADERS });
+    const resp = await axios.post(`${URL_BASE}/send-video`, body, { headers: HEADERS });
+    registrarIdEnviado(extrairIdDaResposta(resp.data));
     console.log(`✅ Vídeo enviado para ${telefoneCliente}`);
   } catch (erro) {
     console.log(`❌ Erro ao enviar vídeo para ${telefoneCliente}:`);
@@ -133,4 +167,5 @@ module.exports = {
   enviarVideo,
   alertarDono,
   mostrarDigitando,
+  foiEnviadoPeloBot,
 };

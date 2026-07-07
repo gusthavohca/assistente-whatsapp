@@ -13,7 +13,10 @@ function proximasSextasESabados() {
   const agoraSP = new Date(agora.getTime() - 3 * 60 * 60 * 1000);
 
   const resultado = [];
-  for (let i = 0; i <= 35; i++) {
+  // Horizonte ampliado: ~5 meses (150 dias). Assim o GIA sabe o dia da semana
+  // de qualquer data que o cliente perguntar dentro desse período e nunca
+  // erra dizendo "não abre" numa sexta ou sábado que ainda não foi divulgada.
+  for (let i = 0; i <= 150; i++) {
     const d = new Date(agoraSP);
     d.setUTCDate(agoraSP.getUTCDate() + i);
     const dow = d.getUTCDay(); // 5 = sexta, 6 = sábado
@@ -25,7 +28,7 @@ function proximasSextasESabados() {
       resultado.push(`${dia}/${mes}/${ano} → ${nomeDia}`);
     }
   }
-  return resultado.slice(0, 10).join('\n');
+  return resultado.join('\n');
 }
 
 // ============================================================================
@@ -83,19 +86,29 @@ ${exemplosTom.map((ex, i) => `Exemplo ${i + 1}: "${ex}"`).join('\n')}
 DATA E HORA ATUAL (horário de São Paulo): ${dataAtual}, ${horaAtual}
 
 ════════════════════════════════
-CALENDÁRIO DE ABERTURA — PRÓXIMAS DATAS
+CALENDÁRIO DE DIAS DE EVENTO — PRÓXIMAS DATAS
 ════════════════════════════════
-A Le Club abre APENAS nas datas abaixo. Consulte esta lista SEMPRE que um cliente mencionar uma data específica.
+A Le Club abre TODA sexta (eletrônica) e TODO sábado (funk/open format), e NUNCA de domingo a quinta.
+A lista abaixo serve para você saber com CERTEZA o dia da semana de cada data. Consulte-a SEMPRE que o cliente mencionar uma data.
 
 ${listaProximasDatas}
 
-REGRAS DE DATA:
-- Quando o cliente mencionar qualquer data (ex: "dia 26/06", "26.06", "dia 28", "sábado que vem"), consulte a lista acima PRIMEIRO.
-- Se a data estiver na lista como SEXTA-FEIRA → é noite de eletrônico.
-- Se a data estiver na lista como SÁBADO → é noite de funk/open format.
-- Se a data NÃO estiver na lista (segunda, terça, quarta, quinta ou domingo) → a Le Club não abre nesse dia. Diga isso claramente.
-- NUNCA diga que uma data é sexta ou sábado sem verificar na lista acima.
-- Datas podem ser escritas como: "26/06", "26.06", "dia 26", "26 de junho". Trate todos os formatos da mesma forma.
+REGRAS DE DATA (siga à risca — datas erradas são proibidas):
+
+1. Quando o cliente mencionar uma data (ex: "dia 26/06", "26.06", "dia 28", "sábado que vem", "17/10", "19 de setembro"), procure-a na lista acima.
+
+2. Se a data ESTÁ na lista (ou seja, é SEXTA ou SÁBADO) → é um dia de evento:
+   - Sexta → noite de eletrônico. Sábado → noite de funk/open format.
+   - Se o flyer/programação daquela data estiver disponível, envie normalmente.
+   - Se NÃO houver flyer/programação daquela data ainda (data futura não divulgada), responda EXATAMENTE:
+     "Sobre essa data ainda não tenho as informações fechadas. Normalmente a divulgação sai entre 15 e 10 dias antes da data — assim que sair, te aviso!"
+
+3. Se a data cai de DOMINGO a QUINTA (não está na lista por ser dia sem evento) → diga com clareza que nesse dia a casa não abre, e que a Le Club abre sexta e sábado.
+
+4. Se a data é muito no futuro (além das datas da lista) OU você não tem 100% de certeza do dia da semana → NUNCA diga que não abre e NUNCA chute. Responda EXATAMENTE:
+   "Sobre essa data ainda não tenho as informações. Provavelmente teremos novidades entre 15 e 10 dias antes da data — assim que tiver, te passo!"
+
+5. NUNCA invente o dia da semana de uma data. NUNCA afirme que a casa "não abre" numa data sem ter confirmado pela lista acima. Datas podem vir como "26/06", "26.06", "dia 26", "26 de junho" — trate todos os formatos igual.
 
 ════════════════════════════════
 SOBRE A LE CLUB

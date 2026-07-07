@@ -16,13 +16,35 @@ const ultimaRespostaManual = {};
 
 function registrarRespostaManual(telefone) {
   ultimaRespostaManual[telefone] = Date.now();
-  console.log(`⏸️ Pausa de 1h ativada para ${telefone} após resposta manual`);
+  console.log(`⏸️ Pausa de 30min ativada para ${telefone} após resposta manual`);
 }
 
 // Usado quando GIA não sabe responder — mesmo mecanismo de pausa
 function pausarClientePorNaoSaber(telefone) {
   ultimaRespostaManual[telefone] = Date.now();
-  console.log(`⏸️ Pausa de 1h ativada para ${telefone} — GIA não soube responder`);
+  console.log(`⏸️ Pausa de 30min ativada para ${telefone} — GIA não soube responder`);
+}
+
+// Salva a resposta MANUAL do Gusthavo no histórico da conversa, como se fosse
+// uma fala do assistente. Assim, quando o GIA voltar a atender (após os 30min),
+// ele enxerga o que o Gusthavo já respondeu e continua de onde parou, no contexto.
+// Se a última entrada já for do assistente, concatena (a API exige alternância
+// de papéis user/assistant e não aceita dois 'assistant' seguidos).
+async function registrarMensagemManualNoHistorico(telefone, texto) {
+  try {
+    let historico = (await lerHistorico(telefone)) || [];
+    const ultima = historico[historico.length - 1];
+    if (ultima && ultima.role === 'assistant') {
+      ultima.content = `${ultima.content}\n${texto}`;
+    } else {
+      historico.push({ role: 'assistant', content: texto });
+    }
+    historico = historico.slice(-20);
+    await salvarHistorico(telefone, historico);
+    console.log(`🧠 Resposta manual salva no histórico de ${telefone} (contexto preservado)`);
+  } catch (erro) {
+    console.log('⚠️ Erro ao salvar resposta manual no histórico:', erro.message);
+  }
 }
 
 function estaEmPausaManual(telefone) {
@@ -199,4 +221,4 @@ async function perguntarParaClaude(telefone, mensagemDoCliente) {
   return { tipo: 'texto', mensagem: textoResposta };
 }
 
-module.exports = { perguntarParaClaude, registrarRespostaManual, pausarClientePorNaoSaber, estaEmPausaManual };
+module.exports = { perguntarParaClaude, registrarRespostaManual, pausarClientePorNaoSaber, estaEmPausaManual, registrarMensagemManualNoHistorico };
