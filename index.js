@@ -1,5 +1,13 @@
 require('dotenv').config();
 
+// ===== BLINDAGEM: nao deixar o processo morrer por erro nao tratado =====
+process.on('uncaughtException', (err) => {
+  console.error('uncaughtException:', err && err.stack ? err.stack : err);
+});
+process.on('unhandledRejection', (reason) => {
+  console.error('unhandledRejection:', reason);
+});
+
 const express = require('express');
 const bodyParser = require('body-parser');
 const path = require('path');
