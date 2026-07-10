@@ -73,7 +73,7 @@ async function iniciarRelay(clientePhone, pergunta, holdingMsg) {
   const alertId = await zapi.enviarAlertaRelay(nome, clientePhone, pergunta);
   if (alertId) { await salvarRelayPendente(alertId, { clientePhone, pergunta, criadoEm: Date.now() }); }
   if (holdingMsg) { try { await zapi.enviarTexto(clientePhone, holdingMsg); } catch (e) {} }
-  claude.pausarClientePorNaoSaber(clientePhone);
+  await claude.pausarClientePorNaoSaber(clientePhone);
 }
 
 // ============================================================================
@@ -125,7 +125,7 @@ async function processarMensagem(dadosDoWebhook) {
         delete buffersDeMensagens[telefoneCliente];
 
         // Pausa o GIA por 30min — e reinicia a contagem a cada nova mensagem manual
-        claude.registrarRespostaManual(telefoneCliente);
+        await claude.registrarRespostaManual(telefoneCliente);
 
         if (textoRecebido && textoRecebido.trim()) {
           // Aprender o tom do Gusthavo
@@ -151,6 +151,7 @@ async function processarMensagem(dadosDoWebhook) {
         await zapi.enviarTexto(relay.clientePhone, textoRecebido);
         claude.registrarMensagemManualNoHistorico(relay.clientePhone, textoRecebido).catch(() => {});
         if (refUsado) await deletarRelayPendente(refUsado);
+        await claude.liberarCliente(relay.clientePhone);
         console.log('Relay: resposta do admin encaminhada para ' + relay.clientePhone);
         return;
       }

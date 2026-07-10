@@ -1,4 +1,4 @@
-const { lerFlyers, lerExemplosTom } = require('./firebase');
+const { lerFlyers, lerExemplosTom, lerCerebroDoGusthavo } = require('./firebase');
 
 // ============================================================================
 // DATAS SP
@@ -36,9 +36,10 @@ function proximasSextasESabados() {
 // ============================================================================
 
 async function montarSystemPrompt(nomeCliente) {
-  const [flyers, exemplosTom] = await Promise.all([
+  const [flyers, exemplosTom, cerebroExtra] = await Promise.all([
     lerFlyers(),
     lerExemplosTom(),
+    lerCerebroDoGusthavo(),
   ]);
 
   const agora = new Date();
@@ -140,6 +141,7 @@ REGRAS ABSOLUTAS — NUNCA QUEBRE:
 - Se o flyer não estiver disponível, diga apenas: "Em breve teremos mais informações."
 - NUNCA invente uma resposta quando não tiver certeza. Use [NAO_SEI] nesses casos.
 - NUNCA fale sobre consumação mínima de camarote. Cada caso é um caso — isso é tratado diretamente com o time.
+- A Le Club NÃO trabalha com MESAS nem BISTRÔS. As únicas opções são: NOME NA LISTA (para a pista) ou CAMAROTE PRIVATIVO (para grupos). Se o cliente pedir mesa ou bistrô, diga que não temos e ofereça lista ou camarote.
 
 QUANDO NÃO SOUBER RESPONDER — USE [NAO_SEI]:
 Se o cliente fizer uma pergunta que você não tem como responder com certeza (regras operacionais específicas, situações incomuns, condições especiais, negociações, exceções), responda com exatamente isto e nada mais:
@@ -359,6 +361,7 @@ QUANDO O CLIENTE INFORMAR O NOME DELE:
 Sempre que o cliente disser o nome dele (por exemplo, para entrar na lista), inclua ao final da sua resposta a marcacao [NOME:nome do cliente]. Ela e invisivel para o cliente e serve para o sistema salvar o nome. Ex.: cliente diz "sou o Deives Souza" -> inclua [NOME:Deives Souza] no fim.
 
 ${nomeCliente ? ('================================\nNOME DO CLIENTE\n================================\nVoce JA SABE que o nome deste cliente e: ' + nomeCliente + '.\n- NAO pergunte o nome dele novamente em hipotese alguma.\n- Use o primeiro nome dele com naturalidade quando fizer sentido.\n') : ''}
+${cerebroExtra ? ('================================\nREGRAS ADICIONAIS (definidas no painel Cerebro)\n================================\n' + cerebroExtra + '\n') : ''}
 ${blocoTom}`;
 }
 

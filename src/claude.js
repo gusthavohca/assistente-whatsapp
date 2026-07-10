@@ -1,7 +1,7 @@
 require('dotenv').config();
 const Anthropic = require('@anthropic-ai/sdk');
 const { montarSystemPrompt } = require('./prompt');
-const { lerHistorico, salvarHistorico, lerFlyer, lerCalendario, lerLinksEventos, lerClienteMeta } = require('./firebase');
+const { lerHistorico, salvarHistorico, lerFlyer, lerCalendario, lerLinksEventos, lerClienteMeta, salvarClienteMeta } = require('./firebase');
 
 const claude = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -11,18 +11,28 @@ const claude = new Anthropic({
 // CONTROLE DE PAUSA POR RESPOSTA MANUAL DO ADMIN
 // ============================================================================
 
-const PAUSA_APOS_MANUAL_MS = 30 * 60 * 1000; // 30 minutos
-const ultimaRespostaManual = {};
+const PAUSA_APOS_MANUAL_MS = 30 * 60 * 1000;       // 30 min apos resposta manual
+const PAUSA_NAO_SEI_MS = 6 * 60 * 60 * 1000;       // 6h quando GIA nao soube (ate o Gusthavo responder)
 
-function registrarRespostaManual(telefone) {
-  ultimaRespostaManual[telefone] = Date.now();
-  console.log(`⏸️ Pausa de 30min ativada para ${telefone} após resposta manual`);
+// A pausa agora e gravada no FIREBASE (clientes_meta.pausadoAte) para sobreviver
+// a reinicios do Railway. Antes ficava so na memoria e era perdida a cada restart.
+async function registrarRespostaManual(telefone) {
+  try {
+    await salvarClienteMeta(telefone, { pausadoAte: Date.now() + PAUSA_APOS_MANUAL_MS });
+    console.log(`⏸️ Pausa de 30min (resposta manual) para ${telefone}`);
+  } catch (e) { console.log('Erro ao pausar (manual):', e.message); }
 }
 
-// Usado quando GIA não sabe responder — mesmo mecanismo de pausa
-function pausarClientePorNaoSaber(telefone) {
-  ultimaRespostaManual[telefone] = Date.now();
-  console.log(`⏸️ Pausa de 30min ativada para ${telefone} — GIA não soube responder`);
+async function pausarClientePorNaoSaber(telefone) {
+  try {
+    await salvarClienteMeta(telefone, { pausadoAte: Date.now() + PAUSA_NAO_SEI_MS });
+    console.log(`⏸️ Pausa (GIA nao soube / modo ponte) para ${telefone}`);
+  } catch (e) { console.log('Erro ao pausar (nao_sei):', e.message); }
+}
+
+// Libera o cliente (ex.: depois que o admin respondeu via modo ponte)
+async function liberarCliente(telefone) {
+  try { await salvarClienteMeta(telefone, { pausadoAte: 0 }); } catch (e) {}
 }
 
 // Salva a resposta MANUAL do Gusthavo no histórico da conversa, como se fosse
@@ -47,17 +57,16 @@ async function registrarMensagemManualNoHistorico(telefone, texto) {
   }
 }
 
-function estaEmPausaManual(telefone) {
-  const ultima = ultimaRespostaManual[telefone];
-  if (!ultima) return false;
-  const passado = Date.now() - ultima;
-  if (passado < PAUSA_APOS_MANUAL_MS) {
-    const restante = Math.ceil((PAUSA_APOS_MANUAL_MS - passado) / 60000);
-    console.log(`⏸️ GIA em pausa para ${telefone}. Restam ~${restante} min`);
-    return true;
-  }
-  delete ultimaRespostaManual[telefone];
-  return false;
+async function estaEmPausaManual(telefone) {
+  try {
+    const m = await lerClienteMeta(telefone);
+    const ate = (m && m.pausadoAte) ? m.pausadoAte : 0;
+    if (ate && ate > Date.now()) {
+      console.log(`⏸️ GIA em pausa para ${telefone}. Restam ~${Math.ceil((ate - Date.now()) / 60000)} min`);
+      return true;
+    }
+    return false;
+  } catch (e) { return false; }
 }
 
 // ============================================================================
@@ -147,7 +156,7 @@ function montarTextoLinks(eventos) {
 
 async function perguntarParaClaude(telefone, mensagemDoCliente) {
 
-  if (estaEmPausaManual(telefone)) {
+  if (await estaEmPausaManual(telefone)) {
     console.log(`🔇 Mensagem ignorada — GIA em pausa manual para ${telefone}`);
     return null;
   }
@@ -226,4 +235,4 @@ async function perguntarParaClaude(telefone, mensagemDoCliente) {
   return { tipo: 'texto', mensagem: textoResposta };
 }
 
-module.exports = { perguntarParaClaude, registrarRespostaManual, pausarClientePorNaoSaber, estaEmPausaManual, registrarMensagemManualNoHistorico };
+module.exports = { perguntarParaClaude, registrarRespostaManual, pausarClientePorNaoSaber, estaEmPausaManual, registrarMensagemManualNoHistorico, liberarCliente };
