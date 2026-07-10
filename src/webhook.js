@@ -5,7 +5,7 @@
 const claude = require('./claude');
 const zapi = require('./zapi');
 const { processarComandoAdmin } = require('./admin');
-const { lerCerebroDoGusthavo, lerFlyers, lerStatusGia, registrarPedido, registrarAtendimento, salvarPerguntaSemResposta, salvarExemploTom } = require('./firebase');
+const { lerCerebroDoGusthavo, lerFlyers, lerStatusGia, registrarPedido, registrarAtendimento, salvarPerguntaSemResposta, salvarExemploTom, salvarClienteMeta } = require('./firebase');
 const NUMERO_ADMIN = process.env.NUMERO_GUSTHAVO_PESSOAL;
 
 // ============================================================================
@@ -48,6 +48,9 @@ const RENOVAR_DIGITANDO_MS = 7000;
 const buffersDeMensagens = {};
 const timersDeEspera = {};
 const timersDeDigitando = {};
+
+// Nomes de clientes ja capturados nesta execucao (evita gravacoes repetidas)
+const nomesCapturados = new Set();
 
 // ============================================================================
 // FUNÇÃO PRINCIPAL: PROCESSAR MENSAGEM RECEBIDA
@@ -109,6 +112,15 @@ async function processarMensagem(dadosDoWebhook) {
         console.log(`✍️ Resposta manual para ${telefoneCliente} — GIA pausado 30min, contexto salvo`);
       }
       return;
+    }
+
+    // -- CRM: captura o nome do cliente (do WhatsApp) para a aba Clientes --
+    if (!nomesCapturados.has(telefoneCliente)) {
+      const nomeWhats = dadosDoWebhook.chatName || dadosDoWebhook.senderName || '';
+      if (nomeWhats && /[a-zA-ZÀ-ÿ]/.test(nomeWhats)) {
+        nomesCapturados.add(telefoneCliente);
+        salvarClienteMeta(telefoneCliente, { nomeWhats: nomeWhats.trim() }).catch(() => {});
+      }
     }
 
     // Se não é admin, verifica se o GIA está ativo

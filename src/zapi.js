@@ -161,6 +161,25 @@ async function mostrarDigitando(telefoneCliente) {
 // EXPORTAÇÃO
 // ============================================================================
 
+// ============================================================================
+// FUNÇÃO 6: BUSCAR NOME DO CONTATO (usado pelo CRM para preencher nomes)
+// ============================================================================
+// GET /contacts/{telefone} -> retorna metadados do contato (nome salvo, etc.)
+
+async function buscarNomeContato(telefone) {
+  try {
+    const tel = String(telefone).replace(/\D/g, '');
+    if (!tel) return '';
+    const resp = await axios.get(`${URL_BASE}/contacts/${tel}`, { headers: HEADERS });
+    const d = resp.data || {};
+    const nome = d.name || d.short || d.vname || d.notify || '';
+    // Só devolve se tiver ao menos uma letra (evita salvar o próprio número)
+    return /[a-zA-ZÀ-ÿ]/.test(nome) ? nome.trim() : '';
+  } catch (erro) {
+    return '';
+  }
+}
+
 module.exports = {
   enviarTexto,
   enviarImagem,
@@ -168,4 +187,5 @@ module.exports = {
   alertarDono,
   mostrarDigitando,
   foiEnviadoPeloBot,
+  buscarNomeContato,
 };

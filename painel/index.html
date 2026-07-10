@@ -1003,6 +1003,7 @@
           <h2 class="page-title">Clientes</h2>
           <p class="page-desc">Todos os clientes que a GIA já atendeu. Base do seu CRM — v1 lendo o histórico de conversas.</p>
         </div>
+        <button class="btn-primary" onclick="sincronizarNomes()">Sincronizar nomes</button>
       </div>
       <div class="cli-resumo" id="cli-resumo"></div>
       <div class="cli-filtros">
@@ -1669,6 +1670,18 @@
   // CLIENTES (CRM)
   let CLIENTES = [];
   let CLIENTE_ATUAL = null;
+
+  async function sincronizarNomes() {
+    mostrarToast('Sincronizando nomes... aguarde');
+    try {
+      const res = await fetch('/painel/api/clientes/sincronizar-nomes', { method:'POST', headers:{'Authorization':TOKEN} });
+      const data = await res.json();
+      if (data.ok) {
+        mostrarToast((data.atualizados||0) + ' nome(s) sincronizado(s)');
+        carregarClientes();
+      } else { mostrarToast('Erro ao sincronizar','erro'); }
+    } catch(e) { mostrarToast('Erro ao sincronizar','erro'); }
+  }
 
   async function carregarClientes() {
     const lista = document.getElementById('cli-lista');

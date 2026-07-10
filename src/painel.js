@@ -368,7 +368,7 @@ router.get('/clientes', verificarToken, async (req, res) => {
 
       return {
         telefone: h.telefone,
-        nome: m.nome || '',
+        nome: m.nome || m.nomeWhats || '',
         nota: m.nota || '',
         totalMensagens,
         ultimaInteracaoMs: h.ultimaInteracaoMs || 0,
@@ -407,6 +407,27 @@ router.get('/clientes/:telefone/conversa', verificarToken, async (req, res) => {
     res.json({ mensagens: cliente ? cliente.mensagens : [] });
   } catch (erro) {
     res.status(500).json({ erro: erro.message });
+  }
+});
+
+// Sincroniza nomes: puxa do WhatsApp (Z-API) o nome salvo dos clientes "sem nome".
+// IMPORTANTE: esta rota precisa vir ANTES de POST /clientes/:telefone.
+router.post('/clientes/sincronizar-nomes', verificarToken, async (req, res) => {
+  try {
+    const [historicos, meta] = await Promise.all([lerTodosHistoricos(), lerClientesMeta()]);
+    let atualizados = 0, tentados = 0;
+    for (const h of historicos) {
+      const m = meta[h.telefone] || {};
+      if (m.nome || m.nomeWhats) continue;
+      if (!/^\d{6,}$/.test(String(h.telefone).replace(/\D/g, ''))) continue;
+      tentados++;
+      const nome = await zapi.buscarNomeContato(h.telefone);
+      if (nome) { await salvarClienteMeta(h.telefone, { nomeWhats: nome }); atualizados++; }
+    }
+    res.json({ ok: true, atualizados, tentados });
+  } catch (erro) {
+    console.error('Erro ao sincronizar nomes:', erro);
+    res.status(500).json({ ok: false, erro: erro.message });
   }
 });
 
