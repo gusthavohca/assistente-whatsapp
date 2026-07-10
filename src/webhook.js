@@ -5,7 +5,7 @@
 const claude = require('./claude');
 const zapi = require('./zapi');
 const { processarComandoAdmin } = require('./admin');
-const { lerCerebroDoGusthavo, lerFlyers, lerStatusGia, registrarPedido, registrarAtendimento, salvarPerguntaSemResposta, salvarExemploTom, salvarClienteMeta } = require('./firebase');
+const { lerCerebroDoGusthavo, lerFlyers, lerStatusGia, registrarPedido, registrarAtendimento, salvarPerguntaSemResposta, salvarExemploTom, salvarClienteMeta, lerClienteMeta, salvarRelayPendente, lerRelayPorAlerta, lerRelaysPendentes, deletarRelayPendente } = require('./firebase');
 const NUMERO_ADMIN = process.env.NUMERO_GUSTHAVO_PESSOAL;
 
 // ============================================================================
@@ -51,6 +51,30 @@ const timersDeDigitando = {};
 
 // Nomes de clientes ja capturados nesta execucao (evita gravacoes repetidas)
 const nomesCapturados = new Set();
+
+// ===== MODO PONTE (relay admin <-> cliente) =====
+const COMANDOS_ADMIN = ['gia pausar','pausar gia','desativar gia','gia desativar','gia ativar','ativar gia','ligar gia','gia ligar','ajuda','help','comandos'];
+function pareceComandoAdmin(texto) {
+  const t = (texto || '').toLowerCase().trim();
+  return COMANDOS_ADMIN.some((c) => t.includes(c));
+}
+
+// Janelas de madrugada de evento (SP, UTC-3): sex 23h ate sab 4h; sab 23h ate dom 4h
+function ehMadrugadaEvento() {
+  const agoraSP = new Date(Date.now() - 3 * 60 * 60 * 1000);
+  const dia = agoraSP.getUTCDay(); // 0=Dom 5=Sex 6=Sab
+  const h = agoraSP.getUTCHours();
+  return (dia === 5 && h === 23) || (dia === 6 && h < 4) || (dia === 6 && h === 23) || (dia === 0 && h < 4);
+}
+
+async function iniciarRelay(clientePhone, pergunta, holdingMsg) {
+  let nome = '';
+  try { const m = await lerClienteMeta(clientePhone); nome = m.nome || m.nomeInformado || m.nomeWhats || ''; } catch (e) {}
+  const alertId = await zapi.enviarAlertaRelay(nome, clientePhone, pergunta);
+  if (alertId) { await salvarRelayPendente(alertId, { clientePhone, pergunta, criadoEm: Date.now() }); }
+  if (holdingMsg) { try { await zapi.enviarTexto(clientePhone, holdingMsg); } catch (e) {} }
+  claude.pausarClientePorNaoSaber(clientePhone);
+}
 
 // ============================================================================
 // FUNÇÃO PRINCIPAL: PROCESSAR MENSAGEM RECEBIDA
@@ -112,6 +136,24 @@ async function processarMensagem(dadosDoWebhook) {
         console.log(`✍️ Resposta manual para ${telefoneCliente} — GIA pausado 30min, contexto salvo`);
       }
       return;
+    }
+
+    // MODO PONTE: admin respondeu um alerta -> encaminha pro cliente
+    if (ehAdmin && !enviadaPorNos && textoRecebido) {
+      const refAlerta = dadosDoWebhook.referenceMessageId;
+      let relay = null, refUsado = null;
+      if (refAlerta) { relay = await lerRelayPorAlerta(refAlerta); refUsado = refAlerta; }
+      if (!relay && !pareceComandoAdmin(textoRecebido)) {
+        const pendentes = await lerRelaysPendentes();
+        if (pendentes.length === 1) { relay = pendentes[0].dados; refUsado = pendentes[0].id; }
+      }
+      if (relay && relay.clientePhone) {
+        await zapi.enviarTexto(relay.clientePhone, textoRecebido);
+        claude.registrarMensagemManualNoHistorico(relay.clientePhone, textoRecebido).catch(() => {});
+        if (refUsado) await deletarRelayPendente(refUsado);
+        console.log('Relay: resposta do admin encaminhada para ' + relay.clientePhone);
+        return;
+      }
     }
 
     // -- CRM: captura o nome do cliente (do WhatsApp) para a aba Clientes --
@@ -199,6 +241,13 @@ async function processarBufferDoCliente(telefoneCliente) {
     const ehAdmin = telefoneAdmin && telefoneClean.includes(telefoneAdmin.slice(-8));
 
     // ── ADMIN ──
+    // MODO PONTE: madrugada de evento (sex->sab e sab->dom, 23h-4h)
+    if (!ehAdmin && ehMadrugadaEvento()) {
+      await iniciarRelay(telefoneCliente, textoFinal, 'Deixa eu confirmar uma informacao rapidinho e ja te respondo, beleza?');
+      console.log('MODO PONTE (madrugada) para ' + telefoneCliente);
+      return;
+    }
+
     if (ehAdmin) {
       console.log('🔑 Modo Admin ativado');
       const respostaAdmin = await processarComandoAdmin(textoFinal);
@@ -232,18 +281,13 @@ async function processarBufferDoCliente(telefoneCliente) {
     let textoLimpo = respostaDaClaude;
     const flyersSolicitados = [];
 
-    // Detectar [NAO_SEI] — GIA não soube responder
+    // Detectar [NAO_SEI] — GIA nao soube: entra em MODO PONTE (encaminha pro admin)
     if (textoLimpo.includes('[NAO_SEI]')) {
       textoLimpo = textoLimpo.replace(/\[NAO_SEI\]/g, '').trim();
-      // Enviar mensagem padrão ao cliente (já está no textoLimpo)
-      await zapi.enviarTexto(telefoneCliente, textoLimpo);
-      // Alertar admin
-      await zapi.alertarDono(telefoneCliente, `❓ Pergunta sem resposta:\n"${textoFinal}"`);
-      // Pausar GIA para esse cliente por 1h
-      claude.pausarClientePorNaoSaber(telefoneCliente);
-      // Salvar pergunta no Firebase para revisão semanal
+      const holding = textoLimpo || 'Deixa eu confirmar isso rapidinho e ja te respondo, beleza?';
+      await iniciarRelay(telefoneCliente, textoFinal, holding);
       await salvarPerguntaSemResposta(telefoneCliente, textoFinal);
-      console.log(`❓ [NAO_SEI] — cliente ${telefoneCliente} pausado 1h, pergunta salva`);
+      console.log('[NAO_SEI] -> MODO PONTE para ' + telefoneCliente);
       return;
     }
 

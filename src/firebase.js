@@ -658,6 +658,26 @@ async function lerClienteMeta(telefone) {
   }
 }
 
+async function salvarRelayPendente(alertId, dados) {
+  try { await db.collection('relay_pendente').doc(String(alertId)).set({ ...dados }); return true; }
+  catch (erro) { console.log('Erro ao salvar relay:', erro.message); return false; }
+}
+
+async function lerRelayPorAlerta(alertId) {
+  try { const d = await db.collection('relay_pendente').doc(String(alertId)).get(); return d.exists ? (d.data() || null) : null; }
+  catch (erro) { return null; }
+}
+
+async function lerRelaysPendentes() {
+  try { const s = await db.collection('relay_pendente').get(); return s.docs.map((d) => ({ id: d.id, dados: d.data() || {} })); }
+  catch (erro) { return []; }
+}
+
+async function deletarRelayPendente(alertId) {
+  try { await db.collection('relay_pendente').doc(String(alertId)).delete(); return true; }
+  catch (erro) { return false; }
+}
+
 // ============================================================================
 // EXPORTACAO
 // ============================================================================
@@ -700,4 +720,8 @@ module.exports = {
   lerClientesMeta,
   lerClienteMeta,
   salvarClienteMeta,
+  salvarRelayPendente,
+  lerRelayPorAlerta,
+  lerRelaysPendentes,
+  deletarRelayPendente,
 };
