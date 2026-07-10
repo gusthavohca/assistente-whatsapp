@@ -596,19 +596,66 @@ async function lerExemplosTom() {
 }
 
 // ============================================================================
-// EXPORTAÇÃO
+// CRM - CLIENTES (v1: derivado da colecao "historicos" + metadados editaveis)
+// ============================================================================
+
+// Le TODOS os historicos de conversa (cada doc = um telefone que a GIA atendeu).
+async function lerTodosHistoricos() {
+  try {
+    const snap = await db.collection('historicos').get();
+    return snap.docs.map((d) => {
+      const dados = d.data() || {};
+      let ultimaMs = 0;
+      if (dados.atualizadoEm) {
+        ultimaMs = typeof dados.atualizadoEm.toMillis === 'function'
+          ? dados.atualizadoEm.toMillis()
+          : new Date(dados.atualizadoEm).getTime() || 0;
+      }
+      return {
+        telefone: d.id,
+        mensagens: dados.mensagens || [],
+        ultimaInteracaoMs: ultimaMs,
+      };
+    });
+  } catch (erro) {
+    console.log('Erro ao ler todos os historicos:', erro.message);
+    return [];
+  }
+}
+
+// Metadados editaveis do cliente (nome, nota, status manual, converteu) - colecao separada.
+async function lerClientesMeta() {
+  try {
+    const snap = await db.collection('clientes_meta').get();
+    const meta = {};
+    snap.docs.forEach((d) => { meta[d.id] = d.data() || {}; });
+    return meta;
+  } catch (erro) {
+    console.log('Erro ao ler metadados de clientes:', erro.message);
+    return {};
+  }
+}
+
+async function salvarClienteMeta(telefone, dados) {
+  try {
+    await db.collection('clientes_meta').doc(telefone).set(
+      { ...dados, atualizadoEm: new Date() },
+      { merge: true }
+    );
+    return true;
+  } catch (erro) {
+    console.log('Erro ao salvar metadados do cliente:', erro.message);
+    return false;
+  }
+}
+
+// ============================================================================
+// EXPORTACAO
 // ============================================================================
 
 module.exports = {
   lerCerebroDoGusthavo,
   salvarCerebroDoGusthavo,
-  lerDisparos,
-  salvarDisparos,
-  verificarEMarcarSlotDisparado,
-  limparLogsDisparos,
-  salvarPerguntaSemResposta,
-  lerPerguntasSemResposta,
-  deletarPerguntaSemResposta,
   lerAtracoes,
   salvarAtracao,
   lerHistorico,
@@ -628,9 +675,19 @@ module.exports = {
   deletarCalendario,
   lerCalendario,
   lerCalendarioCompleto,
+  lerDisparos,
+  salvarDisparos,
+  verificarEMarcarSlotDisparado,
+  limparLogsDisparos,
+  salvarPerguntaSemResposta,
+  lerPerguntasSemResposta,
+  deletarPerguntaSemResposta,
   salvarLinkEvento,
   deletarLinkEvento,
   lerLinksEventos,
   salvarExemploTom,
   lerExemplosTom,
+  lerTodosHistoricos,
+  lerClientesMeta,
+  salvarClienteMeta,
 };

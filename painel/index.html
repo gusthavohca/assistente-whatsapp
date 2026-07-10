@@ -932,6 +932,9 @@
     <button class="tab" id="tab-perguntas" onclick="abrirTab('perguntas', this)">
       <span class="tab-icon">❓</span> Perguntas
     </button>
+    <button class="tab" onclick="abrirTab('clientes', this)">
+      <span class="tab-icon">👥</span> Clientes
+    </button>
   </nav>
 
   <!-- ─── HOME ─── -->
@@ -952,6 +955,106 @@
   </div>
 
   <!-- ─── FLYERS ─── -->
+  <!-- ─── CLIENTES (CRM) ─── -->
+  <style>
+    .cli-resumo { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:22px; }
+    .cli-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:16px 18px; }
+    .cli-card .n { font-family:'Cormorant Garamond',serif; font-size:30px; color:var(--gold); line-height:1; }
+    .cli-card .l { font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--text-muted); margin-top:6px; }
+    .cli-filtros { display:flex; flex-wrap:wrap; gap:10px; margin-bottom:18px; }
+    .cli-filtros input, .cli-filtros select { background:var(--bg-input); border:1px solid var(--border); color:var(--text); border-radius:var(--radius-sm); padding:10px 12px; font-family:inherit; font-size:13px; }
+    .cli-filtros input { flex:1; min-width:180px; }
+    .cli-lista { display:flex; flex-direction:column; gap:8px; }
+    .cli-row { display:grid; grid-template-columns:1.4fr 1fr 1fr 1.2fr auto; gap:12px; align-items:center; background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-sm); padding:14px 16px; transition:border-color .3s; }
+    .cli-row:hover { border-color:var(--border-md); }
+    .cli-nome { font-size:14px; color:var(--text); font-weight:500; }
+    .cli-tel { font-size:12px; color:var(--text-muted); margin-top:2px; }
+    .cli-meta { font-size:12px; color:var(--text-muted); }
+    .cli-meta b { color:var(--text); font-weight:500; }
+    .cli-tags { display:flex; flex-wrap:wrap; gap:5px; }
+    .cli-tag { font-size:10px; letter-spacing:.05em; text-transform:uppercase; padding:3px 8px; border-radius:20px; border:1px solid var(--gold-dim); color:var(--gold); }
+    .cli-badge { font-size:10px; letter-spacing:.06em; text-transform:uppercase; padding:3px 9px; border-radius:20px; font-weight:500; }
+    .cli-badge.novo { background:rgba(16,185,129,.12); color:var(--green); }
+    .cli-badge.recorrente { background:rgba(201,168,76,.14); color:var(--gold); }
+    .cli-badge.sumido { background:rgba(239,68,68,.12); color:var(--red); }
+    .cli-conv { font-size:11px; color:var(--green); }
+    .cli-acoes { display:flex; gap:6px; }
+    .cli-btn { background:var(--bg-input); border:1px solid var(--border); color:var(--text-muted); border-radius:var(--radius-sm); padding:7px 11px; font-size:12px; cursor:pointer; font-family:inherit; transition:color .3s,border-color .3s; }
+    .cli-btn:hover { color:var(--gold); border-color:var(--gold-dim); }
+    .cli-vazio { color:var(--text-muted); padding:30px; text-align:center; }
+    .cli-modal-bg { position:fixed; inset:0; background:rgba(0,0,0,.7); display:none; align-items:center; justify-content:center; z-index:60; padding:20px; }
+    .cli-modal-bg.on { display:flex; }
+    .cli-modal { background:var(--bg-card); border:1px solid var(--border-md); border-radius:var(--radius); width:100%; max-width:520px; max-height:85vh; overflow-y:auto; padding:24px; }
+    .cli-modal h3 { font-family:'Cormorant Garamond',serif; font-size:24px; color:var(--gold); margin:0 0 4px; }
+    .cli-modal label { display:block; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--text-muted); margin:14px 0 6px; }
+    .cli-modal input, .cli-modal select, .cli-modal textarea { width:100%; background:var(--bg-input); border:1px solid var(--border); color:var(--text); border-radius:var(--radius-sm); padding:10px 12px; font-family:inherit; font-size:13px; }
+    .cli-chk { display:flex; align-items:center; gap:8px; margin-top:14px; font-size:13px; color:var(--text); }
+    .cli-conversa { background:var(--bg-input); border:1px solid var(--border); border-radius:var(--radius-sm); padding:14px; max-height:340px; overflow-y:auto; margin-top:8px; }
+    .cli-msg { margin-bottom:10px; font-size:13px; line-height:1.45; }
+    .cli-msg .who { font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:var(--text-muted); display:block; margin-bottom:2px; }
+    .cli-msg.user .txt { color:var(--text); }
+    .cli-msg.assistant .txt { color:var(--gold); }
+    @media (max-width:760px){ .cli-resumo{grid-template-columns:repeat(2,1fr);} .cli-row{grid-template-columns:1fr; gap:8px;} }
+  </style>
+  <div class="secao" id="secao-clientes">
+    <div class="app-body">
+      <div class="page-header">
+        <div>
+          <h2 class="page-title">Clientes</h2>
+          <p class="page-desc">Todos os clientes que a GIA já atendeu. Base do seu CRM — v1 lendo o histórico de conversas.</p>
+        </div>
+      </div>
+      <div class="cli-resumo" id="cli-resumo"></div>
+      <div class="cli-filtros">
+        <input type="text" id="cli-busca" placeholder="Buscar por nome ou telefone..." oninput="renderClientes()" />
+        <select id="cli-f-status" onchange="renderClientes()">
+          <option value="">Todos os status</option>
+          <option value="novo">Novos</option>
+          <option value="recorrente">Recorrentes</option>
+          <option value="sumido">Sumidos</option>
+        </select>
+        <select id="cli-f-interesse" onchange="renderClientes()">
+          <option value="">Todos os interesses</option>
+          <option value="lista">Lista</option>
+          <option value="camarote">Camarote</option>
+          <option value="aniversario">Aniversário</option>
+          <option value="convertidos">Só convertidos</option>
+        </select>
+      </div>
+      <div class="cli-lista" id="cli-lista"><div class="cli-vazio">Carregando clientes...</div></div>
+    </div>
+  </div>
+
+  <!-- Modal editar cliente -->
+  <div class="cli-modal-bg" id="cli-modal-bg">
+    <div class="cli-modal">
+      <h3>Cliente</h3>
+      <div class="cli-tel" id="cli-modal-tel"></div>
+      <label>Nome</label>
+      <input type="text" id="cli-modal-nome" placeholder="Nome do cliente" />
+      <label>Status</label>
+      <select id="cli-modal-status">
+        <option value="">Automático</option>
+        <option value="novo">Novo</option>
+        <option value="recorrente">Recorrente</option>
+        <option value="sumido">Sumido</option>
+      </select>
+      <div class="cli-chk">
+        <input type="checkbox" id="cli-modal-conv" />
+        <label for="cli-modal-conv" style="margin:0;letter-spacing:0;text-transform:none;font-size:13px;color:var(--text);">Colocou o nome na lista (convertido)</label>
+      </div>
+      <label>Nota</label>
+      <textarea id="cli-modal-nota" rows="3" placeholder="Observações sobre o cliente..."></textarea>
+      <label>Conversa</label>
+      <div class="cli-conversa" id="cli-modal-conversa">—</div>
+      <div style="display:flex;gap:10px;margin-top:18px;">
+        <button class="btn-primary" onclick="salvarCliente()">💾 Salvar</button>
+        <button class="cli-btn" onclick="fecharModalCliente()">Fechar</button>
+      </div>
+    </div>
+  </div>
+
+
   <div class="secao" id="secao-flyers">
     <div class="app-body">
       <div class="page-header">
@@ -1178,6 +1281,7 @@
     if (nome === 'links') carregarLinks();
     if (nome === 'disparos') carregarDisparos();
     if (nome === 'perguntas') carregarPerguntasSemResposta();
+    if (nome === 'clientes') carregarClientes();
   }
 
   async function carregarStatus() {
@@ -1561,6 +1665,118 @@
   }
 
   // ── BOOT ──────────────────────────────────────────────────────────────────
+
+  // CLIENTES (CRM)
+  let CLIENTES = [];
+  let CLIENTE_ATUAL = null;
+
+  async function carregarClientes() {
+    const lista = document.getElementById('cli-lista');
+    lista.innerHTML = '<div class="cli-vazio">Carregando clientes...</div>';
+    try {
+      const res = await fetch('/painel/api/clientes', { headers:{'Authorization':TOKEN} });
+      const data = await res.json();
+      CLIENTES = data.clientes || [];
+      renderResumoClientes(data.resumo || {});
+      renderClientes();
+    } catch(e) {
+      lista.innerHTML = '<div class="cli-vazio">Erro ao carregar clientes.</div>';
+    }
+  }
+
+  function renderResumoClientes(r) {
+    const card = (n,l) => '<div class="cli-card"><div class="n">'+(n||0)+'</div><div class="l">'+l+'</div></div>';
+    document.getElementById('cli-resumo').innerHTML =
+      card(r.total,'Total') + card(r.ativos,'Ativos') + card(r.sumidos,'Sumidos') + card(r.convertidos,'Na lista');
+  }
+
+  function tempoDesde(dias) {
+    if (dias === null || dias === undefined) return 'sem data';
+    if (dias <= 0) return 'hoje';
+    if (dias === 1) return 'ontem';
+    return 'ha ' + dias + ' dias';
+  }
+
+  function escapeHtml(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  function renderClientes() {
+    const busca = (document.getElementById('cli-busca').value||'').toLowerCase().trim();
+    const fStatus = document.getElementById('cli-f-status').value;
+    const fInt = document.getElementById('cli-f-interesse').value;
+    const lista = document.getElementById('cli-lista');
+
+    const arr = CLIENTES.filter(c => {
+      if (busca && !((c.nome||'').toLowerCase().includes(busca) || c.telefone.includes(busca))) return false;
+      if (fStatus && c.status !== fStatus) return false;
+      if (fInt === 'convertidos' && !c.converteu) return false;
+      if (fInt && fInt !== 'convertidos' && !(c.interesse && c.interesse[fInt])) return false;
+      return true;
+    });
+
+    if (arr.length === 0) { lista.innerHTML = '<div class="cli-vazio">Nenhum cliente encontrado.</div>'; return; }
+
+    lista.innerHTML = arr.map(c => {
+      const tags = [];
+      if (c.interesse && c.interesse.lista) tags.push('<span class="cli-tag">Lista</span>');
+      if (c.interesse && c.interesse.camarote) tags.push('<span class="cli-tag">Camarote</span>');
+      if (c.interesse && c.interesse.aniversario) tags.push('<span class="cli-tag">Aniversario</span>');
+      const conv = c.converteu ? '<div class="cli-conv">na lista</div>' : '';
+      return '<div class="cli-row">' +
+        '<div><div class="cli-nome">'+escapeHtml(c.nome || 'Sem nome')+'</div><div class="cli-tel">'+c.telefone+'</div></div>' +
+        '<div><span class="cli-badge '+c.status+'">'+c.status+'</span></div>' +
+        '<div class="cli-meta">'+tempoDesde(c.diasDesde)+'<br><b>'+c.totalMensagens+'</b> msgs</div>' +
+        '<div class="cli-tags">'+(tags.join('') || '<span class="cli-meta">-</span>')+conv+'</div>' +
+        '<div class="cli-acoes"><button class="cli-btn" onclick="abrirModalCliente(\''+c.telefone+'\')">Ver</button></div>' +
+      '</div>';
+    }).join('');
+  }
+
+  async function abrirModalCliente(telefone) {
+    const c = CLIENTES.find(x => x.telefone === telefone);
+    if (!c) return;
+    CLIENTE_ATUAL = telefone;
+    document.getElementById('cli-modal-tel').textContent = telefone;
+    document.getElementById('cli-modal-nome').value = c.nome || '';
+    document.getElementById('cli-modal-status').value = c.statusManual || '';
+    document.getElementById('cli-modal-conv').checked = !!c.converteu;
+    document.getElementById('cli-modal-nota').value = c.nota || '';
+    document.getElementById('cli-modal-conversa').innerHTML = 'Carregando...';
+    document.getElementById('cli-modal-bg').classList.add('on');
+    try {
+      const res = await fetch('/painel/api/clientes/'+encodeURIComponent(telefone)+'/conversa', { headers:{'Authorization':TOKEN} });
+      const data = await res.json();
+      const msgs = data.mensagens || [];
+      document.getElementById('cli-modal-conversa').innerHTML = msgs.length
+        ? msgs.map(m => '<div class="cli-msg '+(m.role==='user'?'user':'assistant')+'"><span class="who">'+(m.role==='user'?'Cliente':'GIA')+'</span><span class="txt">'+escapeHtml(m.content)+'</span></div>').join('')
+        : '<div class="cli-meta">Sem conversa registrada.</div>';
+    } catch(e) {
+      document.getElementById('cli-modal-conversa').innerHTML = '<div class="cli-meta">Erro ao carregar conversa.</div>';
+    }
+  }
+
+  function fecharModalCliente(){ document.getElementById('cli-modal-bg').classList.remove('on'); CLIENTE_ATUAL = null; }
+
+  async function salvarCliente() {
+    if (!CLIENTE_ATUAL) return;
+    const body = {
+      nome: document.getElementById('cli-modal-nome').value.trim(),
+      nota: document.getElementById('cli-modal-nota').value.trim(),
+      statusManual: document.getElementById('cli-modal-status').value,
+      converteu: document.getElementById('cli-modal-conv').checked,
+    };
+    try {
+      const res = await fetch('/painel/api/clientes/'+encodeURIComponent(CLIENTE_ATUAL), { method:'POST', headers:{'Content-Type':'application/json','Authorization':TOKEN}, body:JSON.stringify(body) });
+      const data = await res.json();
+      if (data.ok) {
+        const c = CLIENTES.find(x => x.telefone === CLIENTE_ATUAL);
+        if (c) { c.nome=body.nome; c.nota=body.nota; c.statusManual=body.statusManual; c.status=body.statusManual||c.status; c.converteu=body.converteu; }
+        mostrarToast('Cliente salvo');
+        fecharModalCliente();
+        renderClientes();
+      } else { mostrarToast('Erro ao salvar','erro'); }
+    } catch(e) { mostrarToast('Erro ao salvar','erro'); }
+  }
+
 
   if (TOKEN) {
     fetch('/painel/api/status',{headers:{'Authorization':TOKEN}})

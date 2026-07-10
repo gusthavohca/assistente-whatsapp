@@ -24,6 +24,9 @@ const {
   salvarDisparos,
   lerPerguntasSemResposta,
   deletarPerguntaSemResposta,
+  lerTodosHistoricos,
+  lerClientesMeta,
+  salvarClienteMeta,
 } = require('./firebase');
 
 cloudinary.config({
@@ -317,6 +320,110 @@ router.post('/disparos/testar', verificarToken, async (req, res) => {
   } catch (erro) {
     console.error('Erro no teste de disparo:', erro);
     res.status(500).json({ ok: false, erro: erro.message });
+  }
+});
+
+// ── CRM: CLIENTES ──────────────────────────────────────────────────────────
+// v1: deriva a lista de clientes a partir da coleção "historicos" (todo cliente
+// que a GIA atendeu) + metadados editáveis (nome, nota, status manual, converteu).
+
+const DIAS_SUMIDO = 14; // sem interação há mais de 14 dias = "sumido"
+
+function derivarInteresse(mensagens) {
+  // Olha só as falas do CLIENTE (role: 'user') para detectar interesse real.
+  const textoCliente = (mensagens || [])
+    .filter((m) => m && m.role === 'user' && typeof m.content === 'string')
+    .map((m) => m.content.toLowerCase())
+    .join(' ');
+  return {
+    lista:      /\blista\b|nome na lista|colocar o nome/.test(textoCliente),
+    camarote:   /camarote|reserva|mesa|area vip|área vip/.test(textoCliente),
+    aniversario:/anivers[aá]rio|aniversariante|comemora/.test(textoCliente),
+  };
+}
+
+router.get('/clientes', verificarToken, async (req, res) => {
+  try {
+    const [historicos, meta] = await Promise.all([
+      lerTodosHistoricos(),
+      lerClientesMeta(),
+    ]);
+
+    const agora = Date.now();
+    const clientes = historicos.map((h) => {
+      const m = meta[h.telefone] || {};
+      const totalMensagens = (h.mensagens || []).length;
+      const diasDesde = h.ultimaInteracaoMs
+        ? Math.floor((agora - h.ultimaInteracaoMs) / 86400000)
+        : null;
+
+      // Status automático (proxy — refinado depois com comandas/check-in):
+      // sumido = sem interação há >14 dias; recorrente = conversa longa/engajada;
+      // novo = interação recente e curta.
+      let statusAuto;
+      if (diasDesde === null)               statusAuto = 'novo';
+      else if (diasDesde > DIAS_SUMIDO)     statusAuto = 'sumido';
+      else if (totalMensagens > 6)          statusAuto = 'recorrente';
+      else                                  statusAuto = 'novo';
+
+      return {
+        telefone: h.telefone,
+        nome: m.nome || '',
+        nota: m.nota || '',
+        totalMensagens,
+        ultimaInteracaoMs: h.ultimaInteracaoMs || 0,
+        diasDesde,
+        interesse: derivarInteresse(h.mensagens),
+        converteu: m.converteu === true, // "colocou nome na lista" — confirmado manualmente
+        status: m.statusManual || statusAuto,
+        statusManual: m.statusManual || '',
+      };
+    });
+
+    // Mais recentes primeiro
+    clientes.sort((a, b) => b.ultimaInteracaoMs - a.ultimaInteracaoMs);
+
+    // Resumo pra os contadores do topo
+    const resumo = {
+      total: clientes.length,
+      ativos: clientes.filter((c) => c.status !== 'sumido').length,
+      sumidos: clientes.filter((c) => c.status === 'sumido').length,
+      convertidos: clientes.filter((c) => c.converteu).length,
+    };
+
+    res.json({ clientes, resumo });
+  } catch (erro) {
+    console.error('Erro ao listar clientes:', erro);
+    res.status(500).json({ erro: erro.message });
+  }
+});
+
+// Retorna a conversa completa de UM cliente (pra ver o histórico no painel)
+router.get('/clientes/:telefone/conversa', verificarToken, async (req, res) => {
+  try {
+    const telefone = req.params.telefone;
+    const historicos = await lerTodosHistoricos();
+    const cliente = historicos.find((h) => h.telefone === telefone);
+    res.json({ mensagens: cliente ? cliente.mensagens : [] });
+  } catch (erro) {
+    res.status(500).json({ erro: erro.message });
+  }
+});
+
+// Salva/edita metadados do cliente (nome, nota, status manual, converteu)
+router.post('/clientes/:telefone', verificarToken, async (req, res) => {
+  try {
+    const telefone = req.params.telefone;
+    const { nome, nota, statusManual, converteu } = req.body;
+    const dados = {};
+    if (nome !== undefined)         dados.nome = nome;
+    if (nota !== undefined)         dados.nota = nota;
+    if (statusManual !== undefined) dados.statusManual = statusManual;
+    if (converteu !== undefined)    dados.converteu = converteu === true;
+    const ok = await salvarClienteMeta(telefone, dados);
+    res.json({ ok });
+  } catch (erro) {
+    res.status(500).json({ erro: erro.message });
   }
 });
 
