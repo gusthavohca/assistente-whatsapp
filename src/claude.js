@@ -1,7 +1,7 @@
 require('dotenv').config();
 const Anthropic = require('@anthropic-ai/sdk');
 const { montarSystemPrompt } = require('./prompt');
-const { lerHistorico, salvarHistorico, lerFlyer, lerCalendario, lerLinksEventos } = require('./firebase');
+const { lerHistorico, salvarHistorico, lerFlyer, lerCalendario, lerLinksEventos, lerClienteMeta } = require('./firebase');
 
 const claude = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -190,7 +190,12 @@ async function perguntarParaClaude(telefone, mensagemDoCliente) {
     }
   }
 
-  const cerebro = await montarSystemPrompt();
+  let nomeCliente = '';
+  try {
+    const meta = await lerClienteMeta(telefone);
+    nomeCliente = meta.nome || meta.nomeInformado || '';
+  } catch (e) {}
+  const cerebro = await montarSystemPrompt(nomeCliente);
 
   historico.push({
     role: 'user',

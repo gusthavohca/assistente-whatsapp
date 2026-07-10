@@ -35,7 +35,7 @@ function proximasSextasESabados() {
 // MONTAR SYSTEM PROMPT
 // ============================================================================
 
-async function montarSystemPrompt() {
+async function montarSystemPrompt(nomeCliente) {
   const [flyers, exemplosTom] = await Promise.all([
     lerFlyers(),
     lerExemplosTom(),
@@ -355,6 +355,10 @@ Exemplos:
 
 Nunca deixe a conversa morrer com uma resposta que não gera ação. Sempre que possível, termine com uma pergunta curta e direta.
 
+QUANDO O CLIENTE INFORMAR O NOME DELE:
+Sempre que o cliente disser o nome dele (por exemplo, para entrar na lista), inclua ao final da sua resposta a marcacao [NOME:nome do cliente]. Ela e invisivel para o cliente e serve para o sistema salvar o nome. Ex.: cliente diz "sou o Deives Souza" -> inclua [NOME:Deives Souza] no fim.
+
+${nomeCliente ? ('================================\nNOME DO CLIENTE\n================================\nVoce JA SABE que o nome deste cliente e: ' + nomeCliente + '.\n- NAO pergunte o nome dele novamente em hipotese alguma.\n- Use o primeiro nome dele com naturalidade quando fizer sentido.\n') : ''}
 ${blocoTom}`;
 }
 

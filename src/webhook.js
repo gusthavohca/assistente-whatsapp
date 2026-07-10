@@ -272,6 +272,13 @@ async function processarBufferDoCliente(telefoneCliente) {
       textoLimpo = textoLimpo.replace(/\[ALERTAR_GUSTHAVO\]/g, '').trim();
     }
 
+    // Detectar [NOME:xxx] — cliente informou o nome; salva no CRM
+    const matchNome = textoLimpo.match(/\[NOME:([^\]]+)\]/);
+    if (matchNome && matchNome[1].trim()) {
+      salvarClienteMeta(telefoneCliente, { nomeInformado: matchNome[1].trim() }).catch(() => {});
+    }
+    textoLimpo = textoLimpo.replace(/\[NOME:[^\]]+\]/g, '').trim();
+
     textoLimpo = textoLimpo.replace(/\n{3,}/g, '\n\n').trim();
 
     // Enviar texto em pedaços

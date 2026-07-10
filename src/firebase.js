@@ -649,6 +649,15 @@ async function salvarClienteMeta(telefone, dados) {
   }
 }
 
+async function lerClienteMeta(telefone) {
+  try {
+    const doc = await db.collection('clientes_meta').doc(telefone).get();
+    return doc.exists ? (doc.data() || {}) : {};
+  } catch (erro) {
+    return {};
+  }
+}
+
 // ============================================================================
 // EXPORTACAO
 // ============================================================================
@@ -689,5 +698,6 @@ module.exports = {
   lerExemplosTom,
   lerTodosHistoricos,
   lerClientesMeta,
+  lerClienteMeta,
   salvarClienteMeta,
 };

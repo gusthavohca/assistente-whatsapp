@@ -368,7 +368,7 @@ router.get('/clientes', verificarToken, async (req, res) => {
 
       return {
         telefone: h.telefone,
-        nome: m.nome || m.nomeWhats || '',
+        nome: m.nome || m.nomeInformado || m.nomeWhats || '',
         nota: m.nota || '',
         totalMensagens,
         ultimaInteracaoMs: h.ultimaInteracaoMs || 0,
