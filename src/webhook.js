@@ -116,8 +116,11 @@ async function processarMensagem(dadosDoWebhook) {
 
     // -- CRM: captura o nome do cliente (do WhatsApp) para a aba Clientes --
     if (!nomesCapturados.has(telefoneCliente)) {
-      const nomeWhats = dadosDoWebhook.chatName || dadosDoWebhook.senderName || '';
-      if (nomeWhats && /[a-zA-ZÀ-ÿ]/.test(nomeWhats)) {
+      const _cn = dadosDoWebhook.chatName || '';
+      const _sn = dadosDoWebhook.senderName || '';
+      const _temLetra = (x) => /[a-zA-ZÀ-ÿ]/.test(x);
+      const nomeWhats = _temLetra(_cn) ? _cn : (_temLetra(_sn) ? _sn : '');
+      if (nomeWhats) {
         nomesCapturados.add(telefoneCliente);
         salvarClienteMeta(telefoneCliente, { nomeWhats: nomeWhats.trim() }).catch(() => {});
       }

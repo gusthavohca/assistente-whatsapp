@@ -1677,7 +1677,9 @@
       const res = await fetch('/painel/api/clientes/sincronizar-nomes', { method:'POST', headers:{'Authorization':TOKEN} });
       const data = await res.json();
       if (data.ok) {
-        mostrarToast((data.atualizados||0) + ' nome(s) sincronizado(s)');
+        let msg = (data.atualizados||0) + ' de ' + (data.tentados||0) + ' nomes encontrados';
+        if (data.ocultos) msg += ' — ' + data.ocultos + ' com numero oculto (@lid)';
+        mostrarToast(msg);
         carregarClientes();
       } else { mostrarToast('Erro ao sincronizar','erro'); }
     } catch(e) { mostrarToast('Erro ao sincronizar','erro'); }

@@ -415,16 +415,19 @@ router.get('/clientes/:telefone/conversa', verificarToken, async (req, res) => {
 router.post('/clientes/sincronizar-nomes', verificarToken, async (req, res) => {
   try {
     const [historicos, meta] = await Promise.all([lerTodosHistoricos(), lerClientesMeta()]);
-    let atualizados = 0, tentados = 0;
-    for (const h of historicos) {
-      const m = meta[h.telefone] || {};
-      if (m.nome || m.nomeWhats) continue;
-      if (!/^\d{6,}$/.test(String(h.telefone).replace(/\D/g, ''))) continue;
-      tentados++;
-      const nome = await zapi.buscarNomeContato(h.telefone);
-      if (nome) { await salvarClienteMeta(h.telefone, { nomeWhats: nome }); atualizados++; }
+    const semNome = historicos.filter(h => { const m = meta[h.telefone] || {}; return !m.nome && !m.nomeWhats; });
+    const ocultos = semNome.filter(h => String(h.telefone).includes('@')).length; // @lid: numero oculto
+    const alvos = semNome.filter(h => !String(h.telefone).includes('@') && /^\d{6,}$/.test(String(h.telefone).replace(/\D/g, '')));
+    let atualizados = 0, i = 0;
+    async function worker() {
+      while (i < alvos.length) {
+        const h = alvos[i++];
+        const nome = await zapi.buscarNomeContato(h.telefone);
+        if (nome) { await salvarClienteMeta(h.telefone, { nomeWhats: nome }); atualizados++; }
+      }
     }
-    res.json({ ok: true, atualizados, tentados });
+    await Promise.all(Array.from({ length: 5 }, worker));
+    res.json({ ok: true, atualizados, tentados: alvos.length, ocultos });
   } catch (erro) {
     console.error('Erro ao sincronizar nomes:', erro);
     res.status(500).json({ ok: false, erro: erro.message });
