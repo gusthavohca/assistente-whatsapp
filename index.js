@@ -45,14 +45,14 @@ app.post('/webhook', async (req, res) => {
 });
 
 // ===== ALERTAS DE CONEXAO (Z-API "Ao desconectar" / "Ao conectar") =====
-app.post('/desconectou', async (req, res) => {
+app.all('/desconectou', (req, res) => {
+  res.status(200).send('OK'); // responde JA para nao dar timeout no teste da Z-API
   console.log('Z-API status (desconectou):', JSON.stringify(req.body || {}));
-  await zapi.enviarAlertaAdmin('⚠️ GIA DESCONECTOU do WhatsApp. O bot esta sem receber mensagens — reconecte na Z-API o quanto antes.');
-  res.status(200).send('OK');
+  zapi.enviarAlertaAdmin('⚠️ GIA DESCONECTOU do WhatsApp. O bot esta sem receber mensagens — reconecte na Z-API o quanto antes.').catch(() => {});
 });
-app.post('/conectou', async (req, res) => {
-  await zapi.enviarAlertaAdmin('✅ GIA reconectou ao WhatsApp. Voltou a receber mensagens normalmente.');
+app.all('/conectou', (req, res) => {
   res.status(200).send('OK');
+  zapi.enviarAlertaAdmin('✅ GIA reconectou ao WhatsApp. Voltou a receber mensagens normalmente.').catch(() => {});
 });
 
 // ============================================================================
