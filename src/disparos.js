@@ -30,7 +30,7 @@ const HORARIOS_FIXOS_COMPLETOS = {
   quarta:  [{h:11,m:7}, {h:18,m:7}],
   quinta:  [{h:11,m:7}, {h:19,m:7}],
   sexta:   [{h:12,m:7}, {h:17,m:7}, {h:21,m:7}],
-  sabado:  [{h:12,m:7}, {h:18,m:7}, {h:21,m:7}],
+  sabado:  [{h:12,m:7}, {h:13,m:1}, {h:18,m:7}, {h:21,m:7}],
   domingo: [],
 };
 
@@ -41,7 +41,7 @@ const HORARIOS_FIXOS = {
   quarta:  [11, 18],
   quinta:  [11, 19],
   sexta:   [12, 17, 21],
-  sabado:  [12, 18, 21],
+  sabado:  [12, 13, 18, 21],
   domingo: [],
 };
 
