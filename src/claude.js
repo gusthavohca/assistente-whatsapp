@@ -2,6 +2,15 @@ require('dotenv').config();
 const Anthropic = require('@anthropic-ai/sdk');
 const { montarSystemPrompt } = require('./prompt');
 const { lerHistorico, salvarHistorico, lerFlyer, lerCalendario, lerLinksEventos, lerClienteMeta, salvarClienteMeta } = require('./firebase');
+const zapi = require('./zapi');
+
+let ultimoAlertaIA = 0;
+function alertarFalhaIA(msg) {
+  const agora = Date.now();
+  if (agora - ultimoAlertaIA < 10 * 60 * 1000) return; // no maximo 1 alerta a cada 10min
+  ultimoAlertaIA = agora;
+  zapi.enviarAlertaAdmin('⚠️ A IA da GIA FALHOU (Anthropic): ' + (msg || 'erro') + '. Verifique credito/chave. O bot esta pedindo "aguarde" aos clientes.').catch(() => {});
+}
 
 const claude = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -211,12 +220,20 @@ async function perguntarParaClaude(telefone, mensagemDoCliente) {
     content: mensagemDoCliente,
   });
 
-  const resposta = await claude.messages.create({
-    model: 'claude-sonnet-4-5',
-    max_tokens: 1024,
-    system: cerebro,
-    messages: historico,
-  });
+  let resposta;
+  try {
+    resposta = await claude.messages.create({
+      model: 'claude-sonnet-4-5',
+      max_tokens: 1024,
+      system: cerebro,
+      messages: historico,
+    });
+  } catch (erroIA) {
+    console.log('❌ Erro na IA (Anthropic):', erroIA.message);
+    alertarFalhaIA(erroIA.message);
+    try { await zapi.enviarTexto(telefone, 'Deixa eu confirmar isso rapidinho e ja te respondo, beleza?'); } catch (e) {}
+    return null;
+  }
 
   const textoResposta = resposta.content[0].text;
 

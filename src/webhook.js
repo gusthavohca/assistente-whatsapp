@@ -51,6 +51,8 @@ const timersDeDigitando = {};
 
 // Nomes de clientes ja capturados nesta execucao (evita gravacoes repetidas)
 const nomesCapturados = new Set();
+const idsProcessados = new Set();
+const MAX_IDS_PROCESSADOS = 800;
 
 // ===== MODO PONTE (relay admin <-> cliente) =====
 const COMANDOS_ADMIN = ['gia pausar','pausar gia','desativar gia','gia desativar','gia ativar','ativar gia','ligar gia','gia ligar','ajuda','help','comandos'];
@@ -94,6 +96,18 @@ async function processarMensagem(dadosDoWebhook) {
     if (ehDeGrupo) {
       console.log(`👥 Mensagem de grupo ignorada. ID: ${telefoneCliente}`);
       return;
+    }
+
+    // Deduplicacao: ignora reentrega do mesmo messageId pela Z-API
+    const idWebhook = dadosDoWebhook.messageId || dadosDoWebhook.id;
+    if (idWebhook) {
+      if (idsProcessados.has(idWebhook)) { return; }
+      idsProcessados.add(idWebhook);
+      if (idsProcessados.size > MAX_IDS_PROCESSADOS) {
+        const arr = Array.from(idsProcessados).slice(-MAX_IDS_PROCESSADOS);
+        idsProcessados.clear();
+        arr.forEach((x) => idsProcessados.add(x));
+      }
     }
 
     // Verifica se é admin

@@ -16,6 +16,7 @@ const webhook = require('./src/webhook');
 const painel = require('./src/painel');
 const { iniciarAgendamento } = require('./src/relatorio');
 const { iniciarDisparos } = require('./src/disparos');
+const zapi = require('./src/zapi');
 
 const app = express();
 const PORTA = process.env.PORT || 3000;
@@ -40,6 +41,17 @@ app.get('/', (req, res) => {
 // ============================================================================
 app.post('/webhook', async (req, res) => {
   webhook.processarMensagem(req.body);
+  res.status(200).send('OK');
+});
+
+// ===== ALERTAS DE CONEXAO (Z-API "Ao desconectar" / "Ao conectar") =====
+app.post('/desconectou', async (req, res) => {
+  console.log('Z-API status (desconectou):', JSON.stringify(req.body || {}));
+  await zapi.enviarAlertaAdmin('⚠️ GIA DESCONECTOU do WhatsApp. O bot esta sem receber mensagens — reconecte na Z-API o quanto antes.');
+  res.status(200).send('OK');
+});
+app.post('/conectou', async (req, res) => {
+  await zapi.enviarAlertaAdmin('✅ GIA reconectou ao WhatsApp. Voltou a receber mensagens normalmente.');
   res.status(200).send('OK');
 });
 

@@ -125,6 +125,14 @@ async function enviarAlertaRelay(nomeCliente, telefoneCliente, pergunta) {
   }
 }
 
+async function enviarAlertaAdmin(texto) {
+  try {
+    await axios.post(`${URL_BASE}/send-text`, { phone: NUMERO_GUSTHAVO, message: texto }, { headers: HEADERS });
+  } catch (erro) {
+    console.log('Erro ao enviar alerta admin:', erro.response?.data || erro.message);
+  }
+}
+
 module.exports = {
   enviarTexto,
   enviarImagem,
@@ -134,4 +142,5 @@ module.exports = {
   foiEnviadoPeloBot,
   buscarNomeContato,
   enviarAlertaRelay,
+  enviarAlertaAdmin,
 };
