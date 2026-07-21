@@ -78,6 +78,15 @@ async function iniciarRelay(clientePhone, pergunta, holdingMsg) {
   await claude.pausarClientePorNaoSaber(clientePhone);
 }
 
+// Cria uma PONTE (relay) sem holding e sem pausar — usado quando o GIA ja
+// respondeu ao cliente, mas quer que o admin possa complementar/fechar a resposta.
+async function criarPontePara(clientePhone, pergunta) {
+  let nome = '';
+  try { const m = await lerClienteMeta(clientePhone); nome = m.nome || m.nomeInformado || m.nomeWhats || ''; } catch (e) {}
+  const alertId = await zapi.enviarAlertaRelay(nome, clientePhone, pergunta);
+  if (alertId) { await salvarRelayPendente(alertId, { clientePhone, pergunta, criadoEm: Date.now() }); }
+}
+
 // ============================================================================
 // FUNÇÃO PRINCIPAL: PROCESSAR MENSAGEM RECEBIDA
 // ============================================================================
@@ -183,6 +192,19 @@ async function processarMensagem(dadosDoWebhook) {
       }
     }
 
+    // -- CRM: detectar origem de anúncio CTWA (Click-to-WhatsApp do Meta Ads) --
+    const referral = dadosDoWebhook.referral;
+    if (referral && (referral.sourceType === 'ad' || referral.ctwaClid || referral.sourceId)) {
+      salvarClienteMeta(telefoneCliente, {
+        origemAnuncio: 'meta_ctwa',
+        campanhaId:    referral.sourceId  || '',
+        campanhaUrl:   referral.sourceUrl || '',
+        ctwaClid:      referral.ctwaClid  || '',
+        primeiraInteracaoAnuncio: Date.now(),
+      }).catch(() => {});
+      console.log(`📢 Lead de anúncio CTWA detectado: ${telefoneCliente} (ad: ${referral.sourceId || 'desconhecido'})`);
+    }
+
     // Se não é admin, verifica se o GIA está ativo
     if (!ehAdmin) {
       const giaAtivo = await lerStatusGia();
@@ -281,6 +303,13 @@ async function processarBufferDoCliente(telefoneCliente) {
 
     console.log(`🤖 Resposta tipo: "${resposta.tipo}"`);
 
+    // Falha da IA -> MODO PONTE (voce responde no admin e o GIA encaminha)
+    if (resposta.tipo === 'falha_ia') {
+      await iniciarRelay(telefoneCliente, resposta.pergunta || textoFinal, 'Deixa eu confirmar isso rapidinho e ja te respondo, beleza?');
+      console.log('[FALHA_IA] -> MODO PONTE para ' + telefoneCliente);
+      return;
+    }
+
     // Se for flyer direto (programação detectada pelo claude.js)
     if (resposta.tipo === 'flyer') {
       await zapi.enviarImagem(telefoneCliente, resposta.url);
@@ -306,14 +335,10 @@ async function processarBufferDoCliente(telefoneCliente) {
       return;
     }
 
-    // Detectar [MUITOS_CONVIDADOS] — grupo grande, notificar admin SEM responder o cliente
+    // Detectar [MUITOS_CONVIDADOS] — grupo grande: entra em MODO PONTE
     if (textoLimpo.includes('[MUITOS_CONVIDADOS]')) {
-      // NÃO envia nada ao cliente — só alerta o admin e pausa o GIA
-      await zapi.alertarDono(telefoneCliente,
-        `👥 Cliente quer trazer MUITOS convidados:\n"${textoFinal}"\n\nResponda manualmente — GIA aguarda.`
-      );
-      claude.pausarClientePorNaoSaber(telefoneCliente);
-      console.log(`👥 [MUITOS_CONVIDADOS] — admin notificado, GIA pausado para ${telefoneCliente}`);
+      await iniciarRelay(telefoneCliente, textoFinal, 'Deixa eu confirmar a melhor condicao pra um grupo desse tamanho e ja te respondo, beleza?');
+      console.log('[MUITOS_CONVIDADOS] -> MODO PONTE para ' + telefoneCliente);
       return;
     }
 
@@ -364,9 +389,9 @@ async function processarBufferDoCliente(telefoneCliente) {
       }
     }
 
-    // Alertar admin se necessário
+    // Alertar admin se necessário — agora em MODO PONTE (voce responde e o GIA encaminha)
     if (precisaAlertar) {
-      await zapi.alertarDono(telefoneCliente, textoFinal);
+      await criarPontePara(telefoneCliente, textoFinal);
     }
 
     // Registrar relatório

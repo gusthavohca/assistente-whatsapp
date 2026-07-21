@@ -230,9 +230,9 @@ async function perguntarParaClaude(telefone, mensagemDoCliente) {
     });
   } catch (erroIA) {
     console.log('❌ Erro na IA (Anthropic):', erroIA.message);
-    alertarFalhaIA(erroIA.message);
-    try { await zapi.enviarTexto(telefone, 'Deixa eu confirmar isso rapidinho e ja te respondo, beleza?'); } catch (e) {}
-    return null;
+    alertarFalhaIA(erroIA.message); // heads-up de sistema (1x a cada 10min)
+    // Entra em MODO PONTE: o webhook alerta o admin e encaminha a resposta dele ao cliente.
+    return { tipo: 'falha_ia', pergunta: mensagemDoCliente };
   }
 
   const textoResposta = resposta.content[0].text;
