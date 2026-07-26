@@ -29,7 +29,7 @@ db.settings({
 });
 
 // ============================================================================
-// CÉREBRO DO GUSTHAVO
+// CEREBRO DO CBP
 // ============================================================================
 
 async function lerCerebroDoGusthavo() {
@@ -208,7 +208,7 @@ async function lerInfos() {
 }
 
 // ============================================================================
-// STATUS DA GIA
+// STATUS DO CBP
 // ============================================================================
 
 async function salvarStatusGia(status) {
@@ -217,7 +217,7 @@ async function salvarStatusGia(status) {
       ativo: status,
       atualizadoEm: new Date()
     });
-    console.log(`✅ GIA ${status ? 'ativado' : 'pausado'}`);
+    console.log(`✅ CBP ${status ? 'ativado' : 'pausado'}`);
     return true;
   } catch (erro) {
     console.log('⚠️ Erro ao salvar status:', erro.message);

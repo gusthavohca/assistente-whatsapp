@@ -5,7 +5,7 @@
 const claude = require('./claude');
 const zapi = require('./zapi');
 const { processarComandoAdmin } = require('./admin');
-const { lerCerebroDoGusthavo, lerFlyers, lerStatusGia, registrarPedido, registrarAtendimento, salvarPerguntaSemResposta, salvarExemploTom, salvarClienteMeta, lerClienteMeta, salvarRelayPendente, lerRelayPorAlerta, lerRelaysPendentes, deletarRelayPendente } = require('./firebase');
+const { lerFlyers, lerStatusGia, registrarPedido, registrarAtendimento, salvarPerguntaSemResposta, salvarExemploTom, salvarClienteMeta, lerClienteMeta, salvarRelayPendente, lerRelayPorAlerta, lerRelaysPendentes, deletarRelayPendente, lerLinksEventos, lerCalendario } = require('./firebase');
 const NUMERO_ADMIN = process.env.NUMERO_GUSTHAVO_PESSOAL;
 
 // ============================================================================
@@ -55,7 +55,7 @@ const idsProcessados = new Set();
 const MAX_IDS_PROCESSADOS = 800;
 
 // ===== MODO PONTE (relay admin <-> cliente) =====
-const COMANDOS_ADMIN = ['gia pausar','pausar gia','desativar gia','gia desativar','gia ativar','ativar gia','ligar gia','gia ligar','ajuda','help','comandos'];
+const COMANDOS_ADMIN = ['gia pausar','pausar cbp','desativar gia','gia desativar','gia ativar','ativar gia','ligar gia','gia ligar','ajuda','help','comandos'];
 function pareceComandoAdmin(texto) {
   const t = (texto || '').toLowerCase().trim();
   return COMANDOS_ADMIN.some((c) => t.includes(c));
@@ -80,6 +80,42 @@ async function iniciarRelay(clientePhone, pergunta, holdingMsg) {
 
 // Cria uma PONTE (relay) sem holding e sem pausar — usado quando o GIA ja
 // respondeu ao cliente, mas quer que o admin possa complementar/fechar a resposta.
+// ===== NORMALIZACAO E SANITIZACAO DE ETIQUETAS =====
+const FLYERS_VALIDOS = ['programacao_sexta','programacao_sabado','entrada_sexta','entrada_sabado','camarote_sexta','camarote_sabado','aniversario_sexta','aniversario_sabado'];
+
+// Aceita etiqueta escrita sem o dia (ex.: "entrada") e resolve pelo dia citado
+// na conversa ou pelo proximo dia de evento. Evita o bug de tag vazando como texto.
+function normalizarFlyer(nomeBruto, textoConversa) {
+  let n = String(nomeBruto || '').trim().toLowerCase().replace(/\s+/g, '_');
+  n = n.replace('sábado', 'sabado').replace('sexta-feira', 'sexta');
+  if (FLYERS_VALIDOS.includes(n)) return n;
+  const base = ['programacao','entrada','camarote','aniversario'].find((b) => n.startsWith(b));
+  if (!base) return null;
+  let dia = null;
+  if (/_sexta|sexta/.test(n)) dia = 'sexta';
+  else if (/_sabado|sabado/.test(n)) dia = 'sabado';
+  if (!dia) {
+    const t = String(textoConversa || '').toLowerCase();
+    if (t.includes('sabado') || t.includes('sábado')) dia = 'sabado';
+    else if (t.includes('sexta')) dia = 'sexta';
+  }
+  if (!dia) {
+    const agoraSP = new Date(Date.now() - 3 * 60 * 60 * 1000);
+    dia = agoraSP.getUTCDay() === 6 ? 'sabado' : 'sexta';
+  }
+  const candidato = `${base}_${dia}`;
+  return FLYERS_VALIDOS.includes(candidato) ? candidato : null;
+}
+
+// Rede de seguranca final: remove QUALQUER etiqueta [ ... ] que tenha sobrado,
+// para que nunca chegue ao cliente.
+function sanitizarTexto(txt) {
+  return String(txt || '')
+    .replace(/\[[A-Z_]+(?::[^\]]*)?\]/g, '')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+}
+
 async function criarPontePara(clientePhone, pergunta) {
   let nome = '';
   try { const m = await lerClienteMeta(clientePhone); nome = m.nome || m.nomeInformado || m.nomeWhats || ''; } catch (e) {}
@@ -156,7 +192,7 @@ async function processarMensagem(dadosDoWebhook) {
           // Salvar a fala manual no histórico → GIA volta no contexto certo depois dos 30min
           claude.registrarMensagemManualNoHistorico(telefoneCliente, textoRecebido.trim()).catch(() => {});
         }
-        console.log(`✍️ Resposta manual para ${telefoneCliente} — GIA pausado 30min, contexto salvo`);
+        console.log(`✍️ Resposta manual para ${telefoneCliente} — CBP pausado 30min, contexto salvo`);
       }
       return;
     }
@@ -209,7 +245,7 @@ async function processarMensagem(dadosDoWebhook) {
     if (!ehAdmin) {
       const giaAtivo = await lerStatusGia();
       if (!giaAtivo) {
-        console.log('⏸️ GIA pausado, ignorando mensagem de cliente.');
+        console.log('⏸️ CBP pausado, ignorando mensagem de cliente.');
         return;
       }
     }
@@ -297,7 +333,7 @@ async function processarBufferDoCliente(telefoneCliente) {
 
     // Se retornou null, GIA está em pausa manual — não responde
     if (!resposta) {
-      console.log(`🔇 GIA em pausa manual — sem resposta para ${telefoneCliente}`);
+      console.log(`🔇 CBP em pausa manual — sem resposta para ${telefoneCliente}`);
       return;
     }
 
@@ -325,7 +361,7 @@ async function processarBufferDoCliente(telefoneCliente) {
     let textoLimpo = respostaDaClaude;
     const flyersSolicitados = [];
 
-    // Detectar [NAO_SEI] — GIA nao soube: entra em MODO PONTE (encaminha pro admin)
+    // Detectar [NAO_SEI] — CBP nao soube: entra em MODO PONTE (encaminha pro admin)
     if (textoLimpo.includes('[NAO_SEI]')) {
       textoLimpo = textoLimpo.replace(/\[NAO_SEI\]/g, '').trim();
       const holding = textoLimpo || 'Deixa eu confirmar isso rapidinho e ja te respondo, beleza?';
@@ -342,11 +378,13 @@ async function processarBufferDoCliente(telefoneCliente) {
       return;
     }
 
-    // Detectar flyers solicitados pela GIA
-    const regexFlyer = /\[ENVIAR_FLYER:(programacao_sexta|programacao_sabado|entrada_sexta|entrada_sabado|camarote_sexta|camarote_sabado|aniversario_sexta|aniversario_sabado)\]/g;
+    // Detectar flyers solicitados — aceita qualquer nome e normaliza (anti-bug de tag vazada)
+    const regexFlyer = /\[ENVIAR_FLYER:\s*([^\]]+)\]/gi;
     let matchFlyer;
     while ((matchFlyer = regexFlyer.exec(respostaDaClaude)) !== null) {
-      flyersSolicitados.push(matchFlyer[1]);
+      const norm = normalizarFlyer(matchFlyer[1], textoFinal + ' ' + respostaDaClaude);
+      if (norm && !flyersSolicitados.includes(norm)) flyersSolicitados.push(norm);
+      else if (!norm) console.log('⚠️ Etiqueta de flyer nao reconhecida:', matchFlyer[1]);
     }
     textoLimpo = textoLimpo.replace(regexFlyer, '').trim();
 
@@ -356,14 +394,24 @@ async function processarBufferDoCliente(telefoneCliente) {
       textoLimpo = textoLimpo.replace(/\[ALERTAR_GUSTHAVO\]/g, '').trim();
     }
 
-    // Detectar [NOME:xxx] — cliente informou o nome; salva no CRM
+    // Detectar [NOME:xxx] — cliente informou o nome; salva no CRM (permanente)
     const matchNome = textoLimpo.match(/\[NOME:([^\]]+)\]/);
     if (matchNome && matchNome[1].trim()) {
-      salvarClienteMeta(telefoneCliente, { nomeInformado: matchNome[1].trim() }).catch(() => {});
+      salvarClienteMeta(telefoneCliente, {
+        nomeInformado: matchNome[1].trim(),
+        jaPerguntouNome: true,
+      }).catch(() => {});
     }
     textoLimpo = textoLimpo.replace(/\[NOME:[^\]]+\]/g, '').trim();
 
-    textoLimpo = textoLimpo.replace(/\n{3,}/g, '\n\n').trim();
+    // Se o CBP PERGUNTOU o nome nesta resposta, marca no cadastro para nunca
+    // repetir a pergunta (mesmo dias depois, mesmo se o historico se perder).
+    if (/\bqual\s+(?:e\s+)?(?:o\s+)?seu\s+nome|como\s+(?:voc[eê]\s+)?se\s+chama|me\s+(?:diz|fala|passa)\s+seu\s+nome/i.test(textoLimpo)) {
+      salvarClienteMeta(telefoneCliente, { jaPerguntouNome: true }).catch(() => {});
+    }
+
+    // SANITIZACAO FINAL — nenhuma etiqueta pode chegar ao cliente
+    textoLimpo = sanitizarTexto(textoLimpo);
 
     // Enviar texto em pedaços
     const pedacos = textoLimpo.split(/\n\s*\n/).filter((p) => p.trim() !== '');
@@ -378,6 +426,7 @@ async function processarBufferDoCliente(telefoneCliente) {
       const urlFlyer = flyersAtuais[nomeFlyer];
       if (urlFlyer) {
         await zapi.enviarImagem(telefoneCliente, urlFlyer);
+        claude.registrarEnvio(telefoneCliente, 'flyer_' + nomeFlyer).catch(() => {});
         await esperar(1500);
 
         // Enviar mensagem de fechamento se houver para este tipo de flyer
@@ -389,9 +438,15 @@ async function processarBufferDoCliente(telefoneCliente) {
       }
     }
 
-    // Alertar admin se necessário — agora em MODO PONTE (voce responde e o GIA encaminha)
+    // Alertar admin — MODO PONTE. Camarote/reserva PARA de responder ate o Gusthavo assumir.
     if (precisaAlertar) {
-      await criarPontePara(telefoneCliente, textoFinal);
+      const querCamarote = /camarote|reserva|sof[aá]|mapa/i.test(textoFinal + ' ' + textoLimpo);
+      if (querCamarote) {
+        await iniciarRelay(telefoneCliente, textoFinal, null); // ja respondeu; so alerta e pausa
+        console.log('[CAMAROTE] -> MODO PONTE (pausado) para ' + telefoneCliente);
+      } else {
+        await criarPontePara(telefoneCliente, textoFinal);
+      }
     }
 
     // Registrar relatório

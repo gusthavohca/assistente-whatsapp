@@ -15,12 +15,12 @@ async function processarComandoAdmin(mensagem) {
     // ── PAUSAR GIA ──
     if (
       texto.includes('gia pausar') ||
-      texto.includes('pausar gia') ||
+      texto.includes('pausar cbp') ||
       texto.includes('desativar gia') ||
       texto.includes('gia desativar')
     ) {
       await salvarStatusGia(false);
-      return 'GIA pausado. Clientes não receberão resposta até você ativar novamente.';
+      return 'CBP pausado. Clientes não receberão resposta até você ativar novamente.';
     }
 
     // ── ATIVAR GIA ──
@@ -31,7 +31,7 @@ async function processarComandoAdmin(mensagem) {
       texto.includes('gia ligar')
     ) {
       await salvarStatusGia(true);
-      return 'GIA ativado. Voltando a atender normalmente.';
+      return 'CBP ativado. Voltando a atender normalmente.';
     }
 
     // ── AJUDA ──
@@ -43,7 +43,7 @@ async function processarComandoAdmin(mensagem) {
       return `Comandos disponíveis via WhatsApp:
 
 CONTROLE:
-- GIA pausar
+- CBP pausar
 - GIA ativar
 
 Tudo mais (flyers, cérebro, calendário, relatórios) é gerenciado pelo painel:

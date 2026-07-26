@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>GIA Admin — Le Club</title>
+  <title>CBP Admin — Le Club</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
@@ -888,7 +888,7 @@
 <!-- ═══════ LOGIN ═══════ -->
 <div id="tela-login">
   <div class="login-card">
-    <div class="login-gia">GIA</div>
+    <div class="login-gia">CBP</div>
     <div class="login-leclub">Le Club</div>
     <div class="login-divider"></div>
     <label class="login-label" for="input-senha">Senha</label>
@@ -914,9 +914,6 @@
     <button class="tab" onclick="abrirTab('flyers', this)">
       <span class="tab-icon">🖼️</span> Flyers
     </button>
-    <button class="tab" onclick="abrirTab('cerebro', this)">
-      <span class="tab-icon">🧠</span> Cérebro
-    </button>
     <button class="tab" onclick="abrirTab('calendario', this)">
       <span class="tab-icon">📅</span> Calendário
     </button>
@@ -940,13 +937,13 @@
   <!-- ─── HOME ─── -->
   <div class="secao ativa" id="secao-home">
     <div class="hero">
-      <div class="hero-gia">GIA</div>
+      <div class="hero-gia">CBP</div>
       <div class="hero-leclub">Le Club</div>
       <div class="hero-divider"></div>
       <div class="status-pill">
         <div class="status-dot" id="status-dot"></div>
         <label class="toggle">
-          <input type="checkbox" id="toggle-gia" onchange="alternarGia()" />
+          <input type="checkbox" id="toggle-cbp" onchange="alternarCbp()" />
           <span class="toggle-slider"></span>
         </label>
         <span class="status-label" id="status-text">carregando</span>
@@ -1001,7 +998,7 @@
       <div class="page-header">
         <div>
           <h2 class="page-title">Clientes</h2>
-          <p class="page-desc">Todos os clientes que a GIA já atendeu. Base do seu CRM — v1 lendo o histórico de conversas.</p>
+          <p class="page-desc">Todos os clientes que o CBP já atendeu. Base do seu CRM — v1 lendo o histórico de conversas.</p>
         </div>
         <button class="btn-primary" onclick="sincronizarNomes()">Sincronizar nomes</button>
       </div>
@@ -1071,29 +1068,6 @@
     </div>
   </div>
 
-  <!-- ─── CÉREBRO ─── -->
-  <div class="secao" id="secao-cerebro">
-    <div class="app-body">
-      <div class="page-header">
-        <div>
-          <h2 class="page-title">Cérebro da GIA</h2>
-          <p class="page-desc">Adicione instruções ou edite o comportamento completo.</p>
-        </div>
-      </div>
-      <div class="instrucao-box">
-        <h3>+ Instrução rápida</h3>
-        <p>Digite uma nova regra e ela será adicionada ao cérebro.</p>
-        <div class="instrucao-form">
-          <textarea id="nova-instrucao" placeholder="Ex: Quando perguntarem sobre estacionamento, diga que tem valet por R$30"></textarea>
-          <button class="btn-primary" onclick="adicionarInstrucao()">Adicionar</button>
-        </div>
-      </div>
-      <p class="cerebro-editor-titulo">Editor completo</p>
-      <textarea id="textarea-cerebro" rows="20" placeholder="Carregando..."></textarea>
-      <br/>
-      <button class="btn-primary" style="margin-top:14px" onclick="salvarCerebro()">💾 Salvar Cérebro</button>
-    </div>
-  </div>
 
   <!-- ─── CALENDÁRIO ─── -->
   <div class="secao" id="secao-calendario">
@@ -1101,7 +1075,7 @@
       <div class="page-header">
         <div>
           <h2 class="page-title">Calendário de Eventos</h2>
-          <p class="page-desc">Datas e eventos que a GIA usa para responder sobre a programação.</p>
+          <p class="page-desc">Datas e eventos que o CBP usa para responder sobre a programação.</p>
         </div>
       </div>
       <div class="calendario-form">
@@ -1119,7 +1093,7 @@
       <div class="page-header">
         <div>
           <h2 class="page-title">Links de Ingresso</h2>
-          <p class="page-desc">Links do Sympla por evento. A GIA envia todos quando o cliente pedir antecipado.</p>
+          <p class="page-desc">Links do Sympla por evento. O CBP envia todos quando o cliente pedir antecipado.</p>
         </div>
       </div>
       <div class="link-evento-form">
@@ -1208,7 +1182,7 @@
       <div class="page-header">
         <div>
           <h2 class="page-title">Perguntas sem resposta</h2>
-          <p class="page-desc">Perguntas que a GIA não soube responder. Revise toda semana.</p>
+          <p class="page-desc">Perguntas que o CBP não soube responder. Revise toda semana.</p>
         </div>
       </div>
       <div id="perguntas-sem-resposta-lista"><div class="loading">Carregando...</div></div>
@@ -1237,7 +1211,7 @@
 
 <script>
   const API = '';
-  let TOKEN = localStorage.getItem('gia_token') || '';
+  let TOKEN = localStorage.getItem('cbp_token') || '';
   const MESES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
   const FLYERS_FIXOS = ['programacao_sexta','programacao_sabado','entrada_sexta','entrada_sabado','camarote_sexta','camarote_sabado','aniversario_sexta','aniversario_sabado'];
   const FLYERS_LABELS = { programacao_sexta:'Programação Sexta', programacao_sabado:'Programação Sábado', entrada_sexta:'Entrada Sexta', entrada_sabado:'Entrada Sábado', camarote_sexta:'Camarote Sexta', camarote_sabado:'Camarote Sábado', aniversario_sexta:'Aniversário Sexta', aniversario_sabado:'Aniversário Sábado' };
@@ -1254,7 +1228,7 @@
       const res = await fetch('/painel/api/login', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ senha }) });
       const data = await res.json();
       if (!res.ok) throw new Error(data.erro);
-      TOKEN = data.token; localStorage.setItem('gia_token', TOKEN);
+      TOKEN = data.token; localStorage.setItem('cbp_token', TOKEN);
       abrirPainel();
     } catch(e) { document.getElementById('erro-login').textContent = 'Senha incorreta.'; }
   }
@@ -1267,7 +1241,7 @@
 
   async function fazerLogout() {
     await fetch('/painel/api/logout', { method:'POST', headers:{'Authorization':TOKEN} });
-    TOKEN = ''; localStorage.removeItem('gia_token'); location.reload();
+    TOKEN = ''; localStorage.removeItem('cbp_token'); location.reload();
   }
 
   function abrirTab(nome, btn) {
@@ -1278,7 +1252,6 @@
     if (nome === 'flyers') carregarFlyers();
     if (nome === 'relatorio') carregarRelatorio();
     if (nome === 'calendario') carregarCalendario();
-    if (nome === 'cerebro') carregarCerebro();
     if (nome === 'links') carregarLinks();
     if (nome === 'disparos') carregarDisparos();
     if (nome === 'perguntas') carregarPerguntasSemResposta();
@@ -1288,7 +1261,7 @@
   async function carregarStatus() {
     const res = await fetch('/painel/api/status', { headers:{'Authorization':TOKEN} });
     const data = await res.json();
-    const toggle = document.getElementById('toggle-gia');
+    const toggle = document.getElementById('toggle-cbp');
     const texto = document.getElementById('status-text');
     const dot = document.getElementById('status-dot');
     toggle.checked = data.ativo;
@@ -1296,14 +1269,14 @@
     dot.className = 'status-dot '+(data.ativo ? 'ativo' : 'pausado');
   }
 
-  async function alternarGia() {
-    const ativo = document.getElementById('toggle-gia').checked;
+  async function alternarCbp() {
+    const ativo = document.getElementById('toggle-cbp').checked;
     const texto = document.getElementById('status-text');
     const dot = document.getElementById('status-dot');
     await fetch('/painel/api/status', { method:'POST', headers:{'Content-Type':'application/json','Authorization':TOKEN}, body:JSON.stringify({ ativo }) });
     texto.textContent = ativo ? 'Ativa' : 'Pausada';
     dot.className = 'status-dot '+(ativo ? 'ativo' : 'pausado');
-    mostrarToast(ativo ? '✅ GIA ativada' : '⏸️ GIA pausada');
+    mostrarToast(ativo ? '✅ CBP ativado' : '⏸️ CBP pausado');
   }
 
   async function carregarFlyers() {
@@ -1404,31 +1377,8 @@
     finally { btn.textContent = 'Salvar'; btn.disabled = false; }
   }
 
-  async function carregarCerebro() {
-    const textarea = document.getElementById('textarea-cerebro');
-    textarea.value = 'Carregando...';
-    const res = await fetch('/painel/api/cerebro', { headers:{'Authorization':TOKEN} });
-    const data = await res.json(); textarea.value = data.cerebro || '';
-  }
 
-  async function salvarCerebro() {
-    const cerebro = document.getElementById('textarea-cerebro').value;
-    const res = await fetch('/painel/api/cerebro', { method:'POST', headers:{'Content-Type':'application/json','Authorization':TOKEN}, body:JSON.stringify({ cerebro }) });
-    const data = await res.json();
-    if (data.ok) mostrarToast('✅ Cérebro salvo!'); else mostrarToast('❌ Erro ao salvar','erro');
-  }
 
-  async function adicionarInstrucao() {
-    const instrucao = document.getElementById('nova-instrucao').value.trim();
-    if (!instrucao) return mostrarToast('Digite uma instrução.','erro');
-    const res = await fetch('/painel/api/cerebro', { headers:{'Authorization':TOKEN} });
-    const data = await res.json();
-    const novoCerebro = (data.cerebro||'')+`\n\n[INSTRUÇÃO ADICIONADA]: ${instrucao}`;
-    const resSalvar = await fetch('/painel/api/cerebro', { method:'POST', headers:{'Content-Type':'application/json','Authorization':TOKEN}, body:JSON.stringify({ cerebro:novoCerebro }) });
-    const dataSalvar = await resSalvar.json();
-    if (dataSalvar.ok) { mostrarToast('✅ Instrução adicionada!'); document.getElementById('nova-instrucao').value = ''; document.getElementById('textarea-cerebro').value = novoCerebro; }
-    else mostrarToast('❌ Erro ao adicionar','erro');
-  }
 
   async function carregarCalendario() {
     const container = document.getElementById('calendario-lista');
@@ -1735,6 +1685,7 @@
       if (c.interesse && c.interesse.lista) tags.push('<span class="cli-tag">Lista</span>');
       if (c.interesse && c.interesse.camarote) tags.push('<span class="cli-tag">Camarote</span>');
       if (c.interesse && c.interesse.aniversario) tags.push('<span class="cli-tag">Aniversario</span>');
+      if (c.origemAnuncio) tags.push('<span class="cli-tag" style="background:#e8f0fe;color:#1a73e8;border:1px solid #1a73e8">📢 Anúncio</span>');
       const conv = c.converteu ? '<div class="cli-conv">na lista</div>' : '';
       return '<div class="cli-row">' +
         '<div><div class="cli-nome">'+escapeHtml(c.nome || 'Sem nome')+'</div><div class="cli-tel">'+c.telefone+'</div></div>' +

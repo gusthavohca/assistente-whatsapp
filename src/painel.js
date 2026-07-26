@@ -1,13 +1,11 @@
 // ============================================================================
-// PAINEL.JS - Backend do Painel Administrativo Le Club
+// PAINEL.JS - Backend do Painel Administrativo CBP (Le Club)
 // ============================================================================
 
 const express = require('express');
 const multer  = require('multer');
 const cloudinary = require('cloudinary').v2;
 const {
-  lerCerebroDoGusthavo,
-  salvarCerebroDoGusthavo,
   lerFlyers,
   salvarFlyer,
   deletarFlyer,
@@ -133,17 +131,6 @@ router.delete('/flyer/:tipo', verificarToken, async (req, res) => {
   }
 });
 
-// ── CÉREBRO DA GIA ─────────────────────────────────────
-router.get('/cerebro', verificarToken, async (req, res) => {
-  const cerebro = await lerCerebroDoGusthavo();
-  res.json({ cerebro });
-});
-
-router.post('/cerebro', verificarToken, async (req, res) => {
-  const { cerebro } = req.body;
-  const ok = await salvarCerebroDoGusthavo(cerebro);
-  res.json({ ok });
-});
 
 // ── STATUS DA GIA ──────────────────────────────────────
 router.get('/status', verificarToken, async (req, res) => {
@@ -307,7 +294,7 @@ router.post('/disparos/testar', verificarToken, async (req, res) => {
 
     for (const grupoId of grupos) {
       try {
-        const texto = `🧪 Teste de disparo — GIA funcionando!\n${comMencao ? '(com @todos)' : '(sem @todos)'}`;
+        const texto = `🧪 Teste de disparo — CBP funcionando!\n${comMencao ? '(com @todos)' : '(sem @todos)'}`;
         await zapi.enviarTexto(grupoId, texto, comMencao === true);
         resultados.push({ grupo: grupoId, ok: true });
       } catch (e) {

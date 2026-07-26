@@ -33,7 +33,7 @@ app.use('/painel/api', painel);
 // ROTA DE VERIFICAÇÃO
 // ============================================================================
 app.get('/', (req, res) => {
-  res.send('Le Club - Gusthavo IA está online 🟢 | Painel: /painel');
+  res.send('Le Club - CBP esta online 🟢 | Painel: /painel');
 });
 
 // ============================================================================
@@ -48,11 +48,11 @@ app.post('/webhook', async (req, res) => {
 app.all('/desconectou', (req, res) => {
   res.status(200).send('OK'); // responde JA para nao dar timeout no teste da Z-API
   console.log('Z-API status (desconectou):', JSON.stringify(req.body || {}));
-  zapi.enviarAlertaAdmin('⚠️ GIA DESCONECTOU do WhatsApp. O bot esta sem receber mensagens — reconecte na Z-API o quanto antes.').catch(() => {});
+  zapi.enviarAlertaAdmin('⚠️ CBP DESCONECTOU do WhatsApp. O bot esta sem receber mensagens — reconecte na Z-API o quanto antes.').catch(() => {});
 });
 app.all('/conectou', (req, res) => {
   res.status(200).send('OK');
-  zapi.enviarAlertaAdmin('✅ GIA reconectou ao WhatsApp. Voltou a receber mensagens normalmente.').catch(() => {});
+  zapi.enviarAlertaAdmin('✅ CBP reconectou ao WhatsApp. Voltou a receber mensagens normalmente.').catch(() => {});
 });
 
 // ============================================================================
@@ -61,7 +61,7 @@ app.all('/conectou', (req, res) => {
 app.listen(PORTA, () => {
   console.log('');
   console.log('========================================');
-  console.log('  LE CLUB - Gusthavo IA');
+  console.log('  LE CLUB - CBP (Chico Bento Promoter)');
   console.log('========================================');
   console.log(`  Servidor online na porta ${PORTA}`);
   console.log(`  URL local: http://localhost:${PORTA}`);
