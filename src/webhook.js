@@ -55,7 +55,7 @@ const idsProcessados = new Set();
 const MAX_IDS_PROCESSADOS = 800;
 
 // ===== MODO PONTE (relay admin <-> cliente) =====
-const COMANDOS_ADMIN = ['gia pausar','pausar cbp','desativar gia','gia desativar','gia ativar','ativar gia','ligar gia','gia ligar','ajuda','help','comandos'];
+const COMANDOS_ADMIN = ['cbp pausar','pausar cbp','desativar cbp','cbp desativar','cbp ativar','ativar cbp','ligar cbp','cbp ligar','gia pausar','pausar gia','desativar gia','gia desativar','gia ativar','ativar gia','ligar gia','gia ligar','ajuda','help','comandos'];
 function pareceComandoAdmin(texto) {
   const t = (texto || '').toLowerCase().trim();
   return COMANDOS_ADMIN.some((c) => t.includes(c));
@@ -78,7 +78,7 @@ async function iniciarRelay(clientePhone, pergunta, holdingMsg) {
   await claude.pausarClientePorNaoSaber(clientePhone);
 }
 
-// Cria uma PONTE (relay) sem holding e sem pausar — usado quando o GIA ja
+// Cria uma PONTE (relay) sem holding e sem pausar — usado quando o CBP ja
 // respondeu ao cliente, mas quer que o admin possa complementar/fechar a resposta.
 // ===== NORMALIZACAO E SANITIZACAO DE ETIQUETAS =====
 const FLYERS_VALIDOS = ['programacao_sexta','programacao_sabado','entrada_sexta','entrada_sabado','camarote_sexta','camarote_sabado','aniversario_sexta','aniversario_sabado'];
@@ -164,7 +164,7 @@ async function processarMensagem(dadosDoWebhook) {
     if (enviadaPorNos) {
       // 1) Se foi o PRÓPRIO BOT que enviou, ignora — não é intervenção manual.
       //    (Necessário porque, com "Notificar as enviadas por mim" ligado na Z-API,
-      //     os envios automáticos do GIA também voltam como fromMe.)
+      //     os envios automáticos do CBP também voltam como fromMe.)
       const idMensagem = dadosDoWebhook.messageId || dadosDoWebhook.id;
       if (zapi.foiEnviadoPeloBot(idMensagem)) {
         return;
@@ -172,7 +172,7 @@ async function processarMensagem(dadosDoWebhook) {
 
       // 2) Caso contrário, é uma RESPOSTA MANUAL do Gusthavo pelo WhatsApp da casa.
       if (!ehAdmin) {
-        // Cancela qualquer timer pendente — evita que o GIA responda por cima da intervenção manual
+        // Cancela qualquer timer pendente — evita que o CBP responda por cima da intervenção manual
         if (timersDeEspera[telefoneCliente]) {
           clearTimeout(timersDeEspera[telefoneCliente]);
           delete timersDeEspera[telefoneCliente];
@@ -183,13 +183,13 @@ async function processarMensagem(dadosDoWebhook) {
         }
         delete buffersDeMensagens[telefoneCliente];
 
-        // Pausa o GIA por 30min — e reinicia a contagem a cada nova mensagem manual
+        // Pausa o CBP por 30min — e reinicia a contagem a cada nova mensagem manual
         await claude.registrarRespostaManual(telefoneCliente);
 
         if (textoRecebido && textoRecebido.trim()) {
           // Aprender o tom do Gusthavo
           salvarExemploTom(textoRecebido.trim()).catch(() => {});
-          // Salvar a fala manual no histórico → GIA volta no contexto certo depois dos 30min
+          // Salvar a fala manual no histórico → CBP volta no contexto certo depois dos 30min
           claude.registrarMensagemManualNoHistorico(telefoneCliente, textoRecebido.trim()).catch(() => {});
         }
         console.log(`✍️ Resposta manual para ${telefoneCliente} — CBP pausado 30min, contexto salvo`);
@@ -241,7 +241,7 @@ async function processarMensagem(dadosDoWebhook) {
       console.log(`📢 Lead de anúncio CTWA detectado: ${telefoneCliente} (ad: ${referral.sourceId || 'desconhecido'})`);
     }
 
-    // Se não é admin, verifica se o GIA está ativo
+    // Se não é admin, verifica se o CBP está ativo
     if (!ehAdmin) {
       const giaAtivo = await lerStatusGia();
       if (!giaAtivo) {
@@ -331,7 +331,7 @@ async function processarBufferDoCliente(telefoneCliente) {
     // ── CLIENTE ──
     const resposta = await claude.perguntarParaClaude(telefoneCliente, textoFinal);
 
-    // Se retornou null, GIA está em pausa manual — não responde
+    // Se retornou null, CBP está em pausa manual — não responde
     if (!resposta) {
       console.log(`🔇 CBP em pausa manual — sem resposta para ${telefoneCliente}`);
       return;
@@ -339,7 +339,7 @@ async function processarBufferDoCliente(telefoneCliente) {
 
     console.log(`🤖 Resposta tipo: "${resposta.tipo}"`);
 
-    // Falha da IA -> MODO PONTE (voce responde no admin e o GIA encaminha)
+    // Falha da IA -> MODO PONTE (voce responde no admin e o CBP encaminha)
     if (resposta.tipo === 'falha_ia') {
       await iniciarRelay(telefoneCliente, resposta.pergunta || textoFinal, 'Deixa eu confirmar isso rapidinho e ja te respondo, beleza?');
       console.log('[FALHA_IA] -> MODO PONTE para ' + telefoneCliente);

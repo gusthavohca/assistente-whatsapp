@@ -1,6 +1,6 @@
 // ============================================================================
 // PROMPT.JS - Cerebro do CBP (Chico Bento Promoter)
-// Comportamento conforme "GIA-manual-v2.md". Ele se apresenta ao cliente como
+// Comportamento conforme "CBP-manual-v2.md". Ele se apresenta ao cliente como
 // Gusthavo, promoter da Le Club.
 // ============================================================================
 

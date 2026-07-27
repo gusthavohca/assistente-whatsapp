@@ -1156,7 +1156,7 @@
         <div class="grupo-row"><label>Grupo 1</label><input type="text" id="grupo-0" placeholder="120363xxxxxxxxxx@g.us" /></div>
         <div class="grupo-row"><label>Grupo 2</label><input type="text" id="grupo-1" placeholder="120363xxxxxxxxxx@g.us" /></div>
         <div class="grupo-row"><label>Grupo 3</label><input type="text" id="grupo-2" placeholder="120363xxxxxxxxxx@g.us" /></div>
-        <p class="disparo-hint">Para descobrir o ID: envie mensagem para a GIA pelo grupo. O ID aparece nos logs do Railway no formato <code style="color:var(--gold);background:rgba(201,168,76,0.08);padding:2px 6px;border-radius:4px">120363xxxxxxxxxx@g.us</code></p>
+        <p class="disparo-hint">Para descobrir o ID: envie mensagem para a CBP pelo grupo. O ID aparece nos logs do Railway no formato <code style="color:var(--gold);background:rgba(201,168,76,0.08);padding:2px 6px;border-radius:4px">120363xxxxxxxxxx@g.us</code></p>
       </div>
 
       <h3 style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:6px">Mensagens por Dia</h3>
@@ -1713,7 +1713,7 @@
       const data = await res.json();
       const msgs = data.mensagens || [];
       document.getElementById('cli-modal-conversa').innerHTML = msgs.length
-        ? msgs.map(m => '<div class="cli-msg '+(m.role==='user'?'user':'assistant')+'"><span class="who">'+(m.role==='user'?'Cliente':'GIA')+'</span><span class="txt">'+escapeHtml(m.content)+'</span></div>').join('')
+        ? msgs.map(m => '<div class="cli-msg '+(m.role==='user'?'user':'assistant')+'"><span class="who">'+(m.role==='user'?'Cliente':'CBP')+'</span><span class="txt">'+escapeHtml(m.content)+'</span></div>').join('')
         : '<div class="cli-meta">Sem conversa registrada.</div>';
     } catch(e) {
       document.getElementById('cli-modal-conversa').innerHTML = '<div class="cli-meta">Erro ao carregar conversa.</div>';

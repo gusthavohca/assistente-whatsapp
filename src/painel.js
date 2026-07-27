@@ -132,7 +132,7 @@ router.delete('/flyer/:tipo', verificarToken, async (req, res) => {
 });
 
 
-// ── STATUS DA GIA ──────────────────────────────────────
+// ── STATUS DO CBP ──────────────────────────────────────
 router.get('/status', verificarToken, async (req, res) => {
   const ativo = await lerStatusGia();
   res.json({ ativo });
@@ -312,7 +312,7 @@ router.post('/disparos/testar', verificarToken, async (req, res) => {
 
 // ── CRM: CLIENTES ──────────────────────────────────────────────────────────
 // v1: deriva a lista de clientes a partir da coleção "historicos" (todo cliente
-// que a GIA atendeu) + metadados editáveis (nome, nota, status manual, converteu).
+// que o CBP atendeu) + metadados editáveis (nome, nota, status manual, converteu).
 
 const DIAS_SUMIDO = 14; // sem interação há mais de 14 dias = "sumido"
 

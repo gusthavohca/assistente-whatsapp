@@ -2,7 +2,7 @@
 // ADMIN.JS - Comandos do WhatsApp Admin (simplificado)
 // ============================================================================
 // Agora o painel web é o centro de controle.
-// Aqui ficam apenas: pausar/ativar GIA e alertas.
+// Aqui ficam apenas: pausar/ativar CBP e alertas.
 // ============================================================================
 
 require('dotenv').config();
@@ -12,24 +12,18 @@ async function processarComandoAdmin(mensagem) {
   try {
     const texto = mensagem.toLowerCase().trim();
 
-    // ── PAUSAR GIA ──
-    if (
-      texto.includes('gia pausar') ||
-      texto.includes('pausar cbp') ||
-      texto.includes('desativar gia') ||
-      texto.includes('gia desativar')
-    ) {
+    // ── PAUSAR CBP ── (aceita "cbp" e o antigo "gia")
+    const PAUSAR = ['cbp pausar','pausar cbp','desativar cbp','cbp desativar',
+                    'gia pausar','pausar gia','desativar gia','gia desativar'];
+    if (PAUSAR.some((c) => texto.includes(c))) {
       await salvarStatusGia(false);
       return 'CBP pausado. Clientes não receberão resposta até você ativar novamente.';
     }
 
-    // ── ATIVAR GIA ──
-    if (
-      texto.includes('gia ativar') ||
-      texto.includes('ativar gia') ||
-      texto.includes('ligar gia') ||
-      texto.includes('gia ligar')
-    ) {
+    // ── ATIVAR CBP ── (aceita "cbp" e o antigo "gia")
+    const ATIVAR = ['cbp ativar','ativar cbp','ligar cbp','cbp ligar',
+                    'gia ativar','ativar gia','ligar gia','gia ligar'];
+    if (ATIVAR.some((c) => texto.includes(c))) {
       await salvarStatusGia(true);
       return 'CBP ativado. Voltando a atender normalmente.';
     }
@@ -44,7 +38,7 @@ async function processarComandoAdmin(mensagem) {
 
 CONTROLE:
 - CBP pausar
-- GIA ativar
+- CBP ativar
 
 Tudo mais (flyers, cérebro, calendário, relatórios) é gerenciado pelo painel:
 https://assistente-whatsapp-production-d909.up.railway.app/painel`;

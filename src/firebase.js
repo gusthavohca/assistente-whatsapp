@@ -557,10 +557,10 @@ async function lerLinksEventos() {
 }
 
 // ============================================================================
-// EXEMPLOS DE TOM (respostas manuais do admin — base para o GIA aprender o estilo)
+// EXEMPLOS DE TOM (respostas manuais do admin — base para o CBP aprender o estilo)
 // ============================================================================
 // Toda vez que Gusthavo responde um cliente manualmente, o texto é salvo aqui.
-// O prompt carrega os últimos 15 exemplos para que o GIA adapte seu tom.
+// O prompt carrega os últimos 15 exemplos para que o CBP adapte seu tom.
 
 async function salvarExemploTom(mensagem) {
   try {
@@ -599,7 +599,7 @@ async function lerExemplosTom() {
 // CRM - CLIENTES (v1: derivado da colecao "historicos" + metadados editaveis)
 // ============================================================================
 
-// Le TODOS os historicos de conversa (cada doc = um telefone que a GIA atendeu).
+// Le TODOS os historicos de conversa (cada doc = um telefone que o CBP atendeu).
 async function lerTodosHistoricos() {
   try {
     const snap = await db.collection('historicos').get();
