@@ -38,6 +38,7 @@ button,input,select,textarea{font-family:inherit;font-size:14px}
 
 /* ---------- APP ---------- */
 #app{display:grid;grid-template-columns:var(--sidebar) minmax(0,1fr);min-height:100vh}
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:40;display:none}
 .side{background:var(--surface-1);border-right:1px solid var(--border);padding:18px 12px;display:flex;flex-direction:column;gap:2px;position:sticky;top:0;height:100vh}
 .brand{padding:4px 10px 18px}
 .brand b{display:block;font-size:15px;font-weight:500;letter-spacing:.08em}
@@ -153,6 +154,5 @@ label{display:block;font-size:12px;color:var(--text-secondary);margin:12px 0 5px
   .burger{display:flex}
   .main{padding:16px}
   .cli{grid-template-columns:1fr;gap:8px}
-  .scrim{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:40;display:none}
   .scrim.on{display:block}
 }
