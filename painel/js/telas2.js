@@ -72,7 +72,9 @@ let CFG_DISP = null;
 async function telaDisparos(){
   carregando();
   try{
-    CFG_DISP = await API.disparos();
+    const [cfg, flys] = await Promise.all([API.disparos(), API.flyers()]);
+    CFG_DISP = cfg;
+    FLYERS_ATUAIS = flys || {};
     if (!CFG_DISP.dias) CFG_DISP.dias = {};
     const g = CFG_DISP.grupos || [];
     el().innerHTML =
@@ -126,7 +128,7 @@ function cardMsg(dia, hora, i, m){
   const id = dia + '-' + hora + '-' + i;
   const tipo = m.tipo || 'texto';
   const opts = (v) => ['texto','flyer','video'].map(t => '<option value="' + t + '"' + (t === v ? ' selected' : '') + '>' + t + '</option>').join('');
-  const cats = TIPOS_FLYER.map(t => '<option value="' + t + '"' + (m.categoria === t ? ' selected' : '') + '>' + LABEL_FLYER[t] + '</option>').join('');
+  const cats = opcoesCategoria(m.categoria);
   const ehMidia = tipo === 'flyer' || tipo === 'video';
   return '<div style="background:var(--surface-1);border-radius:var(--radius);padding:12px;margin-bottom:8px">' +
     '<div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">' +
@@ -148,7 +150,7 @@ function setMsg(dia, hora, i, campo, valor){
   m[campo] = valor;
   if (campo === 'tipo') {
     if (valor === 'texto') { delete m.categoria; delete m.texto; if (m.conteudo === undefined) m.conteudo = ''; }
-    else { delete m.conteudo; if (!m.categoria) m.categoria = TIPOS_FLYER[0]; if (m.texto === undefined) m.texto = ''; }
+    else { delete m.conteudo; if (!m.categoria) m.categoria = todasCategorias()[0]; if (m.texto === undefined) m.texto = ''; }
     renderSlots();
   }
 }
@@ -189,4 +191,27 @@ async function telaPerguntas(){
 async function delPergunta(id){
   try{ await API.apagarPergunta(id); toast('Marcada como resolvida'); telaPerguntas(); }
   catch(e){ toast('Erro', 'erro'); }
+}
+
+// ---------- RELATORIO ----------
+async function telaRelatorio(){
+  carregando();
+  try{
+    const d = await API.relatorio();
+    if (!d) { el().innerHTML = '<div class="empty">Sem dados ainda.</div>'; return; }
+    const perguntas = Object.entries(d.perguntas || {}).sort((a,b) => b[1]-a[1]).slice(0,10);
+    el().innerHTML =
+      '<div class="grid g4">' +
+        metric('Atendimentos', d.atendimentos || 0, 'últimos 7 dias') +
+        metric('Pedidos de lista', d.lista || 0, '') +
+        metric('Camarote', d.camarote || 0, '') +
+        metric('Aniversário', d.aniversario || 0, '') +
+      '</div>' +
+      '<div class="sec-title">Perguntas mais frequentes</div>' +
+      '<div class="card">' +
+      (perguntas.length
+        ? perguntas.map(([p, n]) => '<div class="row"><div class="t">' + esc(p) + '</div><div class="m">' + n + 'x</div></div>').join('')
+        : '<div class="empty">Ainda sem perguntas registradas.</div>') +
+      '</div>';
+  } catch(e){ el().innerHTML = '<div class="empty">Erro ao carregar relatório.</div>'; }
 }

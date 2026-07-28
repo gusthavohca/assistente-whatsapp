@@ -8,6 +8,7 @@ const TELAS = {
   agenda:    { t:'Agenda',    f: telaAgenda },
   links:     { t:'Links',     f: telaLinks },
   disparos:  { t:'Disparos',  f: telaDisparos },
+  relatorio: { t:'Relatório', f: telaRelatorio },
   perguntas: { t:'Perguntas', f: telaPerguntas },
 };
 

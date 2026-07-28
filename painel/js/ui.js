@@ -33,12 +33,18 @@ function quando(ms){
   return 'há ' + d + ' dias';
 }
 
+const FLYERS_FIXOS = ['programacao_sexta','entrada_sexta','camarote_sexta','aniversario_sexta','programacao_sabado','entrada_sabado','camarote_sabado','aniversario_sabado'];
+// Extras usados nos disparos (video e disparo de lista)
+const FLYERS_EXTRAS = ['video_sexta','video_sabado','disparo_lista'];
+
 const LABEL_FLYER = {
   programacao_sexta:'Programação sexta', programacao_sabado:'Programação sábado',
   entrada_sexta:'Entrada sexta', entrada_sabado:'Entrada sábado',
   camarote_sexta:'Camarote sexta', camarote_sabado:'Camarote sábado',
   aniversario_sexta:'Aniversário sexta', aniversario_sabado:'Aniversário sábado',
+  video_sexta:'Vídeo sexta', video_sabado:'Vídeo sábado', disparo_lista:'Disparo lista',
 };
+function labelFlyer(k){ return LABEL_FLYER[k] || String(k).replace(/_/g,' '); }
 
 function metric(label, valor, hint, up){
   return '<div class="metric"><div class="l">' + label + '</div><div class="v">' + valor +

@@ -45,34 +45,53 @@ async function telaInicio(){
 }
 
 // ---------- FLYERS ----------
-const TIPOS_FLYER = ['programacao_sexta','entrada_sexta','camarote_sexta','aniversario_sexta','programacao_sabado','entrada_sabado','camarote_sabado','aniversario_sabado'];
+let FLYERS_ATUAIS = {};
+
+function cardFlyer(t, url, custom){
+  const isVid = url && /\.(mp4|mov|webm)/i.test(url);
+  const preview = url
+    ? (isVid ? '<div class="none">video no ar</div>' : '<img src="' + esc(url) + '" alt="">')
+    : '<div class="none">sem flyer</div>';
+  return '<div class="fly">' +
+    '<div class="img">' + preview + '</div>' +
+    '<div class="bar"><b>' + labelFlyer(t) + '</b><span class="tag ' + (url ? 'ok">no ar' : 'no">falta') + '</span></div>' +
+    '<div class="acts">' +
+      '<button class="btn sm" onclick="escolherArquivo(\'' + t + '\')">Trocar</button>' +
+      (url ? '<button class="btn sm ghost" onclick="apagarFlyer(\'' + t + '\')">Remover</button>' : '') +
+    '</div></div>';
+}
 
 async function telaFlyers(){
   carregando();
   try{
     const f = await API.flyers();
+    FLYERS_ATUAIS = f;
+    const custom = Object.keys(f).filter((k) => !FLYERS_FIXOS.includes(k)).sort();
+    const grade = (lista, isCustom) => '<div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(190px,1fr))">' +
+      lista.map((t) => cardFlyer(t, f[t], isCustom)).join('') + '</div>';
+
     el().innerHTML =
-      '<div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(190px,1fr))">' +
-      TIPOS_FLYER.map(t => {
-        const url = f[t];
-        const isVid = url && /\.(mp4|mov|webm)/i.test(url);
-        const preview = url
-          ? (isVid ? '<div class="none">vídeo no ar</div>' : '<img src="' + esc(url) + '" alt="">')
-          : '<div class="none">sem flyer</div>';
-        return '<div class="fly" data-tipo="' + t + '">' +
-          '<div class="img">' + preview + '</div>' +
-          '<div class="bar"><b>' + LABEL_FLYER[t] + '</b><span class="tag ' + (url ? 'ok">no ar' : 'no">falta') + '</span></div>' +
-          '<div class="acts">' +
-            '<button class="btn sm" onclick="escolherArquivo(\'' + t + '\')">Trocar</button>' +
-            (url ? '<button class="btn sm ghost" onclick="apagarFlyer(\'' + t + '\')">Remover</button>' : '') +
-          '</div></div>';
-      }).join('') + '</div>' +
+      '<div style="display:flex;justify-content:flex-end;margin-bottom:12px">' +
+        '<button class="btn" onclick="abrirNovoFlyer()">+ Novo flyer</button></div>' +
+      grade(FLYERS_FIXOS, false) +
+      (custom.length ? '<div class="sec-title">Flyers personalizados</div>' + grade(custom, true) : '') +
       '<div class="sec-title">Envio rápido</div>' +
       '<div class="drop" id="drop"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>' +
       '<div class="t">Arraste o flyer aqui</div><div class="s">e escolha a categoria depois</div></div>' +
       '<input type="file" id="file-input" accept="image/*,video/*" style="display:none">';
     ligarDropzone();
   } catch(e){ el().innerHTML = '<div class="empty">Erro ao carregar flyers.</div>'; }
+}
+
+// Todas as categorias disponiveis: fixas + extras + personalizadas do Firebase
+function todasCategorias(){
+  const custom = Object.keys(FLYERS_ATUAIS || {});
+  const set = [];
+  FLYERS_FIXOS.concat(FLYERS_EXTRAS).concat(custom).forEach((k) => { if (!set.includes(k)) set.push(k); });
+  return set;
+}
+function opcoesCategoria(sel){
+  return todasCategorias().map((t) => '<option value="' + t + '"' + (t === sel ? ' selected' : '') + '>' + labelFlyer(t) + '</option>').join('');
 }
 
 function escolherArquivo(tipo){
@@ -82,13 +101,13 @@ function escolherArquivo(tipo){
 }
 
 async function enviarFlyer(tipo, file){
-  toast('Enviando ' + LABEL_FLYER[tipo] + '...');
+  toast('Enviando ' + labelFlyer(tipo) + '...');
   try{ await API.subirFlyer(tipo, file); toast('Flyer atualizado'); telaFlyers(); }
   catch(e){ toast('Erro ao enviar', 'erro'); }
 }
 
 async function apagarFlyer(tipo){
-  if (!confirm('Remover ' + LABEL_FLYER[tipo] + '?')) return;
+  if (!confirm('Remover ' + labelFlyer(tipo) + '?')) return;
   try{ await API.apagarFlyer(tipo); toast('Flyer removido'); telaFlyers(); }
   catch(e){ toast('Erro ao remover', 'erro'); }
 }
@@ -108,7 +127,7 @@ function ligarDropzone(){
 
 function perguntarCategoria(file){
   abrirModal('<h3>Qual flyer é esse?</h3><p style="font-size:13px;color:var(--text-secondary)">' + esc(file.name) + '</p>' +
-    '<label>Categoria</label><select id="cat">' + TIPOS_FLYER.map(t => '<option value="' + t + '">' + LABEL_FLYER[t] + '</option>').join('') + '</select>' +
+    '<label>Categoria</label><select id="cat">' + opcoesCategoria() + '</select>' +
     '<div style="display:flex;gap:10px;margin-top:18px"><button class="btn" onclick="confirmarCategoria()">Enviar</button>' +
     '<button class="btn ghost" onclick="fecharModal()">Cancelar</button></div>');
   window._arquivoPendente = file;
@@ -118,6 +137,25 @@ function confirmarCategoria(){
   const f = window._arquivoPendente;
   fecharModal();
   if (f) enviarFlyer(tipo, f);
+}
+
+// ---- Novo flyer personalizado (nome livre) ----
+function abrirNovoFlyer(){
+  abrirModal('<h3>Novo flyer</h3><p style="font-size:13px;color:var(--text-secondary)">Crie uma categoria própria (ex.: video sexta, disparo lista).</p>' +
+    '<label>Nome</label><input id="nf-nome" placeholder="Ex: video sexta">' +
+    '<label>Arquivo</label><input type="file" id="nf-file" accept="image/*,video/*">' +
+    '<div style="display:flex;gap:10px;margin-top:18px"><button class="btn" onclick="salvarNovoFlyer()">Salvar</button>' +
+    '<button class="btn ghost" onclick="fecharModal()">Cancelar</button></div>');
+}
+async function salvarNovoFlyer(){
+  const nome = (document.getElementById('nf-nome').value || '').trim().toLowerCase()
+    .replace(/\s+/g,'_').replace(/[^a-z0-9_]/g,'');
+  const file = document.getElementById('nf-file').files[0];
+  if (!nome) return toast('Digite um nome', 'erro');
+  if (!file) return toast('Escolha um arquivo', 'erro');
+  toast('Enviando...');
+  try{ await API.subirFlyer(nome, file); fecharModal(); toast('Flyer "' + nome.replace(/_/g,' ') + '" criado'); telaFlyers(); }
+  catch(e){ toast('Erro ao criar flyer', 'erro'); }
 }
 
 // ---------- CLIENTES ----------
