@@ -44,6 +44,7 @@ async function obterFlyers() {
 // ============================================================================
 
 const TEMPO_ESPERA_MS = 25000;
+const MAX_MENSAGENS = 3; // teto rigido: nunca envia mais que isso por resposta
 const RENOVAR_DIGITANDO_MS = 7000;
 const buffersDeMensagens = {};
 const timersDeEspera = {};
@@ -413,8 +414,16 @@ async function processarBufferDoCliente(telefoneCliente) {
     // SANITIZACAO FINAL — nenhuma etiqueta pode chegar ao cliente
     textoLimpo = sanitizarTexto(textoLimpo);
 
-    // Enviar texto em pedaços
-    const pedacos = textoLimpo.split(/\n\s*\n/).filter((p) => p.trim() !== '');
+    // Enviar texto em pedaços — com TETO RIGIDO de mensagens.
+    // O texto e quebrado a cada linha em branco; se passar do limite, o excedente
+    // e juntado na ultima mensagem (nada de conteudo se perde).
+    let pedacos = textoLimpo.split(/\n\s*\n/).filter((p) => p.trim() !== '');
+    if (pedacos.length > MAX_MENSAGENS) {
+      const inicio = pedacos.slice(0, MAX_MENSAGENS - 1);
+      const resto = pedacos.slice(MAX_MENSAGENS - 1).join('\n');
+      pedacos = inicio.concat([resto]);
+      console.log(`✂️ Resposta tinha ${pedacos.length + 1} blocos — reduzida para ${MAX_MENSAGENS}`);
+    }
     for (const pedaco of pedacos) {
       await zapi.enviarTexto(telefoneCliente, pedaco.trim());
       await esperar(1500);
