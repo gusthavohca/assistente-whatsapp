@@ -2,7 +2,7 @@
 // SERVICE WORKER — CBP
 // Cacheia a casca do app (offline-friendly). Dados sempre da rede.
 // ============================================================
-const CACHE = 'cbp-v1';
+const CACHE = 'cbp-v3';
 const CASCA = [
   '/painel/',
   '/painel/index.html',
@@ -32,12 +32,13 @@ self.addEventListener('fetch', (e) => {
   if (e.request.method !== 'GET') return;
   // Chamadas de API: sempre rede (dados frescos)
   if (url.pathname.startsWith('/painel/api')) return;
-  // Casca: cache primeiro, rede como reforco
+  // REDE PRIMEIRO (cache so como reserva offline).
+  // Cache-first fazia o painel servir CSS/JS velho apos um deploy.
   e.respondWith(
-    caches.match(e.request).then((hit) => hit || fetch(e.request).then((res) => {
+    fetch(e.request).then((res) => {
       const copia = res.clone();
       caches.open(CACHE).then((c) => c.put(e.request, copia)).catch(() => {});
       return res;
-    }).catch(() => hit))
+    }).catch(() => caches.match(e.request))
   );
 });
