@@ -25,6 +25,7 @@ const {
   lerTodosHistoricos,
   lerClientesMeta,
   salvarClienteMeta,
+  lerRelaysPendentes,
 } = require('./firebase');
 
 cloudinary.config({
@@ -307,6 +308,77 @@ router.post('/disparos/testar', verificarToken, async (req, res) => {
   } catch (erro) {
     console.error('Erro no teste de disparo:', erro);
     res.status(500).json({ ok: false, erro: erro.message });
+  }
+});
+
+// ── DASHBOARD ──────────────────────────────────────────
+// Metricas da semana + estado dos flyers, tudo numa chamada.
+router.get('/dashboard', verificarToken, async (req, res) => {
+  try {
+    const [relatorio, flyers, historicos, meta, ativo] = await Promise.all([
+      lerRelatorioSemana(),
+      lerFlyers(),
+      lerTodosHistoricos(),
+      lerClientesMeta(),
+      lerStatusGia(),
+    ]);
+
+    const agora = Date.now();
+    const SEMANA = 7 * 24 * 60 * 60 * 1000;
+
+    const clientesNovos = historicos.filter((h) => {
+      const m = meta[h.telefone] || {};
+      const inicio = m.criadoEm || h.ultimaInteracaoMs;
+      return inicio && (agora - inicio) < SEMANA;
+    }).length;
+
+    const convertidos = Object.values(meta).filter((m) => m && m.converteu === true).length;
+
+    const r = relatorio || { atendimentos: 0, lista: 0, camarote: 0, aniversario: 0 };
+    const conversao = r.atendimentos > 0 ? Math.round((r.lista / r.atendimentos) * 100) : 0;
+
+    const ESPERADOS = ['programacao_sexta','programacao_sabado','entrada_sexta','entrada_sabado','camarote_sexta','camarote_sabado','aniversario_sexta','aniversario_sabado'];
+    const statusFlyers = ESPERADOS.map((k) => ({ tipo: k, ok: !!flyers[k] }));
+
+    res.json({
+      ativo,
+      metricas: {
+        atendimentos: r.atendimentos || 0,
+        lista: r.lista || 0,
+        camarote: r.camarote || 0,
+        aniversario: r.aniversario || 0,
+        conversao,
+        clientesNovos,
+        convertidos,
+        totalClientes: historicos.length,
+      },
+      flyers: statusFlyers,
+    });
+  } catch (erro) {
+    console.error('Erro no dashboard:', erro);
+    res.status(500).json({ erro: erro.message });
+  }
+});
+
+// ── PENDENCIAS ─────────────────────────────────────────
+// Clientes esperando resposta manual do Gusthavo (modo ponte).
+router.get('/pendencias', verificarToken, async (req, res) => {
+  try {
+    const [pendentes, meta] = await Promise.all([lerRelaysPendentes(), lerClientesMeta()]);
+    const lista = pendentes.map((p) => {
+      const d = p.dados || {};
+      const m = meta[d.clientePhone] || {};
+      return {
+        id: p.id,
+        telefone: d.clientePhone || '',
+        nome: m.nome || m.nomeInformado || m.nomeWhats || '',
+        pergunta: d.pergunta || '',
+        criadoEm: d.criadoEm || 0,
+      };
+    }).sort((a, b) => b.criadoEm - a.criadoEm);
+    res.json({ pendencias: lista, total: lista.length });
+  } catch (erro) {
+    res.status(500).json({ erro: erro.message });
   }
 });
 
