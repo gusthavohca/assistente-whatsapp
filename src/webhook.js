@@ -5,7 +5,7 @@
 const claude = require('./claude');
 const zapi = require('./zapi');
 const { processarComandoAdmin } = require('./admin');
-const { lerFlyers, lerStatusGia, registrarPedido, registrarAtendimento, salvarPerguntaSemResposta, salvarExemploTom, salvarClienteMeta, lerClienteMeta, salvarRelayPendente, lerRelayPorAlerta, lerRelaysPendentes, deletarRelayPendente, lerLinksEventos, lerCalendario } = require('./firebase');
+const { lerFlyers, lerStatusGia, registrarPedido, registrarAtendimento, salvarPerguntaSemResposta, salvarExemploTom, salvarClienteMeta, lerClienteMeta, salvarRelayPendente, lerRelayPorAlerta, lerRelaysPendentes, deletarRelayPendente, lerLinksEventos, lerCalendario, marcarSituacaoCliente } = require('./firebase');
 const NUMERO_ADMIN = process.env.NUMERO_GUSTHAVO_PESSOAL;
 
 // ============================================================================
@@ -57,9 +57,16 @@ const MAX_IDS_PROCESSADOS = 800;
 
 // ===== MODO PONTE (relay admin <-> cliente) =====
 const COMANDOS_ADMIN = ['cbp pausar','pausar cbp','desativar cbp','cbp desativar','cbp ativar','ativar cbp','ligar cbp','cbp ligar','gia pausar','pausar gia','desativar gia','gia desativar','gia ativar','ativar gia','ligar gia','gia ligar','ajuda','help','comandos'];
+// Comandos que COMECAM com estas palavras tambem sao do admin (integracao PNE).
+// SEM ISSO, o modo ponte encaminharia para o CLIENTE qualquer comando digitado
+// quando existe exatamente UMA pendencia aberta — incluindo "PNE COOKIES ...",
+// o que vazaria a sessao do sistema da casa para um cliente qualquer.
+const PREFIXOS_ADMIN = ['pne ', 'lista ', 'reserva ', 'aniv ', 'aniversario ', 'aniversário '];
+
 function pareceComandoAdmin(texto) {
   const t = (texto || '').toLowerCase().trim();
-  return COMANDOS_ADMIN.some((c) => t.includes(c));
+  if (COMANDOS_ADMIN.some((c) => t.includes(c))) return true;
+  return PREFIXOS_ADMIN.some((pre) => t.startsWith(pre));
 }
 
 // Janelas de madrugada de evento (SP, UTC-3): sex 23h ate sab 4h; sab 23h ate dom 4h
@@ -171,6 +178,16 @@ async function processarMensagem(dadosDoWebhook) {
         return;
       }
 
+      // REDE DE SEGURANCA: se a Z-API nao devolveu o messageId no envio (ou o
+      // processo reiniciou), o rastreio por ID falha e a mensagem do PROPRIO BOT
+      // seria lida como resposta manual do Gusthavo — o bot se pausaria sozinho e
+      // gravaria o proprio texto como "exemplo de tom", degradando a voz dele.
+      // Conferir o TEXTO enviado nos ultimos minutos elimina esse falso positivo.
+      if (textoRecebido && zapi.textoFoiEnviadoPeloBot(textoRecebido)) {
+        console.log('🛡️ Eco da propria mensagem do CBP ignorado (protecao de tom/pausa)');
+        return;
+      }
+
       // 2) Caso contrário, é uma RESPOSTA MANUAL do Gusthavo pelo WhatsApp da casa.
       if (!ehAdmin) {
         // Cancela qualquer timer pendente — evita que o CBP responda por cima da intervenção manual
@@ -193,7 +210,7 @@ async function processarMensagem(dadosDoWebhook) {
           // Salvar a fala manual no histórico → CBP volta no contexto certo depois dos 30min
           claude.registrarMensagemManualNoHistorico(telefoneCliente, textoRecebido.trim()).catch(() => {});
         }
-        console.log(`✍️ Resposta manual para ${telefoneCliente} — CBP pausado 30min, contexto salvo`);
+        console.log(`✍️ Resposta manual para ${telefoneCliente} — CBP em silencio por 30min a partir de AGORA (contador reiniciado), contexto salvo`);
       }
       return;
     }
@@ -255,6 +272,14 @@ async function processarMensagem(dadosDoWebhook) {
     if (!textoRecebido) return;
 
     console.log(`📥 Mensagem recebida de ${telefoneCliente}: "${textoRecebido}"`);
+
+    // PAUSA DE 30 MIN APOS RESPOSTA MANUAL — checada AQUI, antes de qualquer coisa.
+    // Antes isso so era descoberto 25s depois, ja com o "digitando..." na tela do
+    // cliente: ele via o CBP digitando e nada chegava. Agora o silencio e total.
+    if (!ehAdmin && await claude.estaEmPausaManual(telefoneCliente)) {
+      console.log(`🔇 ${telefoneCliente} em pausa manual — mensagem recebida e guardada, CBP em silencio`);
+      return;
+    }
 
     // Adicionar mensagem ao buffer do cliente
     if (!buffersDeMensagens[telefoneCliente]) {
@@ -404,6 +429,16 @@ async function processarBufferDoCliente(telefoneCliente) {
       }).catch(() => {});
     }
     textoLimpo = textoLimpo.replace(/\[NOME:[^\]]+\]/g, '').trim();
+
+    // Detectar [SITUACAO:chave] — CRM ativo: classifica a conversa pra follow-up depois.
+    // Pode vir mais de uma tag na mesma resposta.
+    const regexSituacao = /\[SITUACAO:\s*([a-z0-9_]+)\s*\]/gi;
+    let matchSituacao;
+    while ((matchSituacao = regexSituacao.exec(respostaDaClaude)) !== null) {
+      const chaveSituacao = matchSituacao[1].trim().toLowerCase();
+      marcarSituacaoCliente(telefoneCliente, chaveSituacao).catch(() => {});
+    }
+    textoLimpo = textoLimpo.replace(regexSituacao, '').trim();
 
     // Se o CBP PERGUNTOU o nome nesta resposta, marca no cadastro para nunca
     // repetir a pergunta (mesmo dias depois, mesmo se o historico se perder).

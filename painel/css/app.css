@@ -158,3 +158,46 @@ label{display:block;font-size:12px;color:var(--text-secondary);margin:12px 0 5px
   .cli{grid-template-columns:1fr;gap:8px}
   .scrim.on{display:block}
 }
+
+/* ============================================================
+   PAINEL DE CONTROLE — pagina inicial (liga/desliga + numeros)
+   ============================================================ */
+.controle{display:flex;flex-direction:column;align-items:center;text-align:center;
+  background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-lg);
+  padding:40px 24px 34px;margin-bottom:26px}
+.controle .rotulo{font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-muted);margin-bottom:20px}
+
+.power{width:132px;height:132px;border-radius:50%;border:2px solid var(--border-strong);
+  background:var(--surface-1);color:var(--text-muted);cursor:pointer;display:flex;
+  align-items:center;justify-content:center;transition:all .2s ease;position:relative}
+.power svg{width:52px;height:52px;stroke-width:1.6}
+.power:hover{transform:scale(1.03)}
+.power:active{transform:scale(.98)}
+.power:disabled{cursor:wait;opacity:.6}
+.power.on{border-color:var(--success);background:var(--bg-success);color:var(--text-success);
+  box-shadow:0 0 0 8px var(--bg-success)}
+.power.off{border-color:var(--danger);background:var(--bg-danger);color:var(--text-danger);
+  box-shadow:0 0 0 8px var(--bg-danger)}
+
+.power-estado{margin-top:26px;font-size:19px;font-weight:500}
+.power-estado.on{color:var(--text-success)}
+.power-estado.off{color:var(--text-danger)}
+.power-dica{margin-top:5px;font-size:13px;color:var(--text-secondary);max-width:420px}
+
+.interesse{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)}
+.interesse:last-child{border-bottom:none}
+.interesse .ico{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;
+  justify-content:center;flex:none;background:var(--bg-accent);color:var(--text-accent)}
+.interesse .ico svg{width:17px;height:17px;stroke-width:1.7}
+.interesse .nm{flex:1;min-width:0}
+.interesse .nm b{display:block;font-size:13.5px;font-weight:500}
+.interesse .nm span{font-size:12px;color:var(--text-muted)}
+.interesse .qt{font-size:19px;font-weight:500;flex:none}
+.barra{height:5px;border-radius:3px;background:var(--surface-1);overflow:hidden;margin-top:5px}
+.barra i{display:block;height:100%;background:var(--accent);border-radius:3px;transition:width .4s ease}
+
+@media (max-width:720px){
+  .controle{padding:32px 18px 28px}
+  .power{width:112px;height:112px}
+  .power svg{width:44px;height:44px}
+}

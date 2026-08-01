@@ -42,4 +42,9 @@ const API = {
   perguntas:  ()      => api('/perguntas'),
   apagarPergunta:(id) => api('/perguntas/' + encodeURIComponent(id), { method:'DELETE' }),
   relatorio:  ()      => api('/relatorio'),
+  situacoes:  ()      => api('/situacoes'),
+  salvarSituacao: (d) => api('/situacoes', { method:'POST', body: d }),
+  apagarSituacao: (chave) => api('/situacoes/' + encodeURIComponent(chave), { method:'DELETE' }),
+  clientesDaSituacao: (chave) => api('/situacoes/' + encodeURIComponent(chave) + '/clientes'),
+  testarSituacao: (chave, telefone) => api('/situacoes/' + encodeURIComponent(chave) + '/testar', { method:'POST', body:{ telefone } }),
 };

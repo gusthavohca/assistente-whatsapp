@@ -30,6 +30,37 @@ function registrarIdEnviado(id) {
   }
 }
 function foiEnviadoPeloBot(id) { return !!id && idsEnviadosPeloBot.has(String(id)); }
+
+// ---- Rede de seguranca: rastreio pelo TEXTO enviado ----
+// Se a Z-API nao devolver o messageId (mudanca de payload, timeout, erro de rede),
+// o webhook trataria a mensagem do PROPRIO BOT como resposta manual do Gusthavo —
+// o que pausaria o bot sozinho e ainda gravaria o texto dele como "exemplo de tom".
+// Guardar o texto por alguns minutos elimina esse falso positivo.
+const textosEnviadosPeloBot = new Map(); // texto normalizado -> timestamp
+const JANELA_TEXTO_MS = 10 * 60 * 1000;
+
+function normalizarTexto(t) {
+  return String(t || '').trim().toLowerCase().replace(/\s+/g, ' ').slice(0, 300);
+}
+
+function registrarTextoEnviado(texto) {
+  const chave = normalizarTexto(texto);
+  if (!chave) return;
+  textosEnviadosPeloBot.set(chave, Date.now());
+  if (textosEnviadosPeloBot.size > 400) {
+    const limite = Date.now() - JANELA_TEXTO_MS;
+    for (const [k, ts] of textosEnviadosPeloBot) {
+      if (ts < limite) textosEnviadosPeloBot.delete(k);
+    }
+  }
+}
+
+function textoFoiEnviadoPeloBot(texto) {
+  const chave = normalizarTexto(texto);
+  if (!chave) return false;
+  const ts = textosEnviadosPeloBot.get(chave);
+  return !!ts && (Date.now() - ts) < JANELA_TEXTO_MS;
+}
 function extrairIdDaResposta(data) {
   if (!data) return null;
   return data.messageId || data.id || data.zaapId || null;
@@ -46,6 +77,7 @@ async function enviarTexto(telefoneCliente, textoMensagem, mencionarTodos = fals
     body.message = mensagem;
     const resp = await axios.post(`${URL_BASE}/send-text`, body, { headers: HEADERS });
     registrarIdEnviado(extrairIdDaResposta(resp.data));
+    registrarTextoEnviado(mensagem);
     console.log(`Texto enviado para ${telefoneCliente}`);
   } catch (erro) {
     console.log(`Erro ao enviar texto para ${telefoneCliente}:`, erro.response?.data || erro.message);
@@ -140,6 +172,7 @@ module.exports = {
   alertarDono,
   mostrarDigitando,
   foiEnviadoPeloBot,
+  textoFoiEnviadoPeloBot,
   buscarNomeContato,
   enviarAlertaRelay,
   enviarAlertaAdmin,

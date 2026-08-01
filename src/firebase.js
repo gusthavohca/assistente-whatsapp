@@ -562,15 +562,39 @@ async function lerLinksEventos() {
 // Toda vez que Gusthavo responde um cliente manualmente, o texto é salvo aqui.
 // O prompt carrega os últimos 15 exemplos para que o CBP adapte seu tom.
 
+// BLINDAGEM: o exemplo de tom serve para o CBP copiar o ESTILO do Gusthavo —
+// nunca para virar fonte de informacao. Por isso o texto e higienizado antes de
+// entrar no banco: remove etiquetas do sistema (evita injecao no prompt), corta
+// mensagens gigantes e descarta o que nao ajuda a aprender tom.
+const TAM_MIN_TOM = 8;
+const TAM_MAX_TOM = 320;
+
+function higienizarExemploTom(texto) {
+  let t = String(texto || '')
+    .replace(/\[[^\]]*\]/g, ' ')        // nenhuma etiqueta [ ... ] pode entrar no prompt
+    .replace(/https?:\/\/\S+/gi, ' ')   // links sao contexto, nao estilo
+    .replace(/\s+/g, ' ')
+    .trim();
+  if (t.length > TAM_MAX_TOM) t = t.slice(0, TAM_MAX_TOM).trim();
+  return t;
+}
+
 async function salvarExemploTom(mensagem) {
   try {
-    if (!mensagem || mensagem.trim().length < 5) return false; // ignora textos muito curtos
+    const texto = higienizarExemploTom(mensagem);
+    if (texto.length < TAM_MIN_TOM) return false;          // curto demais pra ensinar tom
+    if (!/[a-zA-ZÀ-ÿ]/.test(texto)) return false;          // sem letras (so numero/emoji)
+
+    // Evita encher o banco com a mesma frase repetida (ex.: "ja te respondo").
+    const dupe = await db.collection('tom_exemplos').where('mensagem', '==', texto).limit(1).get();
+    if (!dupe.empty) return false;
+
     const id = String(Date.now());
     await db.collection('tom_exemplos').doc(id).set({
-      mensagem: mensagem.trim(),
+      mensagem: texto,
       criadoEm: new Date()
     });
-    console.log(`💬 Exemplo de tom salvo: "${mensagem.substring(0, 60)}"`);
+    console.log(`💬 Exemplo de tom salvo: "${texto.substring(0, 60)}"`);
     return true;
   } catch (erro) {
     console.log('⚠️ Erro ao salvar exemplo de tom:', erro.message);
@@ -582,7 +606,7 @@ async function lerExemplosTom() {
   try {
     const snapshot = await db.collection('tom_exemplos')
       .orderBy('criadoEm', 'desc')
-      .limit(15)
+      .limit(30)
       .get();
     const exemplos = [];
     snapshot.forEach(doc => {
@@ -679,10 +703,120 @@ async function deletarRelayPendente(alertId) {
 }
 
 // ============================================================================
+// CRM ATIVO — SITUACOES (etiquetas por conversa) E MENSAGENS AUTOMATICAS
+// ============================================================================
+// Catalogo editavel no painel: cada situacao tem uma chave, um rotulo, uma
+// descricao para a IA entender quando usar, e uma mensagem pronta que sera
+// enviada automaticamente (job semanal). A IA classifica pela CONVERSA —
+// nao depende de check-in/comanda.
+
+async function lerSituacoesCRM() {
+  try {
+    const snapshot = await db.collection('situacoes_crm').get();
+    const situacoes = [];
+    snapshot.forEach(doc => situacoes.push({ chave: doc.id, ...doc.data() }));
+    return situacoes;
+  } catch (erro) {
+    console.log('⚠️ Erro ao ler situações do CRM:', erro.message);
+    return [];
+  }
+}
+
+async function salvarSituacaoCRM(chave, dados) {
+  try {
+    await db.collection('situacoes_crm').doc(chave).set({
+      ...dados,
+      atualizadoEm: new Date(),
+    }, { merge: true });
+    console.log(`✅ Situação "${chave}" salva no CRM`);
+    return true;
+  } catch (erro) {
+    console.log('⚠️ Erro ao salvar situação do CRM:', erro.message);
+    return false;
+  }
+}
+
+async function deletarSituacaoCRM(chave) {
+  try {
+    await db.collection('situacoes_crm').doc(chave).delete();
+    console.log(`✅ Situação "${chave}" removida do CRM`);
+    return true;
+  } catch (erro) {
+    console.log('⚠️ Erro ao remover situação do CRM:', erro.message);
+    return false;
+  }
+}
+
+// Marca a situacao no cadastro do cliente. So grava "desde" na primeira vez —
+// se a IA marcar de novo em mensagens futuras, nao reseta o historico de envios.
+async function marcarSituacaoCliente(telefone, chave) {
+  try {
+    const doc = await db.collection('clientes_meta').doc(telefone).get();
+    const dados = doc.exists ? (doc.data() || {}) : {};
+    const situacoes = dados.situacoes || {};
+    if (!situacoes[chave]) {
+      situacoes[chave] = { desde: Date.now(), tentativas: 0, ultimoEnvio: 0 };
+      await db.collection('clientes_meta').doc(telefone).set(
+        { situacoes, atualizadoEm: new Date() },
+        { merge: true }
+      );
+      console.log(`🏷️ Situação "${chave}" marcada para ${telefone}`);
+    }
+    return true;
+  } catch (erro) {
+    console.log('⚠️ Erro ao marcar situação do cliente:', erro.message);
+    return false;
+  }
+}
+
+// Registra que uma mensagem automatica foi enviada para essa situacao deste cliente.
+async function registrarEnvioSituacao(telefone, chave) {
+  try {
+    await db.collection('clientes_meta').doc(telefone).set({
+      situacoes: {
+        [chave]: {
+          ultimoEnvio: Date.now(),
+        },
+      },
+    }, { merge: true });
+    // merge profundo do Firestore nao soma "tentativas" sozinho — le e incrementa manualmente.
+    const doc = await db.collection('clientes_meta').doc(telefone).get();
+    const atual = (doc.data() || {}).situacoes || {};
+    const tentativasAtuais = (atual[chave] && atual[chave].tentativas) || 0;
+    await db.collection('clientes_meta').doc(telefone).set({
+      situacoes: { [chave]: { tentativas: tentativasAtuais + 1 } },
+    }, { merge: true });
+    return true;
+  } catch (erro) {
+    console.log('⚠️ Erro ao registrar envio de situação:', erro.message);
+    return false;
+  }
+}
+
+// Remove uma situacao especifica do cliente (ex.: converteu, nao faz mais sentido cobrar).
+async function limparSituacaoCliente(telefone, chave) {
+  try {
+    await db.collection('clientes_meta').doc(telefone).update({
+      [`situacoes.${chave}`]: admin.firestore.FieldValue.delete(),
+    });
+    return true;
+  } catch (erro) {
+    console.log('⚠️ Erro ao limpar situação do cliente:', erro.message);
+    return false;
+  }
+}
+
+// ============================================================================
 // EXPORTACAO
 // ============================================================================
 
 module.exports = {
+  lerSituacoesCRM,
+  salvarSituacaoCRM,
+  deletarSituacaoCRM,
+  marcarSituacaoCliente,
+  registrarEnvioSituacao,
+  limparSituacaoCliente,
   lerCerebroDoGusthavo,
   salvarCerebroDoGusthavo,
   lerAtracoes,

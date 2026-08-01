@@ -5,13 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#185fa5">
 <title>CBP — Le Club</title>
-<link rel="manifest" href="/painel/manifest.json">
-<link rel="icon" href="/painel/icons/icon-192.png">
-<link rel="apple-touch-icon" href="/painel/icons/icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/painel/css/app.css?v=3">
+<link rel="stylesheet" href="/painel/css/app.css?v=4">
 </head>
 <body>
 
@@ -37,6 +34,7 @@
     <button class="nav" data-tela="links" onclick="irPara('links')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>Links</button>
     <button class="nav" data-tela="disparos" onclick="irPara('disparos')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>Disparos</button>
     <button class="nav" data-tela="relatorio" onclick="irPara('relatorio')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 3v18h18"/><path d="M18 17V9M13 17V5M8 17v-3"/></svg>Relatório</button>
+    <button class="nav" data-tela="situacoes" onclick="irPara('situacoes')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M20.59 13.41L11 3.83A2 2 0 009.59 3.24L3 3v6.59a2 2 0 00.59 1.41l9.58 9.58a2 2 0 002.83 0l4.59-4.59a2 2 0 000-2.83z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg>Situações</button>
     <button class="nav" data-tela="perguntas" onclick="irPara('perguntas')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3M12 17h.01"/></svg>Perguntas</button>
     <div class="side-foot"><button class="nav" onclick="sair()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>Sair</button></div>
   </aside>
@@ -59,10 +57,11 @@
 <div class="modal-bg" id="modal-bg"><div class="modal" id="modal"></div></div>
 <div id="toast"></div>
 
-<script src="/painel/js/api.js?v=3"></script>
-<script src="/painel/js/ui.js?v=3"></script>
-<script src="/painel/js/telas.js?v=3"></script>
-<script src="/painel/js/telas2.js?v=3"></script>
-<script src="/painel/js/app.js?v=3"></script>
+<script src="/painel/js/api.js?v=4"></script>
+<script src="/painel/js/ui.js?v=4"></script>
+<script src="/painel/js/telas.js?v=4"></script>
+<script src="/painel/js/telas2.js?v=4"></script>
+<script src="/painel/js/telas3.js?v=4"></script>
+<script src="/painel/js/app.js?v=4"></script>
 </body>
 </html>

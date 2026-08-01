@@ -16,6 +16,7 @@ const webhook = require('./src/webhook');
 const painel = require('./src/painel');
 const { iniciarAgendamento } = require('./src/relatorio');
 const { iniciarDisparos } = require('./src/disparos');
+const { iniciarCrmAtivo } = require('./src/crm-ativo');
 const zapi = require('./src/zapi');
 
 const app = express();
@@ -73,4 +74,5 @@ app.listen(PORTA, () => {
 
   iniciarAgendamento();
   iniciarDisparos();
+  iniciarCrmAtivo();
 });

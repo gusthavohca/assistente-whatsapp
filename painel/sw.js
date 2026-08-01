@@ -1,44 +1,26 @@
 // ============================================================
-// SERVICE WORKER — CBP
-// Cacheia a casca do app (offline-friendly). Dados sempre da rede.
+// SERVICE WORKER — AUTODESTRUTIVO
 // ============================================================
-const CACHE = 'cbp-v3';
-const CASCA = [
-  '/painel/',
-  '/painel/index.html',
-  '/painel/css/app.css',
-  '/painel/js/api.js',
-  '/painel/js/ui.js',
-  '/painel/js/telas.js',
-  '/painel/js/telas2.js',
-  '/painel/js/app.js',
-  '/painel/manifest.json',
-];
+// O painel deixou de ser um app instalavel (PWA) e voltou a ser
+// somente dashboard no navegador. Este arquivo existe apenas para
+// DESFAZER a instalacao anterior: quando o navegador buscar a versao
+// nova do service worker, ele limpa todo o cache, se desregistra e
+// recarrega as janelas abertas. Depois disso nao sobra nada.
+// Nao remover este arquivo — sem ele, o app antigo continua instalado
+// no computador com a versao velha em cache.
 
-self.addEventListener('install', (e) => {
-  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(CASCA)).then(() => self.skipWaiting()));
-});
+self.addEventListener('install', () => self.skipWaiting());
 
 self.addEventListener('activate', (e) => {
-  e.waitUntil(
-    caches.keys()
-      .then((ks) => Promise.all(ks.filter((k) => k !== CACHE).map((k) => caches.delete(k))))
-      .then(() => self.clients.claim())
-  );
+  e.waitUntil((async () => {
+    try {
+      const chaves = await caches.keys();
+      await Promise.all(chaves.map((k) => caches.delete(k)));
+      await self.registration.unregister();
+      const janelas = await self.clients.matchAll({ type: 'window' });
+      janelas.forEach((j) => j.navigate(j.url));
+    } catch (e) { /* nada a fazer */ }
+  })());
 });
 
-self.addEventListener('fetch', (e) => {
-  const url = new URL(e.request.url);
-  if (e.request.method !== 'GET') return;
-  // Chamadas de API: sempre rede (dados frescos)
-  if (url.pathname.startsWith('/painel/api')) return;
-  // REDE PRIMEIRO (cache so como reserva offline).
-  // Cache-first fazia o painel servir CSS/JS velho apos um deploy.
-  e.respondWith(
-    fetch(e.request).then((res) => {
-      const copia = res.clone();
-      caches.open(CACHE).then((c) => c.put(e.request, copia)).catch(() => {});
-      return res;
-    }).catch(() => caches.match(e.request))
-  );
-});
+// Sem interceptar nada: tudo vai direto pra rede.

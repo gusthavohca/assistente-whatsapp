@@ -26,6 +26,9 @@ const {
   lerClientesMeta,
   salvarClienteMeta,
   lerRelaysPendentes,
+  lerSituacoesCRM,
+  salvarSituacaoCRM,
+  deletarSituacaoCRM,
 } = require('./firebase');
 
 cloudinary.config({
@@ -506,6 +509,91 @@ router.post('/clientes/:telefone', verificarToken, async (req, res) => {
     const ok = await salvarClienteMeta(telefone, dados);
     res.json({ ok });
   } catch (erro) {
+    res.status(500).json({ erro: erro.message });
+  }
+});
+
+// ── CRM ATIVO: SITUACOES (etiquetas + mensagens automaticas) ──────────────
+// Catalogo editavel no painel. Cada situacao tem: chave, rotulo, descricaoIA
+// (o que a IA le pra saber quando marcar), mensagem (enviada toda segunda) e
+// ativo (liga/desliga sem apagar).
+
+router.get('/situacoes', verificarToken, async (req, res) => {
+  try {
+    const [situacoes, meta] = await Promise.all([lerSituacoesCRM(), lerClientesMeta()]);
+    const comContagem = situacoes.map((s) => {
+      const total = Object.values(meta).filter((m) => m && m.situacoes && m.situacoes[s.chave]).length;
+      return { ...s, totalClientes: total };
+    });
+    res.json({ situacoes: comContagem });
+  } catch (erro) {
+    console.error('Erro ao listar situações:', erro);
+    res.status(500).json({ erro: erro.message });
+  }
+});
+
+router.post('/situacoes', verificarToken, async (req, res) => {
+  try {
+    const { chave, rotulo, descricaoIA, mensagem, ativo } = req.body;
+    const chaveLimpa = String(chave || '').trim().toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
+    if (!chaveLimpa) return res.status(400).json({ erro: 'Chave da situação é obrigatória' });
+    if (!rotulo || !mensagem) return res.status(400).json({ erro: 'Rótulo e mensagem são obrigatórios' });
+
+    const ok = await salvarSituacaoCRM(chaveLimpa, {
+      rotulo,
+      descricaoIA: descricaoIA || rotulo,
+      mensagem,
+      ativo: ativo !== false,
+    });
+    res.json({ ok, chave: chaveLimpa });
+  } catch (erro) {
+    console.error('Erro ao salvar situação:', erro);
+    res.status(500).json({ erro: erro.message });
+  }
+});
+
+router.delete('/situacoes/:chave', verificarToken, async (req, res) => {
+  try {
+    const ok = await deletarSituacaoCRM(req.params.chave);
+    res.json({ ok });
+  } catch (erro) {
+    res.status(500).json({ erro: erro.message });
+  }
+});
+
+// Lista os clientes atualmente marcados com uma situação (pra revisar antes do envio)
+router.get('/situacoes/:chave/clientes', verificarToken, async (req, res) => {
+  try {
+    const { chave } = req.params;
+    const meta = await lerClientesMeta();
+    const clientes = Object.entries(meta)
+      .filter(([, m]) => m && m.situacoes && m.situacoes[chave])
+      .map(([telefone, m]) => ({
+        telefone,
+        nome: m.nome || m.nomeInformado || m.nomeWhats || '',
+        converteu: m.converteu === true,
+        tentativas: (m.situacoes[chave] && m.situacoes[chave].tentativas) || 0,
+        ultimoEnvio: (m.situacoes[chave] && m.situacoes[chave].ultimoEnvio) || 0,
+        desde: (m.situacoes[chave] && m.situacoes[chave].desde) || 0,
+      }));
+    res.json({ clientes });
+  } catch (erro) {
+    res.status(500).json({ erro: erro.message });
+  }
+});
+
+// Teste manual: manda a mensagem configurada pra UM telefone especifico (nao dispara em massa)
+router.post('/situacoes/:chave/testar', verificarToken, async (req, res) => {
+  try {
+    const { telefone } = req.body;
+    if (!telefone) return res.status(400).json({ erro: 'Informe um telefone de teste' });
+    const situacoes = await lerSituacoesCRM();
+    const situacao = situacoes.find((s) => s.chave === req.params.chave);
+    if (!situacao || !situacao.mensagem) return res.status(404).json({ erro: 'Situação sem mensagem configurada' });
+    await zapi.enviarTexto(telefone, situacao.mensagem);
+    res.json({ ok: true });
+  } catch (erro) {
+    console.error('Erro no teste de situação:', erro);
     res.status(500).json({ erro: erro.message });
   }
 });

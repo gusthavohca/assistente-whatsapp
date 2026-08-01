@@ -9,6 +9,7 @@ const TELAS = {
   links:     { t:'Links',     f: telaLinks },
   disparos:  { t:'Disparos',  f: telaDisparos },
   relatorio: { t:'Relatório', f: telaRelatorio },
+  situacoes: { t:'Situações', f: telaSituacoes },
   perguntas: { t:'Perguntas', f: telaPerguntas },
 };
 
@@ -70,7 +71,16 @@ function pintarStatus(ativo){
 async function alternarCbp(){
   const b = document.getElementById('status');
   const novo = b.dataset.ativo !== '1';
-  try{ await API.setStatus(novo); pintarStatus(novo); toast(novo ? 'CBP ativado' : 'CBP pausado'); }
+  try{
+    await API.setStatus(novo);
+    // Confirma no servidor antes de pintar — evita mostrar "pausado" sem ter pausado.
+    const conf = await API.status();
+    const real = conf.ativo === true;
+    pintarStatus(real);
+    // Mantem o botao grande da tela inicial em sincronia com o atalho do topo.
+    if (typeof ESTADO_CBP !== 'undefined') { ESTADO_CBP = real; if (document.getElementById('power')) pintarPower(); }
+    toast(real === novo ? (real ? 'CBP ligado' : 'CBP desligado') : 'O servidor não confirmou a mudança', real === novo ? '' : 'erro');
+  }
   catch(e){ toast('Erro ao alterar', 'erro'); }
 }
 
@@ -85,7 +95,7 @@ function atualizarSino(n){
 }
 function notificar(n){
   if (!('Notification' in window) || Notification.permission !== 'granted') return;
-  try{ new Notification('CBP — cliente esperando', { body: n + ' cliente(s) precisam da sua resposta.', icon:'/painel/icons/icon-192.png', tag:'cbp-pendencia' }); }
+  try{ new Notification('CBP — cliente esperando', { body: n + ' cliente(s) precisam da sua resposta.', tag:'cbp-pendencia' }); }
   catch(e){}
 }
 function iniciarVigia(){
@@ -96,6 +106,9 @@ function iniciarVigia(){
 }
 
 // ---------- PWA ----------
+// O painel deixou de ser app instalavel (PWA). Este trecho registra o service
+// worker autodestrutivo, que limpa o cache antigo e se desinstala sozinho —
+// e a unica forma de remover do computador o app que ja tinha sido instalado.
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => navigator.serviceWorker.register('/painel/sw.js').catch(() => {}));
 }

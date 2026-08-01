@@ -4,44 +4,116 @@
 const el = () => document.getElementById('telas');
 const carregando = () => { el().innerHTML = '<div class="empty">Carregando...</div>'; };
 
-// ---------- INICIO (dashboard) ----------
+// ---------- INICIO (painel de controle) ----------
+// Botao grande de ligar/desligar + numeros da semana. E a primeira coisa que o
+// Gusthavo ve: estado do CBP em um olhar, e acao em um clique.
+
+const ICO_INTERESSE = {
+  camarote:    '<path d="M3 18v-6a2 2 0 012-2h14a2 2 0 012 2v6"/><path d="M3 18h18M6 10V7a2 2 0 012-2h8a2 2 0 012 2v3"/>',
+  lista:       '<path d="M9 6h11M9 12h11M9 18h11"/><path d="M4 6h.01M4 12h.01M4 18h.01"/>',
+  aniversario: '<path d="M4 15v6h16v-6"/><path d="M3 11h18v4H3z"/><path d="M12 7V3M9 5l3-2 3 2"/>',
+};
+
+function linhaInteresse(chave, titulo, legenda, valor, maximo){
+  const pct = maximo > 0 ? Math.round((valor / maximo) * 100) : 0;
+  return '<div class="interesse">' +
+      '<div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor">' + ICO_INTERESSE[chave] + '</svg></div>' +
+      '<div class="nm"><b>' + titulo + '</b><span>' + legenda + '</span>' +
+        '<div class="barra"><i style="width:' + pct + '%"></i></div></div>' +
+      '<div class="qt">' + valor + '</div>' +
+    '</div>';
+}
+
 async function telaInicio(){
   carregando();
   try{
     const [d, p] = await Promise.all([API.dashboard(), API.pendencias()]);
     const m = d.metricas;
     atualizarSino(p.total);
+    ESTADO_CBP = d.ativo === true;
 
-    const pend = p.pendencias.length
-      ? p.pendencias.map(x =>
-          '<div class="row"><div><div class="t">' + esc(x.nome || x.telefone) + '</div><div class="s">' +
-          esc((x.pergunta || '').slice(0, 70)) + '</div></div><div class="m">' + quando(x.criadoEm) + '</div></div>'
-        ).join('')
-      : '<div class="empty">Ninguém esperando. Tudo em dia.</div>';
+    const interesses = [
+      { k:'camarote',    t:'Camarote',    l:'maior ticket da casa',       v: m.camarote || 0 },
+      { k:'lista',       t:'Nome na lista', l:'entrada mais procurada',    v: m.lista || 0 },
+      { k:'aniversario', t:'Aniversário', l:'grupos e comemorações',      v: m.aniversario || 0 },
+    ].sort((a, b) => b.v - a.v);
+    const topo = interesses[0] ? interesses[0].v : 0;
 
     const flyOk = d.flyers.filter(f => f.ok).length;
-    const flyLista = d.flyers.map(f =>
-      '<div class="row"><div class="t" style="font-size:12.5px;color:var(--text-secondary)">' + LABEL_FLYER[f.tipo] +
-      '</div><span class="tag ' + (f.ok ? 'ok">no ar' : 'no">falta') + '</span></div>').join('');
+
+    const pend = p.pendencias.length
+      ? p.pendencias.slice(0, 5).map(x =>
+          '<div class="row"><div><div class="t">' + esc(x.nome || x.telefone) + '</div><div class="s">' +
+          esc((x.pergunta || '').slice(0, 70)) + '</div></div><div class="m">' + quando(x.criadoEm) + '</div></div>'
+        ).join('') + (p.total > 5 ? '<div class="s" style="padding-top:8px">e mais ' + (p.total - 5) + '…</div>' : '')
+      : '<div class="empty">Ninguém esperando. Tudo em dia.</div>';
 
     el().innerHTML =
-      '<div class="grid g4">' +
-        metric('Atendimentos', m.atendimentos, 'últimos 7 dias') +
-        metric('Nomes na lista', m.lista, m.conversao + '% de conversão', m.conversao >= 30) +
-        metric('Camarotes', m.camarote, 'maior ticket') +
-        metric('Clientes novos', m.clientesNovos, 'de ' + m.totalClientes + ' no total') +
+      '<div class="controle">' +
+        '<div class="rotulo">Atendimento automático</div>' +
+        '<button class="power" id="power" onclick="alternarPower()" aria-label="Ligar ou desligar o CBP"></button>' +
+        '<div class="power-estado" id="power-estado"></div>' +
+        '<div class="power-dica" id="power-dica"></div>' +
       '</div>' +
-      '<div class="sec-title">Precisam de você</div>' +
-      '<div class="card" style="' + (p.total ? 'border-color:var(--danger)' : '') + '">' + pend + '</div>' +
-      '<div class="sec-title">Flyers</div>' +
+
+      '<div class="sec-title">Últimos 7 dias</div>' +
+      '<div class="grid g4">' +
+        metric('Clientes atendidos', m.atendimentos, 'na semana') +
+        metric('Nomes na lista', m.lista, m.conversao + '% de conversão', m.conversao >= 30) +
+        metric('Clientes novos', m.clientesNovos, 'de ' + m.totalClientes + ' na base') +
+        metric('Flyers no ar', flyOk + '/' + d.flyers.length, flyOk === d.flyers.length ? 'tudo publicado' : 'faltam alguns', flyOk === d.flyers.length) +
+      '</div>' +
+
       '<div class="grid g2">' +
-        '<div class="card"><h3>' + flyOk + ' de ' + d.flyers.length + ' no ar</h3>' + flyLista + '</div>' +
-        '<div class="card" style="display:flex;flex-direction:column;justify-content:center;gap:10px">' +
-          '<div style="font-size:13px;color:var(--text-secondary)">Suba ou troque os flyers da semana.</div>' +
-          '<button class="btn" onclick="irPara(\'flyers\')">Gerenciar flyers</button>' +
-        '</div>' +
+        '<div><div class="sec-title">Maiores interesses</div>' +
+          '<div class="card">' +
+            interesses.map(i => linhaInteresse(i.k, i.t, i.l, i.v, topo)).join('') +
+          '</div></div>' +
+        '<div><div class="sec-title">Precisam de você</div>' +
+          '<div class="card" style="' + (p.total ? 'border-color:var(--danger)' : '') + '">' + pend + '</div></div>' +
       '</div>';
-  } catch(e){ el().innerHTML = '<div class="empty">Erro ao carregar o início.</div>'; }
+
+    pintarPower();
+  } catch(e){ el().innerHTML = '<div class="empty">Erro ao carregar o painel de controle.</div>'; }
+}
+
+// Estado e desenho do botao grande
+let ESTADO_CBP = false;
+const SVG_POWER = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"><path d="M12 3v9"/><path d="M18.4 6.6a9 9 0 11-12.77.04"/></svg>';
+
+function pintarPower(){
+  const b = document.getElementById('power');
+  if (!b) return;
+  const est = document.getElementById('power-estado');
+  const dica = document.getElementById('power-dica');
+  b.className = 'power ' + (ESTADO_CBP ? 'on' : 'off');
+  b.innerHTML = SVG_POWER;
+  b.disabled = false;
+  est.className = 'power-estado ' + (ESTADO_CBP ? 'on' : 'off');
+  est.textContent = ESTADO_CBP ? 'CBP ligado' : 'CBP desligado';
+  dica.textContent = ESTADO_CBP
+    ? 'Respondendo os clientes no WhatsApp automaticamente. Clique para desligar.'
+    : 'Nenhum cliente está sendo respondido. Clique para ligar.';
+  pintarStatus(ESTADO_CBP);
+}
+
+async function alternarPower(){
+  const b = document.getElementById('power');
+  const novo = !ESTADO_CBP;
+  if (b) b.disabled = true;
+  try{
+    await API.setStatus(novo);
+    // Confirma no servidor em vez de confiar no clique — se não gravou, não mente pro usuário.
+    const conf = await API.status();
+    ESTADO_CBP = conf.ativo === true;
+    pintarPower();
+    toast(ESTADO_CBP === novo
+      ? (ESTADO_CBP ? 'CBP ligado' : 'CBP desligado')
+      : 'O servidor não confirmou a mudança', ESTADO_CBP === novo ? '' : 'erro');
+  } catch(e){
+    if (b) b.disabled = false;
+    toast('Erro ao alterar o estado', 'erro');
+  }
 }
 
 // ---------- FLYERS ----------
