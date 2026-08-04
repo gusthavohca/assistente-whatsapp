@@ -228,10 +228,18 @@ async function salvarStatusGia(status) {
 async function lerStatusGia() {
   try {
     const doc = await db.collection('configuracoes').doc('status').get();
+    // Documento nunca criado (primeiro boot, nunca alternado) -> ativo por padrao.
     if (!doc.exists) return true;
     return doc.data().ativo !== false;
   } catch (erro) {
-    return true;
+    // FALHA SEGURA: se nao conseguimos LER o status por causa de um erro
+    // (Firestore fora do ar, timeout, permissao), a resposta e SEMPRE pausado.
+    // Antes isso retornava "ativo" em qualquer erro — ou seja, uma falha de
+    // leitura destravava o bot sozinho mesmo com ele pausado manualmente.
+    // Um interruptor de pausa tem que falhar para o lado seguro (silencio),
+    // nunca para o lado de continuar respondendo sem controle.
+    console.log('⚠️ Erro ao ler status do CBP — assumindo PAUSADO por seguranca:', erro.message);
+    return false;
   }
 }
 

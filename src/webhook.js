@@ -420,13 +420,19 @@ async function processarBufferDoCliente(telefoneCliente) {
       textoLimpo = textoLimpo.replace(/\[ALERTAR_GUSTHAVO\]/g, '').trim();
     }
 
-    // Detectar [NOME:xxx] — cliente informou o nome; salva no CRM (permanente)
+    // Detectar [NOME:xxx] — cliente informou o nome; salva no CRM (permanente).
+    // AGUARDA a gravacao (nao dispara e esquece): se o cliente mandar outra
+    // mensagem rapido em seguida, a leitura do cadastro precisa ver o nome ja
+    // salvo — do contrario o CBP pode perguntar o nome de novo por causa de
+    // uma corrida entre a gravacao e a proxima leitura.
     const matchNome = textoLimpo.match(/\[NOME:([^\]]+)\]/);
     if (matchNome && matchNome[1].trim()) {
-      salvarClienteMeta(telefoneCliente, {
-        nomeInformado: matchNome[1].trim(),
-        jaPerguntouNome: true,
-      }).catch(() => {});
+      try {
+        await salvarClienteMeta(telefoneCliente, {
+          nomeInformado: matchNome[1].trim(),
+          jaPerguntouNome: true,
+        });
+      } catch (e) { console.log('⚠️ Erro ao salvar nome do cliente:', e.message); }
     }
     textoLimpo = textoLimpo.replace(/\[NOME:[^\]]+\]/g, '').trim();
 
@@ -442,8 +448,10 @@ async function processarBufferDoCliente(telefoneCliente) {
 
     // Se o CBP PERGUNTOU o nome nesta resposta, marca no cadastro para nunca
     // repetir a pergunta (mesmo dias depois, mesmo se o historico se perder).
+    // Tambem aguardada pelo mesmo motivo do bloco acima.
     if (/\bqual\s+(?:e\s+)?(?:o\s+)?seu\s+nome|como\s+(?:voc[eê]\s+)?se\s+chama|me\s+(?:diz|fala|passa)\s+seu\s+nome/i.test(textoLimpo)) {
-      salvarClienteMeta(telefoneCliente, { jaPerguntouNome: true }).catch(() => {});
+      try { await salvarClienteMeta(telefoneCliente, { jaPerguntouNome: true }); }
+      catch (e) { console.log('⚠️ Erro ao marcar que o nome foi perguntado:', e.message); }
     }
 
     // SANITIZACAO FINAL — nenhuma etiqueta pode chegar ao cliente
