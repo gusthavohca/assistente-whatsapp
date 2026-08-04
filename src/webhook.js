@@ -137,7 +137,13 @@ async function criarPontePara(clientePhone, pergunta) {
 
 async function processarMensagem(dadosDoWebhook) {
   try {
-    const telefoneCliente = dadosDoWebhook.phone;
+    // F1 (auditoria 04/08): o campo "phone" da Z-API pode, para o mesmo cliente,
+    // alternar entre o numero real e um identificador de privacidade "@lid" gerado
+    // pelo WhatsApp (comportamento documentado pela propria Z-API como inconsistente).
+    // "chatLid" e descrito pela Z-API como o identificador mais estavel. Preferimos
+    // chatLid quando presente; sem ele, caimos para phone (comportamento anterior).
+    // Isso evita que o mesmo cliente vire "dois clientes sem memoria" no Firestore.
+    const telefoneCliente = dadosDoWebhook.chatLid || dadosDoWebhook.phone;
     const textoRecebido = dadosDoWebhook.text?.message;
     const enviadaPorNos = dadosDoWebhook.fromMe;
 
@@ -425,11 +431,17 @@ async function processarBufferDoCliente(telefoneCliente) {
     // mensagem rapido em seguida, a leitura do cadastro precisa ver o nome ja
     // salvo — do contrario o CBP pode perguntar o nome de novo por causa de
     // uma corrida entre a gravacao e a proxima leitura.
-    const matchNome = textoLimpo.match(/\[NOME:([^\]]+)\]/);
-    if (matchNome && matchNome[1].trim()) {
+    // F4 (auditoria 04/08): usa flag global — se a IA emitir mais de uma etiqueta
+    // [NOME:...] na mesma resposta (caso raro), a ULTIMA e considerada a valida.
+    const regexNome = /\[NOME:([^\]]+)\]/g;
+    let matchNome, nomeCapturado = null;
+    while ((matchNome = regexNome.exec(textoLimpo)) !== null) {
+      if (matchNome[1].trim()) nomeCapturado = matchNome[1].trim();
+    }
+    if (nomeCapturado) {
       try {
         await salvarClienteMeta(telefoneCliente, {
-          nomeInformado: matchNome[1].trim(),
+          nomeInformado: nomeCapturado,
           jaPerguntouNome: true,
         });
       } catch (e) { console.log('⚠️ Erro ao salvar nome do cliente:', e.message); }
@@ -446,16 +458,30 @@ async function processarBufferDoCliente(telefoneCliente) {
     }
     textoLimpo = textoLimpo.replace(regexSituacao, '').trim();
 
-    // Se o CBP PERGUNTOU o nome nesta resposta, marca no cadastro para nunca
-    // repetir a pergunta (mesmo dias depois, mesmo se o historico se perder).
-    // Tambem aguardada pelo mesmo motivo do bloco acima.
-    if (/\bqual\s+(?:e\s+)?(?:o\s+)?seu\s+nome|como\s+(?:voc[eê]\s+)?se\s+chama|me\s+(?:diz|fala|passa)\s+seu\s+nome/i.test(textoLimpo)) {
+    // F2 (auditoria 04/08): a IA agora e instruida (prompt.js) a emitir a etiqueta
+    // [PERGUNTOU_NOME] toda vez que perguntar o nome do cliente — deteccao
+    // deterministica, nao depende de reconhecer a frase exata. A regex antiga
+    // continua como REDE DE SEGURANCA (caso a etiqueta nao venha por algum motivo).
+    const perguntouViaEtiqueta = /\[PERGUNTOU_NOME\]/.test(textoLimpo);
+    textoLimpo = textoLimpo.replace(/\[PERGUNTOU_NOME\]/g, '').trim();
+    const perguntouViaFrase = /\bqual\s+(?:e\s+)?(?:o\s+)?seu\s+nome|como\s+(?:voc[eê]\s+)?se\s+chama|me\s+(?:diz|fala|passa)\s+seu\s+nome/i.test(textoLimpo);
+    if (perguntouViaEtiqueta || perguntouViaFrase) {
       try { await salvarClienteMeta(telefoneCliente, { jaPerguntouNome: true }); }
       catch (e) { console.log('⚠️ Erro ao marcar que o nome foi perguntado:', e.message); }
     }
 
     // SANITIZACAO FINAL — nenhuma etiqueta pode chegar ao cliente
     textoLimpo = sanitizarTexto(textoLimpo);
+
+    // F3 (auditoria 04/08): TRAVA FINAL — recheca a pausa manual bem aqui, na borda
+    // do envio. O processamento acima (chamada a IA) pode levar alguns segundos;
+    // se voce respondeu manualmente ENQUANTO isso rodava, os timers foram cancelados
+    // mas esta chamada ja estava em voo e nao seria interrompida sem esta checagem.
+    // Sem isso, a resposta automatica podia sair por cima da sua resposta manual.
+    if (await claude.estaEmPausaManual(telefoneCliente)) {
+      console.log(`🛑 Pausa manual detectada na borda do envio — resposta automatica descartada para ${telefoneCliente}`);
+      return;
+    }
 
     // Enviar texto em pedaços — com TETO RIGIDO de mensagens.
     // O texto e quebrado a cada linha em branco; se passar do limite, o excedente

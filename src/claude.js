@@ -6,7 +6,7 @@ require('dotenv').config();
 const Anthropic = require('@anthropic-ai/sdk');
 const { montarSystemPrompt } = require('./prompt');
 const {
-  lerHistorico, salvarHistorico, lerFlyer, lerCalendario, lerLinksEventos,
+  lerHistorico, salvarHistorico, anexarHistorico, lerFlyer, lerCalendario, lerLinksEventos,
   lerClienteMeta, salvarClienteMeta,
 } = require('./firebase');
 const zapi = require('./zapi');
@@ -66,15 +66,19 @@ async function estaEmPausaManual(telefone) {
 // ============================================================================
 async function registrarMensagemManualNoHistorico(telefone, texto) {
   try {
-    let historico = (await lerHistorico(telefone)) || [];
-    const ultima = historico[historico.length - 1];
-    if (ultima && ultima.role === 'assistant') {
-      ultima.content = `${ultima.content}\n${texto}`;
-    } else {
-      historico.push({ role: 'assistant', content: texto });
-    }
-    historico = historico.slice(-20);
-    await salvarHistorico(telefone, historico);
+    // F3 (auditoria 04/08): transacional — le e escreve o estado mais atual do
+    // banco, nao um snapshot antigo. Fecha a corrida com a gravacao automatica
+    // que perguntarParaClaude() pode estar fazendo quase ao mesmo tempo.
+    await anexarHistorico(telefone, (atuais) => {
+      const copia = atuais.slice();
+      const ultima = copia[copia.length - 1];
+      if (ultima && ultima.role === 'assistant') {
+        copia[copia.length - 1] = { ...ultima, content: `${ultima.content}\n${texto}` };
+      } else {
+        copia.push({ role: 'assistant', content: texto });
+      }
+      return copia;
+    });
     console.log(`🧠 Resposta manual salva no historico de ${telefone}`);
   } catch (erro) {
     console.log('⚠️ Erro ao salvar resposta manual no historico:', erro.message);
@@ -148,7 +152,9 @@ async function perguntarParaClaude(telefone, mensagemDoCliente) {
 
   const cerebro = await montarSystemPrompt(ctx);
 
-  historico.push({ role: 'user', content: mensagemDoCliente });
+  // Copia local so para montar o payload desta chamada — NAO e mais usada para
+  // escrever no banco (ver bloco de gravacao abaixo, F3 auditoria 04/08).
+  const mensagensParaIA = historico.concat([{ role: 'user', content: mensagemDoCliente }]);
 
   let resposta;
   try {
@@ -156,7 +162,7 @@ async function perguntarParaClaude(telefone, mensagemDoCliente) {
       model: 'claude-sonnet-4-5',
       max_tokens: 1024,
       system: cerebro,
-      messages: historico,
+      messages: mensagensParaIA,
     });
   } catch (erroIA) {
     console.log('❌ Erro na IA (Anthropic):', erroIA.message);
@@ -166,9 +172,16 @@ async function perguntarParaClaude(telefone, mensagemDoCliente) {
 
   const textoResposta = resposta.content[0].text;
 
-  historico.push({ role: 'assistant', content: textoResposta });
-  try { await salvarHistorico(telefone, historico.slice(-20)); }
-  catch (erro) { console.log('⚠️ Erro ao salvar historico.'); }
+  // F3 (auditoria 04/08): gravacao ATOMICA (transacao) a partir do estado mais
+  // atual do banco — nao do "historico" lido no inicio desta funcao. A chamada a
+  // IA acima leva alguns segundos; se uma resposta manual foi registrada nesse
+  // meio-tempo, este bloco nao pode apagar o que ela gravou.
+  try {
+    await anexarHistorico(telefone, (atuais) => atuais.concat([
+      { role: 'user', content: mensagemDoCliente },
+      { role: 'assistant', content: textoResposta },
+    ]));
+  } catch (erro) { console.log('⚠️ Erro ao salvar historico.'); }
 
   return { tipo: 'texto', mensagem: textoResposta };
 }

@@ -121,6 +121,30 @@ async function salvarHistorico(telefone, mensagens) {
   }
 }
 
+// F3 (auditoria 04/08): anexar ao historico de forma ATOMICA via transacao do
+// Firestore. O problema do salvarHistorico() puro: quem chama le o array, monta a
+// versao nova em memoria e sobrescreve com .set() — se duas gravacoes (ex.: resposta
+// automatica da IA + resposta manual do Gusthavo) acontecerem quase juntas, a que
+// terminar por ultimo apaga a outra do registro (ultima escrita vence).
+// Aqui a leitura e a escrita acontecem dentro da MESMA transacao: o Firestore
+// garante que "transformar" sempre recebe o estado mais recente do banco, mesmo que
+// outra escrita tenha acontecido entre o inicio da chamada e este momento.
+async function anexarHistorico(telefone, transformar) {
+  const ref = db.collection('historicos').doc(telefone);
+  try {
+    await db.runTransaction(async (tx) => {
+      const doc = await tx.get(ref);
+      const atuais = doc.exists ? (doc.data().mensagens || []) : [];
+      const novas = transformar(atuais) || atuais;
+      tx.set(ref, { mensagens: novas.slice(-20), atualizadoEm: new Date() });
+    });
+    return true;
+  } catch (erro) {
+    console.log('⚠️ Erro ao anexar histórico (transação):', erro.message);
+    return false;
+  }
+}
+
 // ============================================================================
 // FLYERS
 // ============================================================================
@@ -831,6 +855,7 @@ module.exports = {
   salvarAtracao,
   lerHistorico,
   salvarHistorico,
+  anexarHistorico,
   salvarFlyer,
   lerFlyer,
   lerFlyers,
