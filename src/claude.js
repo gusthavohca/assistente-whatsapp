@@ -25,6 +25,26 @@ function alertarFalhaIA(msg) {
     '. Verifique credito/chave. O bot esta acionando o modo ponte com os clientes.').catch(() => {});
 }
 
+// P0 (hardening 04/08): falha de CREDITO tem alerta PROPRIO, sem o silencio de
+// 10min do alerta generico acima. Credito zerado nao se resolve sozinho — cada
+// minuto sem perceber e cliente real sem resposta. O cooldown de 1min aqui e so
+// pra nao mandar 10 mensagens identicas se varios clientes escreverem juntos.
+let ultimoAlertaCredito = 0;
+function ehErroDeCredito(erro) {
+  const msg = ((erro && erro.message) || '').toLowerCase();
+  return msg.includes('credit balance') || msg.includes('insufficient') || msg.includes('credito');
+}
+function alertarCreditoBaixo(msg) {
+  const agora = Date.now();
+  if (agora - ultimoAlertaCredito < 60 * 1000) return;
+  ultimoAlertaCredito = agora;
+  zapi.enviarAlertaAdmin(
+    '🚨 CBP PAROU DE RESPONDER — credito da Anthropic acabou ou esta baixo demais.\n' +
+    'Adicione credito agora: https://console.anthropic.com/settings/billing\n' +
+    'Erro: ' + (msg || '')
+  ).catch(() => {});
+}
+
 // ============================================================================
 // PAUSA (persistida no Firebase — sobrevive a reinicios)
 // ============================================================================
@@ -166,7 +186,11 @@ async function perguntarParaClaude(telefone, mensagemDoCliente) {
     });
   } catch (erroIA) {
     console.log('❌ Erro na IA (Anthropic):', erroIA.message);
-    alertarFalhaIA(erroIA.message);
+    if (ehErroDeCredito(erroIA)) {
+      alertarCreditoBaixo(erroIA.message);
+    } else {
+      alertarFalhaIA(erroIA.message);
+    }
     return { tipo: 'falha_ia', pergunta: mensagemDoCliente };
   }
 

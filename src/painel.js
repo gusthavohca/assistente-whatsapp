@@ -4,6 +4,7 @@
 
 const express = require('express');
 const multer  = require('multer');
+const crypto  = require('crypto');
 const cloudinary = require('cloudinary').v2;
 const {
   lerFlyers,
@@ -52,9 +53,60 @@ const upload = multer({
 
 const tokensAtivos = new Set();
 
+// P0 (hardening 04/08): token de sessao gerado com crypto seguro (32 bytes
+// aleatorios), nao com Math.random() — Math.random() nao e adequado para nada
+// relacionado a seguranca porque o resultado pode ser previsivel.
 function gerarToken() {
-  return Math.random().toString(36).substring(2) + Date.now().toString(36);
+  return crypto.randomBytes(32).toString('hex');
 }
+
+// ============================================================================
+// RATE LIMIT DE LOGIN (hardening 04/08) — protege contra tentativa de senha
+// por forca bruta. Bloqueia o IP por 15min apos 5 tentativas erradas seguidas.
+// Guardado em memoria (reseta se o Railway reiniciar) — suficiente pro painel
+// ter uma unica senha de admin, sem precisar de banco extra so pra isso.
+// ============================================================================
+const MAX_TENTATIVAS_LOGIN = 5;
+const JANELA_BLOQUEIO_MS = 15 * 60 * 1000;
+const LIMPEZA_APOS_MS = 24 * 60 * 60 * 1000; // remove registros parados ha 24h
+const tentativasLogin = {}; // { ip: { falhas, bloqueadoAte, ultimaTentativa } }
+
+function obterIP(req) {
+  const xff = req.headers['x-forwarded-for'];
+  if (xff) return String(xff).split(',')[0].trim();
+  return (req.socket && req.socket.remoteAddress) || 'desconhecido';
+}
+
+function estaBloqueado(ip) {
+  const r = tentativasLogin[ip];
+  return !!(r && r.bloqueadoAte && r.bloqueadoAte > Date.now());
+}
+
+function registrarFalhaLogin(ip) {
+  const r = tentativasLogin[ip] || { falhas: 0, bloqueadoAte: 0 };
+  r.falhas += 1;
+  r.ultimaTentativa = Date.now();
+  if (r.falhas >= MAX_TENTATIVAS_LOGIN) {
+    r.bloqueadoAte = Date.now() + JANELA_BLOQUEIO_MS;
+    r.falhas = 0;
+  }
+  tentativasLogin[ip] = r;
+}
+
+function limparTentativasLogin(ip) {
+  delete tentativasLogin[ip];
+}
+
+// Varredura periodica — evita que o objeto cresca pra sempre em memoria.
+setInterval(() => {
+  const agora = Date.now();
+  Object.keys(tentativasLogin).forEach((ip) => {
+    const r = tentativasLogin[ip];
+    const semAtividadeRecente = !r.ultimaTentativa || (agora - r.ultimaTentativa) > LIMPEZA_APOS_MS;
+    const naoEstaBloqueado = !r.bloqueadoAte || r.bloqueadoAte < agora;
+    if (semAtividadeRecente && naoEstaBloqueado) delete tentativasLogin[ip];
+  });
+}, 60 * 60 * 1000);
 
 function verificarToken(req, res, next) {
   const token = req.headers['authorization'] || req.query.token;
@@ -68,10 +120,20 @@ const router = express.Router();
 
 // ── LOGIN ──────────────────────────────────────────────
 router.post('/login', (req, res) => {
+  const ip = obterIP(req);
+
+  if (estaBloqueado(ip)) {
+    const restante = Math.ceil((tentativasLogin[ip].bloqueadoAte - Date.now()) / 60000);
+    return res.status(429).json({ erro: `Muitas tentativas erradas. Tente novamente em ${restante} min.` });
+  }
+
   const { senha } = req.body;
   if (senha !== process.env.PAINEL_SENHA) {
+    registrarFalhaLogin(ip);
     return res.status(401).json({ erro: 'Senha incorreta' });
   }
+
+  limparTentativasLogin(ip);
   const token = gerarToken();
   tokensAtivos.add(token);
   res.json({ token });
