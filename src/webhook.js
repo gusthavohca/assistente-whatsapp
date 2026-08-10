@@ -137,13 +137,17 @@ async function criarPontePara(clientePhone, pergunta) {
 
 async function processarMensagem(dadosDoWebhook) {
   try {
-    // F1 (auditoria 04/08): o campo "phone" da Z-API pode, para o mesmo cliente,
-    // alternar entre o numero real e um identificador de privacidade "@lid" gerado
-    // pelo WhatsApp (comportamento documentado pela propria Z-API como inconsistente).
-    // "chatLid" e descrito pela Z-API como o identificador mais estavel. Preferimos
-    // chatLid quando presente; sem ele, caimos para phone (comportamento anterior).
-    // Isso evita que o mesmo cliente vire "dois clientes sem memoria" no Firestore.
-    const telefoneCliente = dadosDoWebhook.chatLid || dadosDoWebhook.phone;
+    // F1 (auditoria 04/08) REVERTIDO em 04/08 apos regressao real: priorizar
+    // "chatLid" quebrou o reconhecimento do proprio admin (o numero configurado
+    // em NUMERO_GUSTHAVO_PESSOAL parou de bater, e a mensagem do Gusthavo passou
+    // a ser tratada como se fosse de um cliente). Na pratica o campo "chatLid" vem
+    // preenchido na grande maioria das mensagens — nao so nos casos raros de
+    // privacidade que a documentacao da Z-API sugeria — entao priorizar ele por
+    // padrao troca a identidade de praticamente todo mundo, nao so quem precisa.
+    // "phone" volta a ser a fonte primaria (e o que sempre funcionou, inclusive
+    // pro admin); chatLid fica so como reserva pros casos raros em que phone nao
+    // vem preenchido.
+    const telefoneCliente = dadosDoWebhook.phone || dadosDoWebhook.chatLid;
     const textoRecebido = dadosDoWebhook.text?.message;
     const enviadaPorNos = dadosDoWebhook.fromMe;
 
