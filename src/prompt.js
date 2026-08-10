@@ -4,7 +4,7 @@
 // Gusthavo, promoter da Le Club.
 // ============================================================================
 
-const { lerFlyers, lerExemplosTom, lerSituacoesCRM } = require('./firebase');
+const { lerFlyers, lerExemplosTom, lerSituacoesCRM, lerCalendario } = require('./firebase');
 
 // ============================================================================
 // DADOS EDITAVEIS (mexa aqui quando os valores mudarem)
@@ -86,7 +86,7 @@ async function montarSystemPrompt(ctx) {
   const jaPerguntouNome = c.jaPerguntouNome === true;
   const jaEnviou = c.jaEnviou || {};
 
-  const [flyers, exemplosTom, situacoesCRM] = await Promise.all([lerFlyers(), lerExemplosTom(), lerSituacoesCRM()]);
+  const [flyers, exemplosTom, situacoesCRM, calendarioCadastrado] = await Promise.all([lerFlyers(), lerExemplosTom(), lerSituacoesCRM(), lerCalendario()]);
 
   const agora = new Date();
   const dataAtual = agora.toLocaleDateString('pt-BR', {
@@ -165,6 +165,24 @@ nao marque so por marcar. Se nenhuma se aplicar, nao inclua nenhuma tag.
 - Quando ele responder o nome (nesta mensagem ou numa futura), inclua [NOME:nome do cliente] no fim da sua resposta (invisivel para o cliente).
 - Depois de perguntar uma vez, NUNCA mais pergunte — nem se o cliente demorar, mudar de assunto ou voltar dias depois.`;
   }
+
+  // BUG CORRIGIDO (04/08): o Calendario cadastrado no painel (artista/atracao
+  // especifico por data, ex.: "14/08 - Ownboss") nunca era lido aqui — o cerebro
+  // so sabia dizer o tipo generico do dia (sexta = eletronica, sabado = funk),
+  // nunca a atracao real que o Gusthavo cadastrou. Isso fazia a IA responder
+  // "programacao" de forma generica, ignorando o que estava atualizado no painel.
+  const blocoCalendarioCadastrado = calendarioCadastrado
+    ? `================================
+PROGRAMACAO CADASTRADA — ATRACAO REAL POR DATA (fonte de verdade principal)
+================================
+Isto e o que esta cadastrado de verdade para cada data. Quando o cliente perguntar
+"qual a programacao", "quem vai tocar", "quem se apresenta" ou coisa parecida, responda
+com a atracao EXATA daqui para a data em questao. So diga que a atracao "ainda nao esta
+fechada" se a data NAO aparecer nesta lista.
+
+${limparTextoExterno(calendarioCadastrado, 2000)}
+`
+    : '';
 
   // --- Bloco anti-duplicacao (o que ja foi enviado nesta conversa) ---
   const jaMandou = [];
@@ -278,6 +296,7 @@ REGRAS DE DATA:
    "Sobre essa data ainda nao tenho as informacoes. Assim que tiver, te passo!"
 6. NUNCA invente o dia da semana. NUNCA diga "nao abre" sem conferir na lista.
 
+${blocoCalendarioCadastrado}
 ================================
 SOBRE A LE CLUB
 ================================
