@@ -11,6 +11,7 @@ const TELAS = {
   relatorio: { t:'Relatório', f: telaRelatorio },
   situacoes: { t:'Situações', f: telaSituacoes },
   perguntas: { t:'Perguntas', f: telaPerguntas },
+  config:    { t:'Config',    f: telaConfig },
 };
 
 function irPara(nome){

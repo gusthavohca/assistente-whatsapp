@@ -735,6 +735,39 @@ async function deletarRelayPendente(alertId) {
 }
 
 // ============================================================================
+// CONFIGURACAO DE NEGOCIO (precos, minimos e regras editaveis pelo painel)
+// ============================================================================
+// Antes, esses valores (desconto, preco de aniversario, minimo de camarote etc.)
+// eram fixos direto no codigo do cerebro (prompt.js) — so mudavam se alguem
+// editasse o arquivo e publicasse de novo. Agora ficam aqui, editaveis pelo
+// painel; o prompt.js le este documento e usa como valor efetivo, caindo nos
+// valores padrao do codigo (DADOS) so pra chaves que ainda nao foram definidas
+// aqui (documento vazio no primeiro uso == comportamento identico ao de antes).
+async function lerConfigNegocio() {
+  try {
+    const doc = await db.collection('configuracoes').doc('negocio').get();
+    return doc.exists ? (doc.data() || {}) : {};
+  } catch (erro) {
+    console.log('⚠️ Erro ao ler config de negócio:', erro.message);
+    return {};
+  }
+}
+
+async function salvarConfigNegocio(dados) {
+  try {
+    await db.collection('configuracoes').doc('negocio').set(
+      { ...dados, atualizadoEm: new Date() },
+      { merge: true }
+    );
+    console.log('✅ Config de negócio atualizada no Firebase');
+    return true;
+  } catch (erro) {
+    console.log('⚠️ Erro ao salvar config de negócio:', erro.message);
+    return false;
+  }
+}
+
+// ============================================================================
 // CRM ATIVO — SITUACOES (etiquetas por conversa) E MENSAGENS AUTOMATICAS
 // ============================================================================
 // Catalogo editavel no painel: cada situacao tem uma chave, um rotulo, uma
@@ -891,4 +924,6 @@ module.exports = {
   lerRelayPorAlerta,
   lerRelaysPendentes,
   deletarRelayPendente,
+  lerConfigNegocio,
+  salvarConfigNegocio,
 };

@@ -25,11 +25,15 @@ const {
   deletarPerguntaSemResposta,
   lerTodosHistoricos,
   lerClientesMeta,
+  lerClienteMeta,
   salvarClienteMeta,
   lerRelaysPendentes,
   lerSituacoesCRM,
   salvarSituacaoCRM,
   deletarSituacaoCRM,
+  limparSituacaoCliente,
+  lerConfigNegocio,
+  salvarConfigNegocio,
 } = require('./firebase');
 
 cloudinary.config({
@@ -208,6 +212,37 @@ router.post('/status', verificarToken, async (req, res) => {
   const { ativo } = req.body;
   const ok = await salvarStatusGia(ativo);
   res.json({ ok });
+
+// ── CONFIG DE NEGOCIO (precos, minimos e regras que o cerebro usa) ───────
+// Antes fixos no codigo do prompt.js; agora editaveis aqui. Documento vazio
+// (primeiro uso) = cerebro usa os valores padrao do codigo normalmente.
+router.get('/config', verificarToken, async (req, res) => {
+  try {
+    const config = await lerConfigNegocio();
+    res.json({ config });
+  } catch (erro) {
+    res.status(500).json({ erro: erro.message });
+  }
+});
+
+router.post('/config', verificarToken, async (req, res) => {
+  try {
+    const CAMPOS_TEXTO = ['abertura', 'instagram', 'contatoDireto', 'descontoAntecipado', 'aniversarioHomem', 'aniversarioMulher', 'aniversarioLimiteHora'];
+    const CAMPOS_NUMERO = ['aniversarioMinConvidados', 'aniversarioGrupoGrande', 'camaroteMinPessoas', 'camaroteSugerirAPartirDe', 'sofaMaxPessoas'];
+    const dados = {};
+    CAMPOS_TEXTO.forEach((c) => { if (req.body[c] !== undefined && String(req.body[c]).trim() !== '') dados[c] = String(req.body[c]).trim(); });
+    CAMPOS_NUMERO.forEach((c) => {
+      if (req.body[c] !== undefined && String(req.body[c]).trim() !== '') {
+        const n = Number(req.body[c]);
+        if (!Number.isNaN(n)) dados[c] = n;
+      }
+    });
+    const ok = await salvarConfigNegocio(dados);
+    res.json({ ok });
+  } catch (erro) {
+    res.status(500).json({ erro: erro.message });
+  }
+});
 });
 
 // ── RELATÓRIO ──────────────────────────────────────────
@@ -569,6 +604,20 @@ router.post('/clientes/:telefone', verificarToken, async (req, res) => {
     if (statusManual !== undefined) dados.statusManual = statusManual;
     if (converteu !== undefined)    dados.converteu = converteu === true;
     const ok = await salvarClienteMeta(telefone, dados);
+
+    // FIX (10/08): ao marcar como convertido, limpa as situacoes de CRM ativo
+    // do cliente. Antes disso a marcacao ficava presa pra sempre — a trava
+    // "nao manda pra quem ja converteu" ja existia, mas a tag continuava
+    // aparecendo na lista de "quem precisa de acompanhamento" mesmo depois
+    // de resolvido, sujando a visao do CRM Ativo.
+    if (converteu === true) {
+      try {
+        const metaAtual = await lerClienteMeta(telefone);
+        const chaves = Object.keys((metaAtual && metaAtual.situacoes) || {});
+        await Promise.all(chaves.map((chave) => limparSituacaoCliente(telefone, chave)));
+      } catch (e) { console.log('Erro ao limpar situações após conversão:', e.message); }
+    }
+
     res.json({ ok });
   } catch (erro) {
     res.status(500).json({ erro: erro.message });

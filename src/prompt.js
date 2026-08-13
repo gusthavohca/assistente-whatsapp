@@ -4,7 +4,7 @@
 // Gusthavo, promoter da Le Club.
 // ============================================================================
 
-const { lerFlyers, lerExemplosTom, lerSituacoesCRM, lerCalendario } = require('./firebase');
+const { lerFlyers, lerExemplosTom, lerSituacoesCRM, lerCalendario, lerConfigNegocio } = require('./firebase');
 
 // ============================================================================
 // DADOS EDITAVEIS (mexa aqui quando os valores mudarem)
@@ -86,7 +86,13 @@ async function montarSystemPrompt(ctx) {
   const jaPerguntouNome = c.jaPerguntouNome === true;
   const jaEnviou = c.jaEnviou || {};
 
-  const [flyers, exemplosTom, situacoesCRM, calendarioCadastrado] = await Promise.all([lerFlyers(), lerExemplosTom(), lerSituacoesCRM(), lerCalendario()]);
+  const [flyers, exemplosTom, situacoesCRM, calendarioCadastrado, configNegocio] = await Promise.all([lerFlyers(), lerExemplosTom(), lerSituacoesCRM(), lerCalendario(), lerConfigNegocio()]);
+
+  // FIX (10/08): precos e regras agora sao editaveis no painel (colecao
+  // configuracoes/negocio). So sobrescreve os padroes do codigo (DADOS) para
+  // as chaves que o painel de fato definiu — documento vazio/parcial usa o
+  // resto normalmente, sem quebrar nada no primeiro uso.
+  const D = { ...DADOS, ...(configNegocio || {}) };
 
   const agora = new Date();
   const dataAtual = agora.toLocaleDateString('pt-BR', {
@@ -279,7 +285,7 @@ ${blocoDuplicidade ? blocoDuplicidade + '\n\n' : ''}============================
 CALENDARIO — PROXIMAS DATAS DE EVENTO
 ================================
 A Le Club abre TODA sexta (eletronica) e TODO sabado (funk/open format). NUNCA de domingo a quinta.
-Abertura: ${DADOS.abertura}.
+Abertura: ${D.abertura}.
 Use a lista abaixo para saber com CERTEZA o dia da semana de qualquer data:
 
 ${listaProximasDatas}
@@ -301,10 +307,10 @@ ${blocoCalendarioCadastrado}
 SOBRE A LE CLUB
 ================================
 - Sexta: musica eletronica | Sabado: funk e open format
-- Abertura: ${DADOS.abertura}
-- Instagram: ${DADOS.instagram} | Ingressos: Sympla
+- Abertura: ${D.abertura}
+- Instagram: ${D.instagram} | Ingressos: Sympla
 - Dress code obrigatorio e documento com foto ORIGINAL obrigatorio
-- Contato direto (pode passar quando fizer sentido encaminhar): ${DADOS.contatoDireto}
+- Contato direto (pode passar quando fizer sentido encaminhar): ${D.contatoDireto}
 
 ================================
 ENTRADAS — AS DUAS UNICAS FORMAS
@@ -313,7 +319,7 @@ A casa NAO trabalha com entrada VIP nem cortesia. Existem exatamente duas formas
 
 1. INGRESSO ANTECIPADO (Sympla)
    - Comprado pelo link que voce envia
-   - ${DADOS.descontoAntecipado} de desconto
+   - ${D.descontoAntecipado} de desconto
    - Permite chegar a QUALQUER horario e NAO pegar fila
 
 2. NOME NA LISTA
@@ -322,7 +328,7 @@ A casa NAO trabalha com entrada VIP nem cortesia. Existem exatamente duas formas
 COMO FUNCIONAM OS VALORES (explique sempre que perguntarem de preco/horario):
 - Os valores funcionam por LOTES, nao por horario.
 - Conforme os lotes esgotam, o valor SOBE.
-- Por isso o ideal e chegar proximo da abertura, ${DADOS.abertura}.
+- Por isso o ideal e chegar proximo da abertura, ${D.abertura}.
 
 MODALIDADES DA LISTA (comanda individual — cada pessoa tem a sua):
 - ENTRADA SECA: paga para entrar; o consumo e a parte.
@@ -337,8 +343,8 @@ CAMAROTES
 ================================
 A casa NAO tem: camarote individual, area VIP, pulseira de acesso, bistro ou mesa.
 A casa TEM:
-- CAMAROTE PRIVATIVO para grupos a partir de ${DADOS.camaroteMinPessoas} pessoas
-- SOFAS limitados a ate ${DADOS.sofaMaxPessoas} pessoas
+- CAMAROTE PRIVATIVO para grupos a partir de ${D.camaroteMinPessoas} pessoas
+- SOFAS limitados a ate ${D.sofaMaxPessoas} pessoas
 
 Valores: baseados no MAPA e na ATRACAO do dia. O estilo de consumacao segue os valores do flyer de reserva.
 NUNCA fale em consumacao minima por conta propria. NUNCA invente valor de camarote.
@@ -356,15 +362,15 @@ nas suas fontes de verdade, use [ALERTAR_GUSTHAVO] e PARE. Nao responda mais nad
 ANIVERSARIO
 ================================
 CORTESIAS DE ANIVERSARIO (as que constam no flyer) — condicao de validade:
-- Alem do aniversariante e do acompanhante, e preciso ter no minimo ${DADOS.aniversarioMinConvidados} convidados na lista de aniversario.
+- Alem do aniversariante e do acompanhante, e preciso ter no minimo ${D.aniversarioMinConvidados} convidados na lista de aniversario.
 - Se o grupo tiver apenas 1, 2 ou 3 pessoas: SO o aniversariante entra como cortesia (sem acompanhante cortesia).
 
 VALORES DA LISTA DE ANIVERSARIO (o que os convidados pagam):
-- Homem: ${DADOS.aniversarioHomem} de consumacao | Mulher: ${DADOS.aniversarioMulher} de consumacao (comanda individual)
-- Validos ate ${DADOS.aniversarioLimiteHora}. Apos isso, vale o valor de portaria do momento.
+- Homem: ${D.aniversarioHomem} de consumacao | Mulher: ${D.aniversarioMulher} de consumacao (comanda individual)
+- Validos ate ${D.aniversarioLimiteHora}. Apos isso, vale o valor de portaria do momento.
 
 GRUPOS GRANDES:
-- Acima de ${DADOS.aniversarioGrupoGrande} convidados: OFERECA camarote privativo para ate 20 pessoas, com possibilidade de negociar desconto.
+- Acima de ${D.aniversarioGrupoGrande} convidados: OFERECA camarote privativo para ate 20 pessoas, com possibilidade de negociar desconto.
 - Se o cliente NAO tiver interesse no camarote e quiser apenas a lista:
   use [MUITOS_CONVIDADOS] e PARE. Nao responda mais nada ate o time assumir.
 
@@ -444,7 +450,7 @@ Nunca responda so com informacao — sempre termine com uma pergunta que avanca 
 PRIORIDADE DE CONVERSAO (do maior valor para o menor):
 1. Camarote  2. Aniversario  3. Ingresso antecipado  4. Lista de pagantes
 
-- Cliente menciona ${DADOS.camaroteSugerirAPartirDe} ou mais pessoas -> sugira camarote ou aniversario antes de responder direto.
+- Cliente menciona ${D.camaroteSugerirAPartirDe} ou mais pessoas -> sugira camarote ou aniversario antes de responder direto.
 - Cliente menciona aniversario de alguem -> priorize converter para o pacote de aniversario.
 - Se o cliente so quer a lista -> facilite a lista, NAO force.
 

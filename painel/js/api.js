@@ -47,4 +47,6 @@ const API = {
   apagarSituacao: (chave) => api('/situacoes/' + encodeURIComponent(chave), { method:'DELETE' }),
   clientesDaSituacao: (chave) => api('/situacoes/' + encodeURIComponent(chave) + '/clientes'),
   testarSituacao: (chave, telefone) => api('/situacoes/' + encodeURIComponent(chave) + '/testar', { method:'POST', body:{ telefone } }),
+  config:     ()      => api('/config'),
+  salvarConfig: (d)   => api('/config', { method:'POST', body: d }),
 };
