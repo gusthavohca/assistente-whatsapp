@@ -212,6 +212,7 @@ router.post('/status', verificarToken, async (req, res) => {
   const { ativo } = req.body;
   const ok = await salvarStatusGia(ativo);
   res.json({ ok });
+});
 
 // ── CONFIG DE NEGOCIO (precos, minimos e regras que o cerebro usa) ───────
 // Antes fixos no codigo do prompt.js; agora editaveis aqui. Documento vazio
@@ -242,7 +243,6 @@ router.post('/config', verificarToken, async (req, res) => {
   } catch (erro) {
     res.status(500).json({ erro: erro.message });
   }
-});
 });
 
 // ── RELATÓRIO ──────────────────────────────────────────
