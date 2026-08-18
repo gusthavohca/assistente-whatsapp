@@ -27,9 +27,8 @@ function linhaInteresse(chave, titulo, legenda, valor, maximo){
 async function telaInicio(){
   carregando();
   try{
-    const [d, p] = await Promise.all([API.dashboard(), API.pendencias()]);
+    const d = await API.dashboard();
     const m = d.metricas;
-    atualizarSino(p.total);
     ESTADO_CBP = d.ativo === true;
 
     const interesses = [
@@ -40,13 +39,6 @@ async function telaInicio(){
     const topo = interesses[0] ? interesses[0].v : 0;
 
     const flyOk = d.flyers.filter(f => f.ok).length;
-
-    const pend = p.pendencias.length
-      ? p.pendencias.slice(0, 5).map(x =>
-          '<div class="row"><div><div class="t">' + esc(x.nome || x.telefone) + '</div><div class="s">' +
-          esc((x.pergunta || '').slice(0, 70)) + '</div></div><div class="m">' + quando(x.criadoEm) + '</div></div>'
-        ).join('') + (p.total > 5 ? '<div class="s" style="padding-top:8px">e mais ' + (p.total - 5) + '…</div>' : '')
-      : '<div class="empty">Ninguém esperando. Tudo em dia.</div>';
 
     el().innerHTML =
       '<div class="controle">' +
@@ -64,13 +56,9 @@ async function telaInicio(){
         metric('Flyers no ar', flyOk + '/' + d.flyers.length, flyOk === d.flyers.length ? 'tudo publicado' : 'faltam alguns', flyOk === d.flyers.length) +
       '</div>' +
 
-      '<div class="grid g2">' +
-        '<div><div class="sec-title">Maiores interesses</div>' +
-          '<div class="card">' +
-            interesses.map(i => linhaInteresse(i.k, i.t, i.l, i.v, topo)).join('') +
-          '</div></div>' +
-        '<div><div class="sec-title">Precisam de você</div>' +
-          '<div class="card" style="' + (p.total ? 'border-color:var(--danger)' : '') + '">' + pend + '</div></div>' +
+      '<div class="sec-title">Maiores interesses</div>' +
+      '<div class="card">' +
+        interesses.map(i => linhaInteresse(i.k, i.t, i.l, i.v, topo)).join('') +
       '</div>';
 
     pintarPower();

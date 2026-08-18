@@ -46,6 +46,12 @@ function sair(){
   location.reload();
 }
 
+// (18/08) Removido o sino de "pendencias" (polling a cada 60s + notificacao
+// do navegador): redundante com o alerta que o CBP ja manda no WhatsApp admin
+// quando nao sabe responder (webhook.js/zapi.enviarAlertaRelay), e o Gusthavo
+// ja acompanha o WhatsApp diariamente. Alem de redundante, essa checagem
+// lia a colecao inteira de clientes_meta a cada minuto, 24h/dia, em qualquer
+// aba aberta — foi o que estourou a cota diaria do Firestore em 18/08.
 function abrirPainel(){
   document.getElementById('login').classList.add('hide');
   document.getElementById('app').classList.remove('hide');
@@ -53,7 +59,6 @@ function abrirPainel(){
   document.getElementById('subtitulo').textContent = hoje.charAt(0).toUpperCase() + hoje.slice(1);
   carregarStatus();
   irPara('inicio');
-  iniciarVigia();
 }
 
 // ---------- STATUS ----------
@@ -83,27 +88,6 @@ async function alternarCbp(){
     toast(real === novo ? (real ? 'CBP ligado' : 'CBP desligado') : 'O servidor não confirmou a mudança', real === novo ? '' : 'erro');
   }
   catch(e){ toast('Erro ao alterar', 'erro'); }
-}
-
-// ---------- SINO / NOTIFICACOES ----------
-let ULTIMO_TOTAL = 0;
-function atualizarSino(n){
-  const b = document.getElementById('bell-n');
-  b.textContent = n;
-  b.classList.toggle('hide', !n);
-  if (n > ULTIMO_TOTAL && ULTIMO_TOTAL !== 0) notificar(n);
-  ULTIMO_TOTAL = n;
-}
-function notificar(n){
-  if (!('Notification' in window) || Notification.permission !== 'granted') return;
-  try{ new Notification('CBP — cliente esperando', { body: n + ' cliente(s) precisam da sua resposta.', tag:'cbp-pendencia' }); }
-  catch(e){}
-}
-function iniciarVigia(){
-  if ('Notification' in window && Notification.permission === 'default') Notification.requestPermission();
-  setInterval(async () => {
-    try{ const p = await API.pendencias(); atualizarSino(p.total); } catch(e){}
-  }, 60000);
 }
 
 // ---------- PWA ----------

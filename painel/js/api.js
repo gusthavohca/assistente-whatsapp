@@ -20,7 +20,6 @@ async function api(rota, opcoes) {
 const API = {
   login:      (senha) => fetch('/painel/api/login', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ senha }) }),
   dashboard:  ()      => api('/dashboard'),
-  pendencias: ()      => api('/pendencias'),
   status:     ()      => api('/status'),
   setStatus:  (ativo) => api('/status', { method:'POST', body:{ ativo } }),
   flyers:     ()      => api('/flyers'),

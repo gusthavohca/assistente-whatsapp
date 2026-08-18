@@ -27,7 +27,6 @@ const {
   lerClientesMeta,
   lerClienteMeta,
   salvarClienteMeta,
-  lerRelaysPendentes,
   lerSituacoesCRM,
   salvarSituacaoCRM,
   deletarSituacaoCRM,
@@ -460,27 +459,14 @@ router.get('/dashboard', verificarToken, async (req, res) => {
   }
 });
 
-// ── PENDENCIAS ─────────────────────────────────────────
-// Clientes esperando resposta manual do Gusthavo (modo ponte).
-router.get('/pendencias', verificarToken, async (req, res) => {
-  try {
-    const [pendentes, meta] = await Promise.all([lerRelaysPendentes(), lerClientesMeta()]);
-    const lista = pendentes.map((p) => {
-      const d = p.dados || {};
-      const m = meta[d.clientePhone] || {};
-      return {
-        id: p.id,
-        telefone: d.clientePhone || '',
-        nome: m.nome || m.nomeInformado || m.nomeWhats || '',
-        pergunta: d.pergunta || '',
-        criadoEm: d.criadoEm || 0,
-      };
-    }).sort((a, b) => b.criadoEm - a.criadoEm);
-    res.json({ pendencias: lista, total: lista.length });
-  } catch (erro) {
-    res.status(500).json({ erro: erro.message });
-  }
-});
+// (18/08) Rota /pendencias REMOVIDA a pedido do Gusthavo: era so' um espelho,
+// no painel, do mesmo alerta que o CBP ja manda pro WhatsApp admin quando nao
+// sabe responder (modo ponte, ver webhook.js). Redundante, e o polling de 60s
+// que a alimentava (iniciarVigia, removido do app.js) foi o que estourou a
+// cota diaria do Firestore lendo "clientes_meta" inteira toda vez. O mecanismo
+// de ponte em si (relay_pendente, alerta no WhatsApp, encaminhar resposta do
+// admin pro cliente) continua ativo e intacto — so a exibicao redundante no
+// painel foi removida.
 
 // ── CRM: CLIENTES ──────────────────────────────────────────────────────────
 // v1: deriva a lista de clientes a partir da coleção "historicos" (todo cliente
