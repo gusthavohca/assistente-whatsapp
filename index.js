@@ -72,7 +72,11 @@ app.listen(PORTA, () => {
   console.log('  Aguardando mensagens do WhatsApp...');
   console.log('');
 
-  iniciarAgendamento();
-  iniciarDisparos();
-  iniciarCrmAtivo();
+  if (process.env.DESLIGAR_AGENDADORES === '1') {
+    console.log('  ⚠️ Agendadores DESLIGADOS (DESLIGAR_AGENDADORES=1): sem disparos, CRM ativo nem relatorio.');
+  } else {
+    iniciarAgendamento();
+    iniciarDisparos();
+    iniciarCrmAtivo();
+  }
 });
