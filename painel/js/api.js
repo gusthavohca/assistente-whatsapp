@@ -28,6 +28,7 @@ const API = {
   clientes:   ()      => api('/clientes'),
   conversa:   (tel)   => api('/clientes/' + encodeURIComponent(tel) + '/conversa'),
   salvarCliente:(tel,d)=> api('/clientes/' + encodeURIComponent(tel), { method:'POST', body: d }),
+  gerarPerfil:  (tel)  => api('/clientes/' + encodeURIComponent(tel) + '/gerar-perfil', { method:'POST' }),
   sincronizarNomes: () => api('/clientes/sincronizar-nomes', { method:'POST' }),
   calendario: ()      => api('/calendario'),
   salvarEvento:(dia,descricao) => api('/calendario', { method:'POST', body:{ dia, descricao } }),

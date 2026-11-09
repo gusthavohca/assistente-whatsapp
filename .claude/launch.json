@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "painel",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["-e", "process.env.DESLIGAR_AGENDADORES='1';process.env.PORT='3000';require('./index.js')"],
+      "port": 3000
+    }
+  ]
+}

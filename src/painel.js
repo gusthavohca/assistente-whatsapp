@@ -33,7 +33,9 @@ const {
   limparSituacaoCliente,
   lerConfigNegocio,
   salvarConfigNegocio,
+  lerHistorico,
 } = require('./firebase');
+const { gerarPerfilPorIA, limparResumo, normalizarNivel } = require('./perfil');
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -522,6 +524,10 @@ router.get('/clientes', verificarToken, async (req, res) => {
         converteu: m.converteu === true, // "colocou nome na lista" — confirmado manualmente
         status: m.statusManual || statusAuto,
         statusManual: m.statusManual || '',
+        resumo: m.resumo || '',
+        nivel: m.nivelManual || m.nivelIA || '',
+        nivelIA: m.nivelIA || '',
+        nivelManual: m.nivelManual || '',
       };
     });
 
@@ -579,16 +585,37 @@ router.post('/clientes/sincronizar-nomes', verificarToken, async (req, res) => {
   }
 });
 
-// Salva/edita metadados do cliente (nome, nota, status manual, converteu)
+// Gera (ou refaz) o historico resumido + nivel sugerido pela IA a partir da conversa salva.
+// IMPORTANTE: precisa vir ANTES de POST /clientes/:telefone.
+router.post('/clientes/:telefone/gerar-perfil', verificarToken, async (req, res) => {
+  try {
+    const telefone = req.params.telefone;
+    const mensagens = await lerHistorico(telefone);
+    if (!mensagens || !mensagens.length) return res.status(400).json({ erro: 'Cliente sem conversa salva.' });
+    const perfil = await gerarPerfilPorIA(mensagens);
+    const dados = {};
+    if (perfil.resumo) { dados.resumo = perfil.resumo; dados.resumoAtualizadoEm = Date.now(); }
+    if (perfil.nivel)  dados.nivelIA = perfil.nivel;
+    if (Object.keys(dados).length) await salvarClienteMeta(telefone, dados);
+    res.json({ ok: true, ...perfil });
+  } catch (erro) {
+    console.error('Erro ao gerar perfil:', erro);
+    res.status(500).json({ erro: erro.message });
+  }
+});
+
+// Salva/edita metadados do cliente (nome, nota, status manual, converteu, resumo, nivel)
 router.post('/clientes/:telefone', verificarToken, async (req, res) => {
   try {
     const telefone = req.params.telefone;
-    const { nome, nota, statusManual, converteu } = req.body;
+    const { nome, nota, statusManual, converteu, resumo, nivelManual } = req.body;
     const dados = {};
     if (nome !== undefined)         dados.nome = nome;
     if (nota !== undefined)         dados.nota = nota;
     if (statusManual !== undefined) dados.statusManual = statusManual;
     if (converteu !== undefined)    dados.converteu = converteu === true;
+    if (resumo !== undefined)       { dados.resumo = limparResumo(resumo); dados.resumoAtualizadoEm = Date.now(); }
+    if (nivelManual !== undefined)  dados.nivelManual = normalizarNivel(nivelManual); // '' = volta pro automatico
     const ok = await salvarClienteMeta(telefone, dados);
 
     // FIX (10/08): ao marcar como convertido, limpa as situacoes de CRM ativo

@@ -4,7 +4,7 @@
 const TELAS = {
   inicio:    { t:'Início',    f: telaInicio },
   flyers:    { t:'Flyers',    f: telaFlyers },
-  clientes:  { t:'Clientes',  f: telaClientes },
+  clientes:  { t:'CRM',       f: telaClientes },
   agenda:    { t:'Agenda',    f: telaAgenda },
   links:     { t:'Links',     f: telaLinks },
   disparos:  { t:'Disparos',  f: telaDisparos },

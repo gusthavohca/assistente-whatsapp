@@ -5,6 +5,7 @@
 const claude = require('./claude');
 const zapi = require('./zapi');
 const { processarComandoAdmin } = require('./admin');
+const { limparResumo, normalizarNivel } = require('./perfil');
 const { lerFlyers, lerStatusGia, registrarPedido, registrarAtendimento, salvarPerguntaSemResposta, salvarExemploTom, salvarClienteMeta, lerClienteMeta, salvarRelayPendente, lerRelayPorAlerta, lerRelaysPendentes, deletarRelayPendente, lerLinksEventos, lerCalendario, marcarSituacaoCliente } = require('./firebase');
 const NUMERO_ADMIN = process.env.NUMERO_GUSTHAVO_PESSOAL;
 
@@ -461,6 +462,29 @@ async function processarBufferDoCliente(telefoneCliente) {
       marcarSituacaoCliente(telefoneCliente, chaveSituacao).catch(() => {});
     }
     textoLimpo = textoLimpo.replace(regexSituacao, '').trim();
+
+    // Detectar [PERFIL:...] e [NIVEL:...] — historico resumido e nivel do cliente no CRM.
+    // Se houver mais de uma, vale a ULTIMA. O nivel manual (painel) nunca e sobrescrito:
+    // a IA grava em nivelIA e o painel mostra nivelManual quando existir.
+    const perfilNovo = {};
+    const regexPerfil = /\[PERFIL:([^\]]+)\]/gi;
+    let matchPerfil;
+    while ((matchPerfil = regexPerfil.exec(respostaDaClaude)) !== null) {
+      const resumo = limparResumo(matchPerfil[1]);
+      if (resumo) perfilNovo.resumo = resumo;
+    }
+    const regexNivel = /\[NIVEL:\s*([^\]]+)\]/gi;
+    let matchNivel;
+    while ((matchNivel = regexNivel.exec(respostaDaClaude)) !== null) {
+      const nivel = normalizarNivel(matchNivel[1]);
+      if (nivel) perfilNovo.nivelIA = nivel;
+    }
+    if (perfilNovo.resumo) perfilNovo.resumoAtualizadoEm = Date.now();
+    if (Object.keys(perfilNovo).length) {
+      salvarClienteMeta(telefoneCliente, perfilNovo)
+        .catch((e) => console.log('⚠️ Erro ao salvar perfil do cliente:', e.message));
+    }
+    textoLimpo = textoLimpo.replace(regexPerfil, '').replace(regexNivel, '').trim();
 
     // F2 (auditoria 04/08): a IA agora e instruida (prompt.js) a emitir a etiqueta
     // [PERGUNTOU_NOME] toda vez que perguntar o nome do cliente — deteccao
