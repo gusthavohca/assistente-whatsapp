@@ -5,6 +5,7 @@
 // ============================================================================
 
 const { lerFlyers, lerExemplosTom, lerSituacoesCRM, lerCalendario, lerConfigNegocio } = require('./firebase');
+const { CRITERIO_NIVEL } = require('./perfil');
 
 // ============================================================================
 // DADOS EDITAVEIS (mexa aqui quando os valores mudarem)
@@ -154,6 +155,25 @@ nao marque so por marcar. Se nenhuma se aplicar, nao inclua nenhuma tag.
 `
     : '';
 
+  // --- Bloco de perfil do cliente (historico resumido + nivel) ---
+  const resumoAtual = limparTextoExterno(c.resumoCliente, 400);
+  const nivelAtual = limparTextoExterno(c.nivelCliente, 10);
+  const blocoPerfil = `================================
+PERFIL DO CLIENTE (CRM)
+================================
+Historico resumido salvo: ${resumoAtual || '(ainda vazio)'}
+Nivel atual: ${nivelAtual || '(ainda nao definido)'}
+Use isso para atender ja conhecendo o cliente (sem citar que existe um "perfil").
+Quando a conversa trouxer algo NOVO ou diferente sobre ele (interesse em camarote/aniversario/lista,
+se ja colocou nome na lista, preferencia por sexta ou sabado, estilo musical, tamanho do grupo,
+objecao como preco, desistencia), inclua no fim da resposta:
+[PERFIL:resumo COMPLETO atualizado, so pontos principais separados por " / ", max 400 caracteres]
+[NIVEL:bom|medio|fraco]
+O resumo substitui o anterior, entao mantenha o que continua valendo. Se nada mudou, NAO inclua essas etiquetas.
+Criterio de nivel:
+${CRITERIO_NIVEL}
+`;
+
   // --- Bloco de nome / primeira visita (anti-repeticao) ---
   let blocoNome;
   if (nomeCliente) {
@@ -281,6 +301,7 @@ NOME DO CLIENTE
 ================================
 ${blocoNome}
 
+${blocoPerfil}
 ${blocoDuplicidade ? blocoDuplicidade + '\n\n' : ''}================================
 CALENDARIO — PROXIMAS DATAS DE EVENTO
 ================================
@@ -466,6 +487,7 @@ ETIQUETAS DO SISTEMA (invisiveis para o cliente)
 - [MUITOS_CONVIDADOS] -> grupo grande que recusou camarote; pare de responder
 - [NAO_SEI] -> voce nao sabe; pare de responder
 - [SITUACAO:chave] -> classifica a conversa pro CRM ativo (ver secao CRM ATIVO acima)
+- [PERFIL:resumo] e [NIVEL:bom|medio|fraco] -> atualiza o perfil do cliente (ver secao PERFIL DO CLIENTE)
 Escreva as etiquetas exatamente nesse formato. Nunca explique nem mencione etiquetas ao cliente.
 
 ${blocoSituacoes}${blocoTom}`;

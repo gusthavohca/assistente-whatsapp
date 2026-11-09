@@ -236,6 +236,7 @@ async function telaClientes(){
       '<div class="filters">' +
         '<input id="busca" placeholder="Buscar por nome ou telefone..." oninput="renderClientes()">' +
         '<select id="f-status" onchange="renderClientes()"><option value="">Todos os status</option><option value="novo">Novos</option><option value="recorrente">Recorrentes</option><option value="sumido">Sumidos</option></select>' +
+        '<select id="f-nivel" onchange="renderClientes()"><option value="">Todos os níveis</option><option value="bom">Cliente Bom</option><option value="medio">Cliente Médio</option><option value="fraco">Cliente Fraco</option><option value="sem">Sem nível</option></select>' +
         '<select id="f-int" onchange="renderClientes()"><option value="">Todos interesses</option><option value="lista">Lista</option><option value="camarote">Camarote</option><option value="aniversario">Aniversário</option><option value="conv">Só convertidos</option></select>' +
         '<button class="btn ghost" onclick="sincronizarNomes()">Sincronizar nomes</button>' +
       '</div><div id="lista-cli"></div>';
@@ -247,9 +248,12 @@ function renderClientes(){
   const b = (document.getElementById('busca').value || '').toLowerCase().trim();
   const fs = document.getElementById('f-status').value;
   const fi = document.getElementById('f-int').value;
+  const fn = document.getElementById('f-nivel').value;
   const arr = CLIENTES.filter(c => {
-    if (b && !((c.nome || '').toLowerCase().includes(b) || c.telefone.includes(b))) return false;
+    if (b && !((c.nome || '').toLowerCase().includes(b) || c.telefone.includes(b) || (c.resumo || '').toLowerCase().includes(b))) return false;
     if (fs && c.status !== fs) return false;
+    if (fn === 'sem' && c.nivel) return false;
+    if (fn && fn !== 'sem' && c.nivel !== fn) return false;
     if (fi === 'conv' && !c.converteu) return false;
     if (fi && fi !== 'conv' && !(c.interesse && c.interesse[fi])) return false;
     return true;
@@ -264,19 +268,32 @@ function renderClientes(){
     if (c.converteu) tags.push('<span style="border-color:var(--success);color:var(--text-success)">Na lista</span>');
     return '<div class="cli">' +
       '<div><div class="nm">' + esc(c.nome || 'Sem nome') + '</div><div class="ph">' + esc(c.telefone) + '</div></div>' +
-      '<div><span class="badge ' + c.status + '">' + c.status + '</span></div>' +
+      (c.resumo
+        ? '<div class="hist" title="' + esc(c.resumo) + '">' + esc(c.resumo) + '</div>'
+        : '<div class="hist vazio">Sem histórico ainda</div>') +
+      '<div class="badges"><span class="badge ' + c.status + '">' + c.status + '</span>' + badgeNivel(c.nivel) + '</div>' +
       '<div class="ph">' + quando(c.ultimaInteracaoMs) + '<br>' + c.totalMensagens + ' msgs</div>' +
       '<div class="tags">' + (tags.join('') || '<span style="border:none;color:var(--text-muted)">—</span>') + '</div>' +
       '<button class="btn ghost sm" onclick="verCliente(\'' + c.telefone + '\')">Ver</button></div>';
   }).join('');
 }
 
+const NIVEL_LABEL = { bom:'Cliente Bom', medio:'Cliente Médio', fraco:'Cliente Fraco' };
+function badgeNivel(n){
+  return n ? '<span class="badge ' + n + '">' + NIVEL_LABEL[n] + '</span>' : '<span class="badge sem-nivel">Sem nível</span>';
+}
+
 async function verCliente(tel){
   const c = CLIENTES.find(x => x.telefone === tel);
   if (!c) return;
   window._cliAtual = tel;
+  const auto = c.nivelIA ? 'Automático (IA: ' + NIVEL_LABEL[c.nivelIA] + ')' : 'Automático (IA ainda não definiu)';
   abrirModal('<h3>' + esc(c.nome || 'Sem nome') + '</h3><p style="font-size:12.5px;color:var(--text-secondary)">' + esc(tel) + '</p>' +
     '<label>Nome</label><input id="c-nome" value="' + esc(c.nome) + '">' +
+    '<label style="display:flex;justify-content:space-between;align-items:center">Histórico do cliente' +
+      '<button type="button" class="btn ghost sm" id="c-gerar" onclick="gerarPerfilCliente()">Gerar com IA</button></label>' +
+    '<textarea id="c-resumo" rows="3" maxlength="400" placeholder="Ex.: Interesse em camarote / Já colocou nome na lista / Prefere sábado / Curte eletrônico e funk">' + esc(c.resumo) + '</textarea>' +
+    '<label>Nível do cliente</label><select id="c-nivel"><option value="">' + auto + '</option><option value="bom">Cliente Bom</option><option value="medio">Cliente Médio</option><option value="fraco">Cliente Fraco</option></select>' +
     '<label>Status</label><select id="c-status"><option value="">Automático</option><option value="novo">Novo</option><option value="recorrente">Recorrente</option><option value="sumido">Sumido</option></select>' +
     '<label style="display:flex;align-items:center;gap:8px;margin-top:14px;text-transform:none;font-size:13.5px;color:var(--text-primary)"><input type="checkbox" id="c-conv" style="width:auto" ' + (c.converteu ? 'checked' : '') + '> Colocou o nome na lista</label>' +
     '<label>Nota</label><textarea id="c-nota" rows="3">' + esc(c.nota) + '</textarea>' +
@@ -284,6 +301,7 @@ async function verCliente(tel){
     '<div style="display:flex;gap:10px;margin-top:18px"><button class="btn" onclick="salvarCliente()">Salvar</button>' +
     '<button class="btn ghost" onclick="fecharModal()">Fechar</button></div>');
   document.getElementById('c-status').value = c.statusManual || '';
+  document.getElementById('c-nivel').value = c.nivelManual || '';
   try{
     const d = await API.conversa(tel);
     const msgs = d.mensagens || [];
@@ -303,9 +321,29 @@ async function salvarCliente(){
       nota: document.getElementById('c-nota').value.trim(),
       statusManual: document.getElementById('c-status').value,
       converteu: document.getElementById('c-conv').checked,
+      // so manda o resumo se mudou — evita sobrescrever uma atualizacao recente da IA
+      resumo: document.getElementById('c-resumo').value.trim() !== (CLIENTES.find(x => x.telefone === tel) || {}).resumo
+        ? document.getElementById('c-resumo').value.trim() : undefined,
+      nivelManual: document.getElementById('c-nivel').value,
     });
     toast('Cliente salvo'); fecharModal(); telaClientes();
   } catch(e){ toast('Erro ao salvar', 'erro'); }
+}
+
+async function gerarPerfilCliente(){
+  const tel = window._cliAtual;
+  if (!tel) return;
+  const bt = document.getElementById('c-gerar');
+  bt.disabled = true; bt.textContent = 'Gerando...';
+  try{
+    const d = await API.gerarPerfil(tel);
+    if (d.resumo) document.getElementById('c-resumo').value = d.resumo;
+    const c = CLIENTES.find(x => x.telefone === tel);
+    if (c) { c.resumo = d.resumo || c.resumo; c.nivelIA = d.nivel || c.nivelIA; }
+    if (d.nivel) document.querySelector('#c-nivel option[value=""]').textContent = 'Automático (IA: ' + NIVEL_LABEL[d.nivel] + ')';
+    toast('Histórico gerado');
+  } catch(e){ toast('Erro ao gerar histórico', 'erro'); }
+  bt.disabled = false; bt.textContent = 'Gerar com IA';
 }
 
 async function sincronizarNomes(){

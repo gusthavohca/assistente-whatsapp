@@ -165,6 +165,8 @@ async function perguntarParaClaude(telefone, mensagemDoCliente) {
     jaPerguntouNome: meta.jaPerguntouNome === true,
     jaVisitou: meta.jaVisitou,
     jaEnviou: montarJaEnviou(meta),
+    resumoCliente: meta.resumo || '',
+    nivelCliente: meta.nivelManual || meta.nivelIA || '',
   };
 
   let historico = [];
